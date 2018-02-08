@@ -1,13 +1,13 @@
 module.exports = function(passport, LocalStrategy){
   passport.use(new LocalStrategy({
-    usernameField: 'userid',
-    passwordField: 'password',
+    usernameField: "userid",
+    passwordField: "password",
     passReqToCallback : true
   },
   function(req, userid, password, done){
     if(userid === "admin" && password === "admin"){
       var user = {
-        'user_id' : userid
+        "user_id" : userid
       };
       return done(null, user);
     }
