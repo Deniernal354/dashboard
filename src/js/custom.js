@@ -7,48 +7,50 @@
  * });
  */
 (function($,sr){
- // debouncing function from John Hann
- // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+// debouncing function from John Hann
+// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
   var debounce = function (func, threshold, execAsap) {
-   var timeout;
+    var timeout;
 
-   return function debounced () {
-     var obj = this, args = arguments;
-     function delayed () {
-       if (!execAsap)
-       func.apply(obj, args);
-       timeout = null;
-     }
+    return function debounced () {
+      var obj = this, args = arguments;
+      function delayed () {
+        if (!execAsap){
+          func.apply(obj, args);
+        }
+        timeout = null;
+      }
 
-     if (timeout)
-     clearTimeout(timeout);
-     else if (execAsap)
-     func.apply(obj, args);
+      if (timeout){
+        clearTimeout(timeout);
+      }
+      else if (execAsap){
+        func.apply(obj, args);
+      }
 
-     timeout = setTimeout(delayed, threshold || 100);
-   };
+      timeout = setTimeout(delayed, threshold || 100);
+    };
   };
+  // smartresize
+  jQuery.fn[sr] = function(fn){  return fn ? this.bind("resize", debounce(fn)) : this.trigger(sr); };
 
- // smartresize
- jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
+})(jQuery,"smartresize");
 
-})(jQuery,'smartresize');
+/**
+* To change this license header, choose License Headers in Project Properties.
+* To change this template file, choose Tools | Templates
+* and open the template in the editor.
+*/
 
- /**
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-var CURRENT_URL = window.location.href.split('#')[0].split('?')[0],
-$BODY = $('body'),
-$MENU_TOGGLE = $('#menu_toggle'),
-$SIDEBAR_MENU = $('#sidebar-menu'),
-$SIDEBAR_FOOTER = $('.sidebar-footer'),
-$LEFT_COL = $('.left_col'),
-$RIGHT_COL = $('.right_col'),
-$NAV_MENU = $('.nav_menu'),
-$FOOTER = $('footer');
+var CURRENT_URL = window.location.href.split("#")[0].split("?")[0],
+  $BODY = $("body"),
+  $MENU_TOGGLE = $("#menu_toggle"),
+  $SIDEBAR_MENU = $("#sidebar-menu"),
+  $SIDEBAR_FOOTER = $(".sidebar-footer"),
+  $LEFT_COL = $(".left_col"),
+  $RIGHT_COL = $(".right_col"),
+  $NAV_MENU = $(".nav_menu"),
+  $FOOTER = $("footer");
 
 $(document).ready(function() {
   //initialize menu components
@@ -60,147 +62,147 @@ $(document).ready(function() {
 });
 
 // NProgress
-if (typeof NProgress != 'undefined') {
- $(document).ready(function () {
-   NProgress.start();
- });
+if (typeof NProgress != "undefined") {
+  $(document).ready(function () {
+    NProgress.start();
+  });
 
- $(window).load(function() {
-   NProgress.done();
- });
+  $(window).load(function() {
+    NProgress.done();
+  });
 }
 
 //Menu components functions
 function init_sidebar() {
-   //TODO: This is some kind of easy fix, maybe we can improve this
-   var setContentHeight = function () {
-     // reset height
-     $RIGHT_COL.css('min-height', $(window).height());
+  //TODO: This is some kind of easy fix, maybe we can improve this
+  var setContentHeight = function () {
+    // reset height
+    $RIGHT_COL.css("min-height", $(window).height());
 
-     var bodyHeight = $BODY.outerHeight(),
-     footerHeight = $BODY.hasClass('footer_fixed') ? -10 : $FOOTER.height(),
-     leftColHeight = $LEFT_COL.eq(1).height() + $SIDEBAR_FOOTER.height(),
-     contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
+    var bodyHeight = $BODY.outerHeight(),
+      footerHeight = $BODY.hasClass("footer_fixed") ? -10 : $FOOTER.height(),
+      leftColHeight = $LEFT_COL.eq(1).height() + $SIDEBAR_FOOTER.height(),
+      contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
 
-     // normalize content
-     contentHeight -= $NAV_MENU.height() + footerHeight;
+    // normalize content
+    contentHeight -= $NAV_MENU.height() + footerHeight;
 
-     $RIGHT_COL.css('min-height', contentHeight);
-   };
+    $RIGHT_COL.css("min-height", contentHeight);
+  };
 
-   $SIDEBAR_MENU.find('a').on('click', function(ev) {
-     //console.log('clicked - sidebar_menu');
-     var $li = $(this).parent();
+  $SIDEBAR_MENU.find("a").on("click", function(ev) {
+    //console.log("clicked - sidebar_menu");
+    var $li = $(this).parent();
 
-     if ($li.is('.active')) {
-       $li.removeClass('active active-sm');
-       $('ul:first', $li).slideUp(function() {
-         setContentHeight();
-       });
-     } else {
-       // prevent closing menu if we are on child menu
-       if (!$li.parent().is('.child_menu')) {
-         $SIDEBAR_MENU.find('li').removeClass('active active-sm');
-         $SIDEBAR_MENU.find('li ul').slideUp();
-       }else
-       {
-         if ( $BODY.is( ".nav-sm" ) )
-         {
-           $SIDEBAR_MENU.find( "li" ).removeClass( "active active-sm" );
-           $SIDEBAR_MENU.find( "li ul" ).slideUp();
-         }
-       }
-       $li.addClass('active');
+    if ($li.is(".active")) {
+      $li.removeClass("active active-sm");
+      $("ul:first", $li).slideUp(function() {
+        setContentHeight();
+      });
+    } else {
+      // prevent closing menu if we are on child menu
+      if (!$li.parent().is(".child_menu")) {
+        $SIDEBAR_MENU.find("li").removeClass("active active-sm");
+        $SIDEBAR_MENU.find("li ul").slideUp();
+      }else
+      {
+        if ( $BODY.is( ".nav-sm" ) )
+        {
+          $SIDEBAR_MENU.find( "li" ).removeClass( "active active-sm" );
+          $SIDEBAR_MENU.find( "li ul" ).slideUp();
+        }
+      }
+      $li.addClass("active");
 
-       $('ul:first', $li).slideDown(function() {
-         setContentHeight();
-       });
-     }
-   });
+      $("ul:first", $li).slideDown(function() {
+        setContentHeight();
+      });
+    }
+  });
 
-   // toggle small or large menu
-   $MENU_TOGGLE.on('click', function() {
-     //console.log('clicked - menu toggle');
+  // toggle small or large menu
+  $MENU_TOGGLE.on("click", function() {
+    //console.log("clicked - menu toggle");
 
-     if ($BODY.hasClass('nav-md')) {
-       $SIDEBAR_MENU.find('li.active ul').hide();
-       $SIDEBAR_MENU.find('li.active').addClass('active-sm').removeClass('active');
-     } else {
-       $SIDEBAR_MENU.find('li.active-sm ul').show();
-       $SIDEBAR_MENU.find('li.active-sm').addClass('active').removeClass('active-sm');
-     }
+    if ($BODY.hasClass("nav-md")) {
+      $SIDEBAR_MENU.find("li.active ul").hide();
+      $SIDEBAR_MENU.find("li.active").addClass("active-sm").removeClass("active");
+    } else {
+      $SIDEBAR_MENU.find("li.active-sm ul").show();
+      $SIDEBAR_MENU.find("li.active-sm").addClass("active").removeClass("active-sm");
+    }
 
-     $BODY.toggleClass('nav-md nav-sm');
+    $BODY.toggleClass("nav-md nav-sm");
 
-     setContentHeight();
+    setContentHeight();
 
-     $('.dataTable').each ( function () { $(this).dataTable().fnDraw(); });
-   });
+    $(".dataTable").each ( function () { $(this).dataTable().fnDraw(); });
+  });
 
-   // check active menu
-   $SIDEBAR_MENU.find('a[href="' + CURRENT_URL + '"]').parent('li').addClass('current-page');
+  // check active menu
+  $SIDEBAR_MENU.find("a[href='" + CURRENT_URL + "']").parent("li").addClass("current-page");
 
-   $SIDEBAR_MENU.find('a').filter(function () {
-     return this.href == CURRENT_URL;
-   }).parent('li').addClass('current-page').parents('ul').slideDown(function() {
-     setContentHeight();
-   }).parent().addClass('active');
+  $SIDEBAR_MENU.find("a").filter(function () {
+    return this.href == CURRENT_URL;
+  }).parent("li").addClass("current-page").parents("ul").slideDown(function() {
+    setContentHeight();
+  }).parent().addClass("active");
 
-   // recompute content when resizing
-   $(window).smartresize(function(){
-     setContentHeight();
-   });
+  // recompute content when resizing
+  $(window).smartresize(function(){
+    setContentHeight();
+  });
 
-   setContentHeight();
+  setContentHeight();
 
-   // fixed sidebar
-   if ($.fn.mCustomScrollbar) {
-     $('.menu_fixed').mCustomScrollbar({
-       autoHideScrollbar: true,
-       theme: 'minimal',
-       mouseWheel:{ preventDefault: true }
-     });
-   }
+  // fixed sidebar
+  if ($.fn.mCustomScrollbar) {
+    $(".menu_fixed").mCustomScrollbar({
+      autoHideScrollbar: true,
+      theme: "minimal",
+      mouseWheel:{ preventDefault: true }
+    });
+  }
 }
 
 //init Panel toolbox
 function init_panel() {
-  $('.collapse-link').on('click', function() {
-   var $BOX_PANEL = $(this).closest('.x_panel'),
-   $ICON = $(this).find('i'),
-   $BOX_CONTENT = $BOX_PANEL.find('.x_content');
+  $(".collapse-link").on("click", function() {
+    var $BOX_PANEL = $(this).closest(".x_panel"),
+      $ICON = $(this).find("i"),
+      $BOX_CONTENT = $BOX_PANEL.find(".x_content");
 
-   // fix for some div with hardcoded fix class
-   if ($BOX_PANEL.attr('style')) {
-     $BOX_CONTENT.slideToggle(200, function(){
-       $BOX_PANEL.removeAttr('style');
-     });
-   } else {
-     $BOX_CONTENT.slideToggle(200);
-     $BOX_PANEL.css('height', 'auto');
-   }
+    // fix for some div with hardcoded fix class
+    if ($BOX_PANEL.attr("style")) {
+      $BOX_CONTENT.slideToggle(200, function(){
+        $BOX_PANEL.removeAttr("style");
+      });
+    } else {
+      $BOX_CONTENT.slideToggle(200);
+      $BOX_PANEL.css("height", "auto");
+    }
 
-   $ICON.toggleClass('fa-chevron-up fa-chevron-down');
+    $ICON.toggleClass("fa-chevron-up fa-chevron-down");
   });
 
-  $('.close-link').click(function () {
-   var $BOX_PANEL = $(this).closest('.x_panel');
+  $(".close-link").click(function () {
+    var $BOX_PANEL = $(this).closest(".x_panel");
 
-   $BOX_PANEL.remove();
+    $BOX_PANEL.remove();
   });
 }
 
 //Tooltip
 function init_tooltip() {
-  $('[data-toggle="tooltip"]').tooltip({
-   container: 'body'
+  $("[data-toggle='tooltip']").tooltip({
+    container: "body"
   });
 }
 
 //Progressbar
 function init_progressbar(){
   if ($(".progress .progress-bar")[0]) {
-   $('.progress .progress-bar').progressbar();
+    $(".progress .progress-bar").progressbar();
   }
 }
 
@@ -209,8 +211,8 @@ function init_progressbar(){
 /* PNotify */
 function init_PNotify() {
 
-  if( typeof (PNotify) === 'undefined'){ return; }
-  console.log('init_PNotify');
+  if( typeof (PNotify) === undefined){ return; }
+  console.log("init_PNotify");
 
   new PNotify({
     title: "PNotify",
@@ -219,8 +221,8 @@ function init_PNotify() {
     nonblock: {
       nonblock: true
     },
-    addclass: 'dark',
-    styling: 'bootstrap3',
+    addclass: "dark",
+    styling: "bootstrap3",
     hide: false,
     before_close: function(PNotify) {
       PNotify.update({
@@ -240,8 +242,8 @@ function init_PNotify() {
 //http://ionden.com/a/plugins/ion.rangeslider/demo.html
 function init_IonRangeSlider() {
 
-  if( typeof ($.fn.ionRangeSlider) === 'undefined'){ return; }
-  console.log('init_IonRangeSlider');
+  if( typeof ($.fn.ionRangeSlider) === "undefined"){ return; }
+  console.log("init_IonRangeSlider");
 
   $("#range_27").ionRangeSlider({
     type: "double",
@@ -257,7 +259,7 @@ function init_IonRangeSlider() {
     max: 5000,
     from: 1000,
     to: 4000,
-    type: 'double',
+    type: "double",
     step: 1,
     prefix: "$",
     grid: true
@@ -366,7 +368,7 @@ function processdata(responseText){
   responseText.data.forEach(function(value){
     var idx = pjIndex.indexOf(value.pj_id);
 
-    if(!value.start_t){ value.start_t = '0'; }
+    if(!value.start_t){ value.start_t = "0"; }
     if(labels[idx].length < responseText.maxLabel){
       labels[idx].push(value.start_t.slice(5, 10));
     }
@@ -451,109 +453,109 @@ function processdata(responseText){
 
 /* KNOB */
 function init_knob() {
- if( typeof ($.fn.knob) === 'undefined'){ return; }
- if(!document.getElementById("knobInput")){ return; }
- console.log('init_knob');
+  if( typeof ($.fn.knob) === "undefined"){ return; }
+  if(!document.getElementById("knobInput")){ return; }
+  console.log("init_knob");
 
- var knob_data = new XMLHttpRequest();
- var doc = document;
+  var knob_data = new XMLHttpRequest();
+  var doc = document;
 
- doc.getElementById("labelSubmit").addEventListener('click', function(){
-   doc.getElementById("newMaxLabel").value =
-   doc.getElementById("newMaxLabel_text").innerText;
- });
+  doc.getElementById("labelSubmit").addEventListener("click", function(){
+    doc.getElementById("newMaxLabel").value =
+    doc.getElementById("newMaxLabel_text").innerText;
+  });
 
- knob_data.open('GET', selectDataApi("knob"), true);
- knob_data.send();
- knob_data.addEventListener('load', function(){
-   var result = JSON.parse(knob_data.responseText);
+  knob_data.open("GET", selectDataApi("knob"), true);
+  knob_data.send();
+  knob_data.addEventListener("load", function(){
+    var result = JSON.parse(knob_data.responseText);
 
-   doc.getElementById("knobInput").value = result;
-   doc.getElementById("MaxLabel_text").innerText = "현재 : "+result+"개";
+    doc.getElementById("knobInput").value = result;
+    doc.getElementById("MaxLabel_text").innerText = "현재 : "+result+"개";
 
-   $(".knob").knob({
-    "min" : 1,
-    "max" : 50,
-    "thickness" : 0.2,
-    "displayPrevious" : true,
-    "inputColor": "#34495E",
-    "fgColor" : "#34495E",
+    $(".knob").knob({
+      "min" : 1,
+      "max" : 50,
+      "thickness" : 0.2,
+      "displayPrevious" : true,
+      "inputColor": "#34495E",
+      "fgColor" : "#34495E",
 
-    change: function(value) {
-      //console.log("change : " + value);
-    },
-    release: function(value) {
-      //console.log(this.$.attr('value'));
-      //console.log("release : " + value);
-      doc.getElementById("newMaxLabel_text").innerText = "변경 : "+value+"개";
-    },
-    cancel: function() {
-      console.log("cancel : ", this);
-    },
-    draw: function() {
-      this.cursorExt = 0.3;
+      change: function(value) {
+        //console.log("change : " + value);
+      },
+      release: function(value) {
+        //console.log(this.$.attr("value"));
+        //console.log("release : " + value);
+        doc.getElementById("newMaxLabel_text").innerText = "변경 : "+value+"개";
+      },
+      cancel: function() {
+        console.log("cancel : ", this);
+      },
+      draw: function() {
+        this.cursorExt = 0.3;
 
-      //a = Arc, pa = Previous arc
-      var a = this.arc(this.cv), pa, r = 1;
+        //a = Arc, pa = Previous arc
+        var a = this.arc(this.cv), pa, r = 1;
 
-      this.g.lineWidth = this.lineWidth;
+        this.g.lineWidth = this.lineWidth;
 
-      if (this.o.displayPrevious) {
-        pa = this.arc(this.v);
+        if (this.o.displayPrevious) {
+          pa = this.arc(this.v);
+          this.g.beginPath();
+          this.g.strokeStyle = this.pColor;
+          this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, pa.s, pa.e, pa.d);
+          this.g.stroke();
+        }
+
         this.g.beginPath();
-        this.g.strokeStyle = this.pColor;
-        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, pa.s, pa.e, pa.d);
+        this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
+        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, a.s, a.e, a.d);
         this.g.stroke();
+
+        this.g.lineWidth = 2;
+        this.g.beginPath();
+        this.g.strokeStyle = this.o.fgColor;
+        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
+        this.g.stroke();
+
+        return false;
       }
-
-      this.g.beginPath();
-      this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
-      this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, a.s, a.e, a.d);
-      this.g.stroke();
-
-      this.g.lineWidth = 2;
-      this.g.beginPath();
-      this.g.strokeStyle = this.o.fgColor;
-      this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
-      this.g.stroke();
-
-      return false;
-    }
-   });
- });//knob_data listener end
+    });
+  });//knob_data listener end
 }
 
 /* SMART WIZARD */
 function init_SmartWizard() {
 
- if( typeof ($.fn.smartWizard) === 'undefined'){ return; }
- console.log('init_SmartWizard');
+  if( typeof ($.fn.smartWizard) === "undefined"){ return; }
+  console.log("init_SmartWizard");
 
- $('#wizard').smartWizard();
+  $("#wizard").smartWizard();
 
- $('#wizard_verticle').smartWizard({
-   transitionEffect: 'slide'
- });
+  $("#wizard_verticle").smartWizard({
+    transitionEffect: "slide"
+  });
 
- $('.buttonNext').addClass('btn btn-success');
- $('.buttonPrevious').addClass('btn btn-primary');
- //$('.buttonFinish').addClass('btn btn-default');
+  $(".buttonNext").addClass("btn btn-success");
+  $(".buttonPrevious").addClass("btn btn-primary");
+  //$(".buttonFinish").addClass("btn btn-default");
 }
 
 /* SELECT2 */
 function init_select2() {
 
   if( !document.getElementById("select2Div0") ){ return; }
-  console.log('init_select2');
+  console.log("init_select2");
 
   //draw select2
   for(var i=0;i<4;i++){
     $("#select2_multiple"+i).select2({
       maximumSelectionLength: 4,
       placeholder: "이전 항목을 선택해주세요",
-      containerCssClass: ':all:',
+      containerCssClass: ":all:",
       allowClear: true,
-      dropdownParent: $('#select2Div'+i)
+      dropdownParent: $("#select2Div"+i)
     });
   }
 
@@ -577,9 +579,9 @@ function init_select2() {
     }
   };
 
-  custom_pj.open('GET', selectDataApi("custom_0"), true);
+  custom_pj.open("GET", selectDataApi("custom_0"), true);
   custom_pj.send();
-  custom_pj.addEventListener('load', function(){
+  custom_pj.addEventListener("load", function(){
     result[0] = JSON.parse(custom_pj.responseText);
 
     for(var i=1;i<6;i++){
@@ -635,9 +637,9 @@ function init_select2() {
         }
 
         var custom_data = new XMLHttpRequest();
-        custom_data.open('GET', selectDataApi("custom_"+(idx+1)+"/"+preValId), true);
+        custom_data.open("GET", selectDataApi("custom_"+(idx+1)+"/"+preValId), true);
         custom_data.send();
-        custom_data.addEventListener('load', function(){
+        custom_data.addEventListener("load", function(){
           var divFrag_mini = document.createDocumentFragment();
           //Delete previous select info
           result[idx+1] = [];
@@ -696,21 +698,21 @@ function init_select2() {
     panel.appendChild(content);
     content.appendChild(chartDiv);
     divFrag.appendChild(panel);
-    document.getElementById('customSortDiv').appendChild(divFrag);
+    document.getElementById("customSortDiv").appendChild(divFrag);
 
     //init_charts();
 
-    document.getElementById('customSubmitBtn').removeEventListener("click", customSubmitBtnListener);
+    document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
   }
   //Add Event Listener to customSubmitBtn
-  document.getElementById('customSubmitBtn').addEventListener("click", customSubmitBtnListener);
+  document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener);
 }
 
 function init_charts(){
   if( !document.getElementById("chartDiv") ){ return; }
-  if( typeof (Chart) === 'undefined'){ return; }
+  if( typeof (Chart) === "undefined"){ return; }
 
-  console.log('init_charts');
+  console.log("init_charts");
 
   var getChartData = new XMLHttpRequest();
 
@@ -727,9 +729,9 @@ function init_charts(){
     }
   };
 
-  getChartData.open('GET', selectDataApi("chart"), true);
+  getChartData.open("GET", selectDataApi("chart"), true);
   getChartData.send();
-  getChartData.addEventListener('load', function(){
+  getChartData.addEventListener("load", function(){
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
     var chartloop = parsedResult.getCnt();
     var doc = document;
@@ -792,25 +794,25 @@ function init_charts(){
 
     for(i=0;i<chartloop;i++){
       var lineChart = new Chart(document.getElementById("lineChart"+i), {
-        type : 'line',
+        type : "line",
         data : parsedResult.getInnerData()[i],
         options : {
           tooltips : {
-            mode : 'label',
+            mode : "label",
             intersect : true
           }
           /*animation : {
-            duration : 0
-          },
-          hover : {
-            animationDuration : 0
-          },
-          responsiveAnimationDuration : 0,
-          elements : {
-            line : {
-              tension : 0
-            }
-          }Improve Chart performance options */
+          duration : 0
+        },
+        hover : {
+        animationDuration : 0
+      },
+      responsiveAnimationDuration : 0,
+      elements : {
+      line : {
+      tension : 0
+    }
+  }Improve Chart performance options */
         }
       });
     }//add chart for loop end
@@ -820,11 +822,11 @@ function init_charts(){
 /* COMPOSE */
 function init_compose() {
 
-  if( typeof ($.fn.slideToggle) === 'undefined'){ return; }
-  console.log('init_compose');
+  if( typeof ($.fn.slideToggle) === "undefined"){ return; }
+  console.log("init_compose");
 
-  $('#compose, .compose-close').click(function(){
-    $('.compose').slideToggle();
+  $("#compose, .compose-close").click(function(){
+    $(".compose").slideToggle();
   });
 }
 
