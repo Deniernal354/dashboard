@@ -121,7 +121,7 @@ module.exports = function(app, connection, maxLabel){
     res.status(200).render(platformTemp, {title : "Platform page"});
   });
 
-  router.get('/getChartData/:page/:detail?', function(req, res){
+  router.get("/getChartData/:page/:detail?", function(req, res){
     var queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
     var queryText_label = ""; var result = {};
 
@@ -152,7 +152,7 @@ module.exports = function(app, connection, maxLabel){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /getChartData");
         console.log("The queryText : " + queryText);
-        res.redirect('/500');
+        res.redirect("/500");
       }
       else{
         result.data = rows;
@@ -166,8 +166,8 @@ module.exports = function(app, connection, maxLabel){
     });
   });
 
-  router.get('/500', function(req, res){
-    res.status(500).render('page_500.html',{title : "Server Error"});
+  router.get("/500", function(req, res){
+    res.status(500).render("page_500.html",{title : "Server Error"});
   });
   return router;
 };

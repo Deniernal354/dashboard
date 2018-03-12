@@ -1,21 +1,21 @@
 module.exports = function(app, connection, passport, maxLabel){
-  var express = require('express');
+  var express = require("express");
   var router = express.Router();
 
-  router.get('/', function(req, res){
+  router.get("/", function(req, res){
     if(req.session.user_id){
-      res.redirect('/admin/adminPage');
+      res.redirect("/admin/adminPage");
     }
     else{
-      res.status(200).render('admin_login.html');
+      res.status(200).render("admin_login.html");
     }
   });
 
-  router.get('/getKnobData/', function(req, res){
+  router.get("/getKnobData/", function(req, res){
     res.status(200).json(maxLabel.getMaxLabel());
   });
 
-  router.post('/changeMaxLabel', function(req, res){
+  router.post("/changeMaxLabel", function(req, res){
     if(req.body.newMaxLabel){
       var newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개"))*1;
 
@@ -24,37 +24,37 @@ module.exports = function(app, connection, passport, maxLabel){
         maxLabel.setMaxLabel(newLabel);
       }
     }
-    res.status(200).redirect('/admin');
+    res.status(200).redirect("/admin");
   });
 
-  router.post('/checkAdmin', passport.authenticate('local',{
-    successRedirect : '/admin/adminPage',
-    failureRedirect : '/admin/403'
+  router.post("/checkAdmin", passport.authenticate("local",{
+    successRedirect : "/admin/adminPage",
+    failureRedirect : "/admin/403"
   }));
 
-  router.get('/adminPage', isAuthenticated, function(req, res){
+  router.get("/adminPage", isAuthenticated, function(req, res){
     if(!req.session.user_id){
       req.session.user_id = req.user.user_id;
     }
-    res.status(200).render('admin.html');
+    res.status(200).render("admin.html");
   });
 
-  router.get('/403', function(req, res){
-    res.status(403).render('page_403.html',{title : "Forbidden"});
+  router.get("/403", function(req, res){
+    res.status(403).render("page_403.html",{title : "Forbidden"});
   });
 
-  router.get('/logout', function(req, res){
+  router.get("/logout", function(req, res){
     req.logout();
     if(req.session.user_id){
       req.session.destroy(function(err){
         if(err){
           console.log(err);
         }else{
-          res.redirect('/');
+          res.redirect("/");
         }
       });
     }else{
-      res.redirect('/');
+      res.redirect("/");
     }
   });
 
@@ -63,7 +63,7 @@ module.exports = function(app, connection, passport, maxLabel){
       return next();
     }
     else{
-      res.redirect('/admin');
+      res.redirect("/admin");
     }
   }
   return router;
