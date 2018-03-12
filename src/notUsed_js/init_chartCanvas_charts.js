@@ -12,9 +12,9 @@ function init_chartCanvas(){
     }
   };
 
-  chart_data.open('GET', selectDataApi(urlByBrowser(), "chart"), true);
+  chart_data.open("GET", selectDataApi(urlByBrowser(), "chart"), true);
   chart_data.send();
-  chart_data.addEventListener('load', function(){
+  chart_data.addEventListener("load", function(){
     var result = JSON.parse(chart_data.responseText);
     var doc = document;
     var divFrag = document.createDocumentFragment();
@@ -75,10 +75,10 @@ function init_chartCanvas(){
 }
 
 function init_charts(result) {
-  if( typeof (Chart) === 'undefined'){ return; }
+  if( typeof (Chart) === "undefined"){ return; }
   //if( !document.getElementById("lineChart0") ){ return; }
 
-  console.log('init_charts');
+  console.log("init_charts");
 
   var labels = []; var chart_data = []; var pj_index = [];
   var buildTime = []; var duration = [];
@@ -103,7 +103,7 @@ function init_charts(result) {
   result.data.forEach(function(value){
     var idx = pj_index.indexOf(value.pj_id);
 
-    if(!value.start_t){ value.start_t = '0'; }
+    if(!value.start_t){ value.start_t = "0"; }
     if(labels[idx].length < result.maxLabel){
       labels[idx].push(value.start_t.slice(5, 10));
     }
@@ -123,7 +123,7 @@ function init_charts(result) {
     }
   });
 
-  if ($('#lineChart0').length ){
+  if ($("#lineChart0").length ){
     for(var i=0;i<result.totalChartCount;i++){
       document.getElementById("h4_b"+i).innerText += " No."+buildTime[i][0]+" ("+buildTime[i][1]+")";
       document.getElementById("h4_d"+i).innerText += " "+duration[i];
@@ -170,11 +170,11 @@ function init_charts(result) {
       };
 
       var lineChart = new Chart(ctx, {
-        type : 'line',
+        type : "line",
         data : innerData,
         options : {
           tooltips : {
-            mode : 'label',
+            mode : "label",
             intersect : true
           }
           /*animation : {
