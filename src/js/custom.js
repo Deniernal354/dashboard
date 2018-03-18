@@ -716,9 +716,7 @@ function init_charts(){
 
   var getChartData = new XMLHttpRequest();
 
-  Chart.defaults.global.legend = {
-    enabled: false
-  };
+  Chart.defaults.global.legend = false;
 
   getChartData.onreadystatechange = function(){
     if (getChartData.status == 404){

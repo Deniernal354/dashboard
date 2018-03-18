@@ -13,7 +13,17 @@ module.exports = function(app, connection){
       pj.id
     }
   */
+  //input valid 한지 확인 하는 로직 필요함!
+  // pj_name : 제한없음
+  // pj_teamname : [NL]T[1-4]?
+  // pj_platform : pc_web|mobile_web|mobile_app
   router.post("/initProject", function(req, res){
+    console.log(req.body.pj_name+"///"+req.body.pj_teamname+"///"+req.body.pj_platform);
+    console.log(req.body);
+    res.status(200).send({"success" : 1});
+  });
+
+  router.post("/initProject2", function(req, res){
     var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, "+req.pj_name+", "+req.pj_teamname+", "+req.pj_platform+");";
     var resultQueryText = "select pj_id from project order by pj_id DESC limit 1";
 
@@ -37,7 +47,7 @@ module.exports = function(app, connection){
     {
       pj_id
     }
-  */ 
+  */
 
   router.delete("/deleteProject", function(req, res){
     var queryText = "DELETE FROM project WHERE pj_id = "+req.pj_id+";";
