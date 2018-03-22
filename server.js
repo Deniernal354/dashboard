@@ -76,7 +76,7 @@ var maxLabel = (function(){
 })();
 app.use("/", require("./routes/route.js")(app, connection, maxLabel));
 app.use("/admin", require("./routes/admin.js")(app, connection, passport, maxLabel));
-app.use("/accessDB", require("./routes/accessDB.js")(app, connection));
+app.use("/access", require("./routes/accessDB.js")(app, connection));
 
 app.use(function(req, res){
   res.status(404).render("page_404.html",{title : "NOT FOUND"});

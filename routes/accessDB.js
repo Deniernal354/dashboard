@@ -24,15 +24,15 @@ module.exports = function(app, connection){
   });
 
   router.post("/initProject2", function(req, res){
-    var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, "+req.pj_name+", "+req.pj_teamname+", "+req.pj_platform+");";
-    var resultQueryText = "select pj_id from project order by pj_id DESC limit 1";
+    var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, "+req.body.pj_name+", "+req.body.pj_teamname+", "+req.body.pj_platform+");";
+    var resultQueryText = "select pj_id from project where pj_name = "+req.body.pj_name+"order by pj_id DESC limit 1";
 
     connection.query(queryText, function(err, rows){
       if(err){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /inputData");
         console.log("The queryText : " + queryText);
-        res.redirect("/500");
+        res.status(500).send({"success" : 0});
       }
       else{
         //result.data = row
