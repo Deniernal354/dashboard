@@ -2,6 +2,25 @@ module.exports = function(app, connection){
   var express = require("express");
   var router = express.Router();
 
+  router.post("/beforeClass", function(req, res){
+
+  });
+  router.post("/afterClass", function(req, res){
+
+  });
+  router.post("/beforeSuite", function(req, res){
+
+  });
+  router.post("/afterSuite", function(req, res){
+
+  });
+  router.post("/beforeMethod", function(req, res){
+
+  });
+  router.post("/afterMethod", function(req, res){
+
+  });
+
   /* req 형태
     {
       pj_name
