@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ./partials/header.ejs %>
+  <title>Dashboard</title>
+
+  <!-- Select2 -->
+  <link href="/scripts/select2/dist/css/select2.min.css" rel="stylesheet" />
+  <!-- Custom Theme Style -->
+  <link href="/css/custom.min.css" rel="stylesheet">
+</head>
+
+<body class="nav-md">
+  <div class="container body">
+    <div class="main_container">
+      <div class="col-md-3 left_col">
+        <div class="left_col scroll-view">
+          <div class="navbar nav_title" style="border: 0;">
+            <a href="/index" class="site_title"> Dashboard </a>
+          </div>
+          <div class="clearfix"></div>
+          <br />
+
+          <% include ./partials/sideBar.ejs %>
+
+          <% include ./partials/menuFooter.ejs %>
+        </div>
+      </div>
+
+      <% include ./partials/topNav.ejs %>
+
+      <!-- page content -->
+      <div class="right_col" role="main">
+        <div class="">
+          <div class="page-title">
+            <div class="title_left">
+              <h3>Custom Sort Page</h3>
+            </div>
+
+            <% include ./partials/titleRight.ejs %>
+          </div>
+          <div class="clearfix"></div>
+          <div id="customSortDiv" class="col-md-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>조건을 선택하신뒤 조회 버튼을 눌러주세요.</h2>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div id = "select2Div0" class="col-md-3">
+                  <p> Project 선택 </p>
+                  <span class="section"></span>
+                  <select id ="select2_multiple0" tabindex="-1" aria-hidden="true" style="width:90%">
+                  </select>
+                </div>
+                <div id = "select2Div1" class="col-md-3">
+                  <p> Package(buildno) 선택 </p>
+                  <span class="section"></span>
+                  <select id ="select2_multiple1" disabled="true" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:90%">
+                  </select>
+                </div>
+                <div id = "select2Div2" class="col-md-3">
+                  <p> Suite 선택 </p>
+                  <span class="section"></span>
+                  <select id ="select2_multiple2" disabled="true" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:90%">
+                  </select>
+                </div>
+                <div id = "select2Div3" class="col-md-3">
+                  <p> Testcase 선택 </p>
+                  <span class="section"></span>
+                  <select id ="select2_multiple3" disabled="true" multiple="multiple" tabindex="-1" aria-hidden="true" style="width:90%">
+                  </select>
+                </div>
+              </div>
+              <div class="x_content">
+                <div class = "col-md-12" style="text-align:center;">
+                  <span class="section"></span>
+                  <button id="customSubmitBtn" type="button" class="btn btn-dark"><h3>조회</h3></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /page content -->
+
+      <% include ./partials/footer.ejs %>
+    </div>
+  </div>
+
+  <% include ./partials/srcDefault.ejs %>
+
+  <!-- Chart.js -->
+  <script src="/scripts/Chart.js/dist/Chart.min.js"></script>
+  <!-- Select2 -->
+  <script src="/scripts/select2/dist/js/select2.full.min.js"></script>
+
+  <!-- Custom Theme Scripts -->
+  <script src="/js/custom.min.js"></script>
+</body>
+</html>

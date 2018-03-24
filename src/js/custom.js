@@ -1,14 +1,13 @@
-/**
- * Resize function without multiple trigger
- *
+/* Resize function without multiple trigger
  * Usage:
  * $(window).smartresize(function(){
  *     // code here
  * });
  */
+
 (function($,sr){
-// debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+//debouncing function from John Hann
+//http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
   var debounce = function (func, threshold, execAsap) {
     var timeout;
 
@@ -27,19 +26,20 @@
       else if (execAsap){
         func.apply(obj, args);
       }
-
       timeout = setTimeout(delayed, threshold || 100);
     };
   };
-  // smartresize
-  jQuery.fn[sr] = function(fn){  return fn ? this.bind("resize", debounce(fn)) : this.trigger(sr); };
+
+  //Smartresize
+  jQuery.fn[sr] = function(fn){
+    return fn ? this.bind("resize", debounce(fn)) : this.trigger(sr);
+  };
 
 })(jQuery,"smartresize");
 
 /**
 * To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
+* To change this template file, choose Tools | Templates and open the template in the editor.
 */
 
 var CURRENT_URL = window.location.href.split("#")[0].split("?")[0],
@@ -52,13 +52,12 @@ var CURRENT_URL = window.location.href.split("#")[0].split("?")[0],
   $NAV_MENU = $(".nav_menu"),
   $FOOTER = $("footer");
 
+//initialize menu components
 $(document).ready(function() {
-  //initialize menu components
   init_sidebar();
   init_panel();
   init_tooltip();
   init_progressbar();
-  //menu initializing end
 });
 
 // NProgress
@@ -205,7 +204,6 @@ function init_progressbar(){
     $(".progress .progress-bar").progressbar();
   }
 }
-
 //Menu component functions end
 
 /* PNotify */
@@ -307,13 +305,12 @@ function init_IonRangeSlider() {
   });*/
 }
 
-//My functions
-//Get URL with Cross browsing
+//Custom functions
 function urlByBrowser(){
   var doc = document;
   var agent = navigator.userAgent.toLowerCase();
 
-  //Only IE
+  //IE Case
   if(agent.indexOf("msie") > -1 || agent.indexOf("trident" > -1)){
     return doc.URL;
   }
@@ -714,9 +711,9 @@ function init_charts(){
 
   console.log("init_charts");
 
-  var getChartData = new XMLHttpRequest();
-
   Chart.defaults.global.legend = false;
+
+  var getChartData = new XMLHttpRequest();
 
   getChartData.onreadystatechange = function(){
     if (getChartData.status == 404){
@@ -786,7 +783,8 @@ function init_charts(){
       h4_m.appendChild(link);
 
       divFrag.appendChild(div);
-    }//for end
+    }//Add DOM Fragment for Loop End
+
     //add fragment to DOM
     document.getElementById("chartDiv").appendChild(divFrag);
 

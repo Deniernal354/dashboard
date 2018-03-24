@@ -7,7 +7,7 @@ module.exports = function(app, connection, passport, maxLabel){
       res.redirect("/admin/adminPage");
     }
     else{
-      res.status(200).render("admin_login.html");
+      res.status(200).render("admin_login");
     }
   });
 
@@ -36,11 +36,11 @@ module.exports = function(app, connection, passport, maxLabel){
     if(!req.session.user_id){
       req.session.user_id = req.user.user_id;
     }
-    res.status(200).render("admin.html");
+    res.status(200).render("admin");
   });
 
   router.get("/403", function(req, res){
-    res.status(403).render("page_403.html",{title : "Forbidden"});
+    res.status(403).render("page_403",{title : "Forbidden"});
   });
 
   router.get("/logout", function(req, res){
