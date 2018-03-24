@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include ./partials/header.ejs %>
+
+    <!-- Custom Theme Style -->
+    <link href="/css/custom.min.css" rel="stylesheet">
+    <title>Forbidden</title>
+  </head>
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <!-- page content -->
+        <div class="col-md-12">
+          <div class="col-middle">
+            <div class="text-center">
+              <h1 class="error-number">403</h1>
+              <h2>Access denied</h2>
+              <p>Full authentication is required to access this resource.</p>
+              <div class="mid_center">
+                <a href = "/admin"><h3>Go To Login Page</h3></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+      </div>
+    </div>
+
+    <% include ./partials/srcDefault.ejs %>
+
+    <!-- Custom Theme Scripts -->
+    <script src="/js/custom.min.js"></script>
+  </body>
+</html>

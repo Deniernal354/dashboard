@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ./partials/header.ejs %>
+  <!-- Custom Theme Style -->
+  <link href="/css/custom.min.css" rel="stylesheet">
+  <title>Dashboard</title>
+</head>
+
+<body class="nav-md">
+  <div class="container body">
+    <div class="main_container">
+      <div class="col-md-3 left_col">
+        <div class="left_col scroll-view">
+          <div class="navbar nav_title" style="border: 0;">
+            <a href="/index" class="site_title"> Dashboard </a>
+          </div>
+          <div class="clearfix"></div>
+          <br />
+
+          <% include ./partials/sideBar.ejs %>
+
+          <% include ./partials/menuFooter.ejs %>
+        </div>
+      </div>
+
+      <% include ./partials/topNav.ejs %>
+
+      <!-- page content -->
+      <div class="right_col" role="main">
+        <div class="">
+          <div class="page-title">
+            <div class="title_left">
+              <h3>Guide Page</h3>
+            </div>
+
+            <% include ./partials/titleRight.ejs %>
+          </div>
+          <div class="clearfix"></div>
+          <div id="guideDiv" class="col-md-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>자동화 프로젝트 내에서 DB로 Data를 전송하는 방법</h2>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <p>아래 순서에 따라서 진행해주세요.</p>
+                <div id="wizard" class="form_wizard wizard_horizontal">
+                  <ul class="wizard_steps anchor">
+                    <li>
+                      <a href="#step-1" class="selected" isdone="1" rel="1">
+                        <span class="step_no">1</span>
+                        <span class="step_descr">Step 1</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#step-2" class="disabled" isdone="0" rel="2">
+                        <span class="step_no">2</span>
+                        <span class="step_descr">Step 2</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#step-3" class="disabled" isdone="0" rel="3">
+                        <span class="step_no">3</span>
+                        <span class="step_descr">Step 3</span>
+                      </a>
+                    </li>
+                  </ul>
+                  <div class="stepContainer">
+                    <div id="step-1" class="content" style="display: block;">
+                      <p>
+                        첫 단계는 이렇게 하시면 됩니다!
+                      </p>
+                      <br /><br />
+                    </div>
+                    <div id="step-2" class="content" style="display: none;">
+                      <p>
+                        두번째 단계는 이렇게 하시면 됩니다!
+                      </p>
+                      <br /><br />
+                    </div>
+                    <div id="step-3" class="content" style="display: none;">
+                      <p>
+                        세번째 단계는 이렇게 하시면 됩니다!
+                      </p>
+                      <br /><br />
+                    </div>
+                  </div>
+                </div>
+                <!-- SmartWizard End -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /page content -->
+
+      <% include ./partials/footer.ejs %>
+    </div>
+  </div>
+
+  <% include ./partials/srcDefault.ejs %>
+
+  <!-- jQuery Smart Wizard -->
+  <script src="/scripts/jQuery-Smart-Wizard/js/jquery.smartWizard.js"></script>
+  <!-- Custom Theme Scripts -->
+  <script src="/js/custom.min.js"></script>
+</body>
+</html>

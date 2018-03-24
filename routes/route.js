@@ -23,58 +23,11 @@ module.exports = function(app, connection, maxLabel){
     res.redirect("/index");
   });
   router.get("/index", function(req, res){
-    //res.status(200).render("index.html");
     res.status(200).render("index.ejs");
   });
-  router.get("/sidebar", function(req, res){
-    res.status(200).render("sidebar.html");
-  });
 
-  //Just for test
-  router.get("/justTest/getall", function(req, res){
-    connection.query("SELECT * FROM randomtable", function(err, rows){
-      if(err){
-        res.redirect("/500");
-      }
-      else{
-        res.status(200).json(rows);
-      }
-    });
-  });
-
-  //graph.html's dummy data1
-  router.get("/big_dummy", function(req, res){
-    connection.query("SELECT * FROM all_graph", function(err, rows){
-      if(err){
-        res.redirect("/500");
-      }
-      else{
-        //res.status(200).json(rows);
-        res.status(200).send(rows);
-      }
-    });
-  });
-  //graph.html"s dummy data2
-  router.get("/small_dummy", function(req, res){
-    connection.query("SELECT * FROM all_graph WHERE start_t = 11 LIMIT 5", function(err, rows){
-      if(err){
-        res.redirect("/500");
-      }
-      else{
-        //res.status(200).json(rows);
-        res.status(200).send(rows);
-      }
-    });
-  });
-  router.get("/graph", function(req, res){
-    res.status(200).render("graph.html");
-  });
-
-  //
-  //Not for test Code Start
-  //
   router.get("/customSort", function(req, res){
-    res.status(200).render("customSort.html");
+    res.status(200).render("customSort");
   });
 
   router.get("/getCustomData/:category/:previousValue?", function(req, res){
@@ -108,17 +61,16 @@ module.exports = function(app, connection, maxLabel){
   });
 
   router.get("/guide", function(req, res){
-    res.status(200).render("guide.html");
+    res.status(200).render("guide");
   });
 
   router.get("/team/:teamNo", function(req, res){
-    var teamNameTemp = "team"+ req.params.teamNo +".html";
-    res.status(200).render(teamNameTemp,{title: "Team page"});
+    var teamNameTemp = "team"+ req.params.teamNo;
+    res.status(200).render(teamNameTemp);
   });
 
   router.get("/platform/:platform_category", function(req, res){
-    var platformTemp = req.params.platform_category+".html";
-    res.status(200).render(platformTemp, {title : "Platform page"});
+    res.status(200).render(req.params.platform_category);
   });
 
   router.get("/getChartData/:page/:detail?", function(req, res){
@@ -167,7 +119,7 @@ module.exports = function(app, connection, maxLabel){
   });
 
   router.get("/500", function(req, res){
-    res.status(500).render("page_500.html",{title : "Server Error"});
+    res.status(500).render("page_500");
   });
   return router;
 };
