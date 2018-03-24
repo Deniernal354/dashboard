@@ -14,6 +14,7 @@ module.exports = function(app, connection){
     }
   */
   //input valid 한지 확인 하는 로직 필요함!
+  //build가 없는 경우 insert수행, 있는 경우 buildid돌려주기.
   // pj_name : 제한없음
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pc_web|mobile_web|mobile_app
@@ -24,8 +25,8 @@ module.exports = function(app, connection){
   });
 
   router.post("/initProject2", function(req, res){
-    var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, "+req.body.pj_name+", "+req.body.pj_teamname+", "+req.body.pj_platform+");";
-    var resultQueryText = "select pj_id from project where pj_name = "+req.body.pj_name+"order by pj_id DESC limit 1";
+    var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, '"+req.body.pj_name+"', '"+req.body.pj_teamname+"', '"+req.body.pj_platform+"');";
+    var resultQueryText = "select pj_id from project where pj_name = '"+req.body.pj_name+"'order by pj_id DESC limit 1";
 
     connection.query(queryText, function(err, rows){
       if(err){

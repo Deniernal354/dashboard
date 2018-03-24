@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ./partials/header.ejs %>
+
+  <!-- Custom Theme Style -->
+  <link href="/css/custom.min.css" rel="stylesheet">
+  <title>Dashboard</title>
+</head>
+
+<body class="nav-md">
+  <div class="container body">
+    <div class="main_container">
+      <div class="col-md-3 left_col">
+        <div class="left_col scroll-view">
+          <div class="navbar nav_title" style="border: 0;">
+            <a href="/index" class="site_title"> Dashboard </a>
+          </div>
+
+          <div class="clearfix"></div>
+
+          <br />
+
+          <% include ./partials/sideBar.ejs %>
+
+          <!-- /menu footer buttons -->
+          <div class="sidebar-footer hidden-small">
+            <div id = "footer_side" display="none">
+              <a data-toggle="tooltip" data-placement="top" title="logout" href="/admin/logout">
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
+          <!-- /menu footer buttons -->
+        </div>
+      </div>
+
+      <!-- top navigation -->
+      <div class="top_nav">
+        <div class="nav_menu">
+          <nav>
+            <div class="nav toggle">
+              <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+            </div>
+
+            <ul class="nav navbar-nav navbar-right">
+              <li class="">
+                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <span class=" fa fa-angle-down"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-usermenu pull-right">
+                  <li><a href="/"><i class="fa fa-sign-out pull-right"></i> Go to Main Page</a></li>
+                </ul>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <!-- /top navigation -->
+
+      <!-- page content -->
+      <div class="right_col" role="main">
+        <div class="">
+          <div class="page-title">
+            <div class="title_left">
+              <h3>Admin Page</h3>
+            </div>
+
+            <% include ./partials/titleRight.ejs %>
+          </div>
+          <div class="clearfix"></div>
+          <div id="knobDiv" class="col-md-6">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>차트에 노출되는 build 개수(1개 ~ 50개) 설정</h2>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="col-md-6">
+                  <input id="knobInput" class="knob"/>
+                </div>
+                <form id="changeLabelForm" action="/admin/changeMaxLabel" method="post">
+                  <div class = "col-md-6">
+                    <div class = "col-md-12">
+                      <p><h2 id="MaxLabel_text">현재 : 5개</h2></p>
+                      <p><h2 id="newMaxLabel_text">변경 : N개</h2></p>
+                      <input type="hidden" name="newMaxLabel" id="newMaxLabel"/>
+                    </div>
+                    <div class = "col-md-12">
+                      <span class="section"></span>
+                      <button id="labelSubmit" type="submit" class="btn btn-dark"><h2>제출하기</h2></button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /page content -->
+
+      <% include ./partials/footer.ejs %>
+    </div>
+  </div>
+
+  <% include ./partials/srcDefault.ejs %>
+
+  <!-- jQuery knob -->
+  <script src="/scripts/jquery-knob/dist/jquery.knob.min.js"></script>
+  <!-- Custom Theme Scripts -->
+  <script src="/js/custom.min.js"></script>
+</body>
+</html>

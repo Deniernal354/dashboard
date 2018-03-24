@@ -20,7 +20,7 @@ function handleDisconnect(){
   var now = new Date();
   connection.connect(function(err){
     if(err){
-      console.log("At "+now+" Error connect -- Reconnect after 3 seconds");
+      console.log("At "+now+" Error connect -- Reconnect after 3 seconds!!");
       setTimeout(handleDisconnect, 3000);
     }
   });
@@ -41,9 +41,8 @@ app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
 app.use(express.static(path.join(__dirname, "/public")));
 
 //ejs template
+//Template HTML -> app.set("view engine", "html");
 app.set("view engine", "ejs");
-// html template
-//app.set("view engine", "html");
 app.engine("html", require("ejs").renderFile);
 
 //middlewares
@@ -79,7 +78,7 @@ app.use("/admin", require("./routes/admin.js")(app, connection, passport, maxLab
 app.use("/access", require("./routes/accessDB.js")(app, connection));
 
 app.use(function(req, res){
-  res.status(404).render("page_404.html",{title : "NOT FOUND"});
+  res.status(404).render("page_404");
 });
 
 var server = app.listen(8000, function(){
