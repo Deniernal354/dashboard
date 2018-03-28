@@ -2,12 +2,20 @@ module.exports = function(app, connection){
   var express = require("express");
   var router = express.Router();
 
-  router.post("/beforeClass", function(req, res){
+  //If the project is valid, just return pj_id
+  //Else, make project and return pj_id
+  router.get("/getProjectId", function(req, res){
 
   });
-  router.post("/afterClass", function(req, res){
+  router.post("/addProjectId", function(req, res){
 
   });
+
+  //Add buildno
+  router.post("/addBuildno", function(req, res){
+
+  });
+
   router.post("/beforeSuite", function(req, res){
 
   });
