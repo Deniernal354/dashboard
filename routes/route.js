@@ -16,21 +16,21 @@ module.exports = function(app, connection, maxLabel){
   var express = require("express");
   var router = express.Router();
 
-  router.get("/", function(req, res){
+  router.get("/", (req, res) => {
     res.redirect("/index");
   });
-  router.get("/index.html", function(req, res){
+  router.get("/index.html", (req, res) => {
     res.redirect("/index");
   });
-  router.get("/index", function(req, res){
+  router.get("/index", (req, res) => {
     res.status(200).render("index.ejs");
   });
 
-  router.get("/customSort", function(req, res){
+  router.get("/customSort", (req, res) => {
     res.status(200).render("customSort");
   });
 
-  router.get("/getCustomData/:category/:previousValue?", function(req, res){
+  router.get("/getCustomData/:category/:previousValue?", (req, res) => {
     var queryText = "";
     if(req.params.category === "project"){
       queryText = "select pj_id, pj_name, pj_teamname from project";
@@ -48,7 +48,7 @@ module.exports = function(app, connection, maxLabel){
       queryText = "";
     }
 
-    connection.query(queryText, function(err, rows){
+    connection.query(queryText, (err, rows) => {
       if(err){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /getCustomData");
@@ -60,20 +60,20 @@ module.exports = function(app, connection, maxLabel){
     });
   });
 
-  router.get("/guide", function(req, res){
+  router.get("/guide", (req, res) => {
     res.status(200).render("guide");
   });
 
-  router.get("/team/:teamNo", function(req, res){
+  router.get("/team/:teamNo", (req, res) => {
     var teamNameTemp = "team"+ req.params.teamNo;
     res.status(200).render(teamNameTemp);
   });
 
-  router.get("/platform/:platform_category", function(req, res){
+  router.get("/platform/:platform_category", (req, res) => {
     res.status(200).render(req.params.platform_category);
   });
 
-  router.get("/getChartData/:page/:detail?", function(req, res){
+  router.get("/getChartData/:page/:detail?", (req, res) => {
     var queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
     var queryText_label = ""; var result = {};
 
@@ -99,7 +99,7 @@ module.exports = function(app, connection, maxLabel){
 
     queryText += " group by pj_id, buildno;";
 
-    connection.query(queryText, function(err, rows){
+    connection.query(queryText, (err, rows) => {
       if(err){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /getChartData");
@@ -108,7 +108,7 @@ module.exports = function(app, connection, maxLabel){
       }
       else{
         result.data = rows;
-        connection.query(queryText_label, function(err, innerrows){
+        connection.query(queryText_label, (err, innerrows) => {
           result.pj_label = innerrows;
           result.totalChartCount = innerrows.length;
           result.maxLabel = maxLabel.getMaxLabel();
@@ -118,7 +118,7 @@ module.exports = function(app, connection, maxLabel){
     });
   });
 
-  router.get("/500", function(req, res){
+  router.get("/500", (req, res) => {
     res.status(500).render("page_500");
   });
   return router;
@@ -127,7 +127,7 @@ module.exports = function(app, connection, maxLabel){
 
 /* post예제
 
-app.post('/addUser/:username', function(req, res){
+app.post('/addUser/:username', (req, res) => {
   var result = {  };
   var username = req.params.username;
 

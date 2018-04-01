@@ -1,13 +1,13 @@
-var express = require("express");
-var path = require("path");
-var db = require("mysql");
-var bodyParser = require("body-parser");
-var session = require("express-session");
-var passport = require("passport");
-var LocalStrategy = require("passport-local").Strategy;
+const express = require("express");
+const path = require("path");
+const db = require("mysql");
+const bodyParser = require("body-parser");
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
 
 //DB
-var connection;
+let connection;
 function handleDisconnect(){
   connection = db.createConnection({
     host : "localhost",
@@ -17,14 +17,14 @@ function handleDisconnect(){
     //  multipleStatements : true
   });
 
-  var now = new Date();
-  connection.connect(function(err){
+  let now = new Date();
+  connection.connect((err) => {
     if(err){
       console.log("At "+now+" Error connect -- Reconnect after 3 seconds!!");
       setTimeout(handleDisconnect, 3000);
     }
   });
-  connection.on("error", function(err){
+  connection.on("error", (err) => {
     console.log("At "+now+" Error on Connection -- Reconnect after 3 seconds");
     if(err.code === "PROTOCOL_CONNECTION_LOST"){
       handleDisconnect();
@@ -35,7 +35,7 @@ function handleDisconnect(){
 }
 handleDisconnect();
 
-var app = express();
+const app = express();
 app.set("views", path.join( __dirname, "/views"));
 app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
 app.use(express.static(path.join(__dirname, "/public")));
@@ -57,18 +57,18 @@ app.use(session({
 }));
 
 //passport
-var passport_config = require("./config/passport")(passport, LocalStrategy);
+let passport_config = require("./config/passport")(passport, LocalStrategy);
 app.use(passport.initialize());
 app.use(passport.session());
 
 //router
-var maxLabel = (function(){
-  var realMaxLabel = 9;
+let maxLabel = (() => {
+  let realMaxLabel = 9;
   return {
-    getMaxLabel : function(){
+    getMaxLabel : () => {
       return realMaxLabel;
     },
-    setMaxLabel : function(value){
+    setMaxLabel : (value) => {
       realMaxLabel = value;
     }
   };
@@ -77,12 +77,12 @@ app.use("/", require("./routes/route.js")(app, connection, maxLabel));
 app.use("/admin", require("./routes/admin.js")(app, connection, passport, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(app, connection));
 
-app.use(function(req, res){
+app.use((req, res) => {
   res.status(404).render("page_404");
 });
 
-var server = app.listen(8000, function(){
-  var now = new Date();
+const server = app.listen(8000, () => {
+  let now = new Date();
   console.log("Server Start : portNo. " + server.address().port);
   console.log("Start time is : "+now);
 });

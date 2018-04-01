@@ -2,7 +2,7 @@ module.exports = function(app, connection, passport, maxLabel){
   var express = require("express");
   var router = express.Router();
 
-  router.get("/", function(req, res){
+  router.get("/", (req, res) => {
     if(req.session.user_id){
       res.redirect("/admin/adminPage");
     }
@@ -11,11 +11,11 @@ module.exports = function(app, connection, passport, maxLabel){
     }
   });
 
-  router.get("/getKnobData/", function(req, res){
+  router.get("/getKnobData/", (req, res) => {
     res.status(200).json(maxLabel.getMaxLabel());
   });
 
-  router.post("/changeMaxLabel", function(req, res){
+  router.post("/changeMaxLabel", (req, res) => {
     if(req.body.newMaxLabel){
       var newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개"))*1;
 
@@ -32,21 +32,21 @@ module.exports = function(app, connection, passport, maxLabel){
     failureRedirect : "/admin/403"
   }));
 
-  router.get("/adminPage", isAuthenticated, function(req, res){
+  router.get("/adminPage", isAuthenticated, (req, res) => {
     if(!req.session.user_id){
       req.session.user_id = req.user.user_id;
     }
     res.status(200).render("admin");
   });
 
-  router.get("/403", function(req, res){
+  router.get("/403", (req, res) => {
     res.status(403).render("page_403",{title : "Forbidden"});
   });
 
-  router.get("/logout", function(req, res){
+  router.get("/logout", (req, res) => {
     req.logout();
     if(req.session.user_id){
-      req.session.destroy(function(err){
+      req.session.destroy((err) => {
         if(err){
           console.log(err);
         }else{

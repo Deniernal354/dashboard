@@ -4,29 +4,33 @@ module.exports = function(app, connection){
 
   //If the project is valid, just return pj_id
   //Else, make project and return pj_id
-  router.get("/getProjectId", function(req, res){
+  router.get("/getProjectId", (req, res) => {
 
   });
-  router.post("/addProjectId", function(req, res){
+  router.post("/addProjectId", (req, res) => {
 
   });
 
   //Add buildno
-  router.post("/addBuildno", function(req, res){
+  router.post("/addBuildno", (req, res) => {
 
   });
 
-  router.post("/beforeSuite", function(req, res){
+  router.post("/beforeSuite", (req, res) => {
 
   });
-  router.post("/afterSuite", function(req, res){
+  router.post("/afterSuite", (req, res) => {
 
   });
-  router.post("/beforeMethod", function(req, res){
+  router.post("/beforeMethod", (req, res) => {
 
   });
-  router.post("/afterMethod", function(req, res){
+  router.post("/afterMethod", (req, res) => {
 
+  });
+
+  router.get("/afterMethod2", (req, res) => {
+    res.send("There is no cow level;");
   });
 
   /* req 형태
@@ -45,17 +49,17 @@ module.exports = function(app, connection){
   // pj_name : 제한없음
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pc_web|mobile_web|mobile_app
-  router.post("/initProject", function(req, res){
+  router.post("/initProject", (req, res) => {
     console.log(req.body.pj_name+"///"+req.body.pj_teamname+"///"+req.body.pj_platform);
     console.log(req.body);
     res.status(200).send({"success" : 1});
   });
 
-  router.post("/initProject2", function(req, res){
+  router.post("/initProject2", (req, res) => {
     var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, '"+req.body.pj_name+"', '"+req.body.pj_teamname+"', '"+req.body.pj_platform+"');";
     var resultQueryText = "select pj_id from project where pj_name = '"+req.body.pj_name+"'order by pj_id DESC limit 1";
 
-    connection.query(queryText, function(err, rows){
+    connection.query(queryText, (err, rows) => {
       if(err){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /inputData");
@@ -64,7 +68,7 @@ module.exports = function(app, connection){
       }
       else{
         //result.data = row
-        connection.query(resultQueryText, function(err, innerrows){
+        connection.query(resultQueryText, (err, innerrows) => {
           res.status(200).json(innerrows);
         });
       }
@@ -77,10 +81,10 @@ module.exports = function(app, connection){
     }
   */
 
-  router.delete("/deleteProject", function(req, res){
+  router.delete("/deleteProject", (req, res) => {
     var queryText = "DELETE FROM project WHERE pj_id = "+req.pj_id+";";
 
-    connection.query(queryText, function(err, rows){
+    connection.query(queryText, (err, rows) => {
       if(err){
         var now = new Date();
         console.log(now+" --- 500 Error occured in /deleteData");
