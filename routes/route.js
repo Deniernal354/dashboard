@@ -12,113 +12,116 @@ res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자�
 
 ////////////////////////////////////////////////////////////////
 */
-module.exports = function(app, connection, maxLabel){
-  var express = require("express");
-  var router = express.Router();
+module.exports = function(app, connection, maxLabel) {
+  const express = require("express");
+  const router = express.Router();
 
-  router.get("/", function(req, res){
+  router.get("/", (req, res) => {
     res.redirect("/index");
   });
-  router.get("/index.html", function(req, res){
+  router.get("/index.html", (req, res) => {
     res.redirect("/index");
   });
-  router.get("/index", function(req, res){
+  router.get("/index", (req, res) => {
     res.status(200).render("index.ejs");
   });
 
-  router.get("/customSort", function(req, res){
+  router.get("/customSort", (req, res) => {
     res.status(200).render("customSort");
   });
 
-  router.get("/getCustomData/:category/:previousValue?", function(req, res){
-    var queryText = "";
-    if(req.params.category === "project"){
+  router.get("/getCustomData/:category/:previousValue?", (req, res) => {
+    let queryText = "";
+
+    if (req.params.category === "project") {
       queryText = "select pj_id, pj_name, pj_teamname from project";
-    }
-    else if(req.params.category === "package"){
-      queryText = "select package_id, package_name, buildno from package where pj_id = "+req.params.previousValue+";";
-    }
-    else if(req.params.category === "suite"){
-      queryText = "select su_id, su_name from suite where package_id = "+req.params.previousValue+";";
-    }
-    else if(req.params.category === "testcase"){
-      queryText = "select case_id, case_name from testcase where su_id = "+ req.params.previousValue+";";
-    }
-    else{
+    } else if (req.params.category === "package") {
+      queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "suite") {
+      queryText = "select su_id, su_name from suite where package_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "testcase") {
+      queryText = "select case_id, case_name from testcase where su_id = " + req.params.previousValue + ";";
+    } else {
       queryText = "";
     }
 
-    connection.query(queryText, function(err, rows){
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /getCustomData");
+    connection.query(queryText, (err, rows) => {
+      if (err) {
+        const now = new Date();
+
+        console.log(now + " --- 500 Error occured in /getCustomData");
         res.redirect("/500");
-      }
-      else{
+      } else {
         res.status(200).json(rows);
       }
     });
   });
 
-  router.get("/guide", function(req, res){
+  router.get("/guide", (req, res) => {
     res.status(200).render("guide");
   });
 
-  router.get("/team/:teamNo", function(req, res){
-    var teamNameTemp = "team"+ req.params.teamNo;
+  router.get("/team/:teamNo", (req, res) => {
+    const teamNameTemp = "team" + req.params.teamNo;
+
     res.status(200).render(teamNameTemp);
   });
 
-  router.get("/platform/:platform_category", function(req, res){
+  router.get("/platform/:platform_category", (req, res) => {
     res.status(200).render(req.params.platform_category);
   });
 
-  router.get("/getChartData/:page/:detail?", function(req, res){
-    var queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
-    var queryText_label = ""; var result = {};
+  router.get("/getChartData/:page/:detail?", (req, res) => {
+    let queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
+    let queryTextLabel = "";
+    const result = {};
 
-    //index page data
-    if(req.params.page === "index"){
-      queryText_label = "select pj_name, pj_id, pj_link from project;";
-    }
-    //team page data
-    else if(req.params.page === "team"){
-      var teamname = "NT"+req.params.detail;
-      if(req.params.detail === "5"){ teamname = "LT"; }
+    // index page data
+    if (req.params.page === "index") {
+      queryTextLabel = "select pj_name, pj_id, pj_link from project;";
+    } else if (req.params.page === "team") {
+      let teamname = "NT" + req.params.detail;
+
+      if (req.params.detail === "5") { teamname = "LT"; }
       queryText = queryText + " and pj.pj_teamname = '" + teamname + "'";
-      queryText_label = "select pj_name, pj_id, pj_link from project where pj_teamname = '"+teamname+"';";
-    }
-    //environment page data
-    else if(req.params.page === "platform"){
+      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_teamname = '" + teamname + "';";
+    } else if (req.params.page === "platform") {
       queryText = queryText + " and pj.pj_platform = '" + req.params.detail + "'";
-      queryText_label = "select pj_name, pj_id, pj_link from project where pj_platform = '" + req.params.detail + "';";
-    }
-    else{
+      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_platform = '" + req.params.detail + "';";
+    } else {
       queryText = "";
     }
 
     queryText += " group by pj_id, buildno;";
 
-    connection.query(queryText, function(err, rows){
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /getChartData");
+    connection.query(queryText, (err, rows) => {
+      if (err) {
+        const now = new Date();
+
+        console.log(now + " --- 500 Error occured in /getChartData");
         console.log("The queryText : " + queryText);
         res.redirect("/500");
-      }
-      else{
+      } else {
         result.data = rows;
-        connection.query(queryText_label, function(err, innerrows){
-          result.pj_label = innerrows;
-          result.totalChartCount = innerrows.length;
-          result.maxLabel = maxLabel.getMaxLabel();
-          res.status(200).json(result);
+        connection.query(queryTextLabel, (innererr, innerrows) => {
+          if (innererr) {
+            const now = new Date();
+
+            console.log(now + " --- 500 Error occured in /getChartData");
+            console.log("The queryText : " + queryText);
+            res.redirect("/500");
+          } else {
+            result.pj_label = innerrows;
+            result.totalChartCount = innerrows.length;
+            result.maxLabel = maxLabel.getMaxLabel();
+            res.status(200).json(result);
+          }
         });
       }
     });
   });
 
-  router.get("/500", function(req, res){
+  router.get("/500", (req, res) => {
     res.status(500).render("page_500");
   });
   return router;
@@ -127,7 +130,7 @@ module.exports = function(app, connection, maxLabel){
 
 /* post예제
 
-app.post('/addUser/:username', function(req, res){
+app.post('/addUser/:username', (req, res) => {
   var result = {  };
   var username = req.params.username;
 
