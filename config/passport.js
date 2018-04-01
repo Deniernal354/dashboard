@@ -1,27 +1,27 @@
-module.exports = function(passport, LocalStrategy){
+module.exports = function(passport, LocalStrategy) {
   passport.use(new LocalStrategy({
     usernameField: "userid",
     passwordField: "password",
-    passReqToCallback : true
+    passReqToCallback: true,
   },
-  function(req, userid, password, done){
-    if(userid === "admin" && password === "admin"){
-      var user = {
-        "user_id" : userid
+  (req, userid, password, done) => {
+    if (userid === "admin" && password === "admin") {
+      const user = {
+        "user_id": userid,
       };
+
       return done(null, user);
-    }
-    else{
+    } else {
       return done(null, false);
     }
   }));
 
-  passport.serializeUser(function(user, done){
-    console.log("serialize / User -- "+user.user_id);
+  passport.serializeUser((user, done) => {
+    console.log("serialize / User -- " + user.user_id);
     done(null, user);
   });
-  passport.deserializeUser(function(user, done){
-    //console.log("deserialize / User-- "+user.user_id);
+  passport.deserializeUser((user, done) => {
+    // console.log("deserialize / User-- " + user.user_id);
     done(null, user);
   });
 };

@@ -6,29 +6,31 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
-//DB
+// DB
 let connection;
-function handleDisconnect(){
+
+function handleDisconnect() {
   connection = db.createConnection({
-    host : "localhost",
-    user : "root",
-    password : "eotlqhem",
-    database : "test_db",
+    host: "localhost",
+    user: "root",
+    password: "eotlqhem",
+    database: "test_db",
     //  multipleStatements : true
   });
 
-  let now = new Date();
-  connection.connect((err) => {
-    if(err){
-      console.log("At "+now+" Error connect -- Reconnect after 3 seconds!!");
+  const now = new Date();
+
+  connection.connect(err => {
+    if (err) {
+      console.log("At " + now + " Error connect -- Reconnect after 3 seconds!!");
       setTimeout(handleDisconnect, 3000);
     }
   });
-  connection.on("error", (err) => {
-    console.log("At "+now+" Error on Connection -- Reconnect after 3 seconds");
-    if(err.code === "PROTOCOL_CONNECTION_LOST"){
+  connection.on("error", err => {
+    console.log("At " + now + " Error on Connection -- Reconnect after 3 seconds");
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
       handleDisconnect();
-    } else{
+    } else {
       throw err;
     }
   });
@@ -36,43 +38,45 @@ function handleDisconnect(){
 handleDisconnect();
 
 const app = express();
-app.set("views", path.join( __dirname, "/views"));
+
+app.set("views", path.join(__dirname, "/views"));
 app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
 app.use(express.static(path.join(__dirname, "/public")));
 
-//ejs template
-//Template HTML -> app.set("view engine", "html");
+// ejs template
+// Template HTML -> app.set("view engine", "html");
 app.set("view engine", "ejs");
 app.engine("html", require("ejs").renderFile);
 
-//middlewares
+// middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-  extended: true
+  extended: true,
 }));
 app.use(session({
   secret: "!@#nts#@!",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
 }));
 
-//passport
-let passport_config = require("./config/passport")(passport, LocalStrategy);
+// passport
+const passportConfig = require("./config/passport")(passport, LocalStrategy);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-//router
-let maxLabel = (() => {
+// router
+const maxLabel = (() => {
   let realMaxLabel = 9;
+
   return {
-    getMaxLabel : () => {
-      return realMaxLabel;
-    },
-    setMaxLabel : (value) => {
+    getMaxLabel: () => realMaxLabel,
+    setMaxLabel: value => {
       realMaxLabel = value;
-    }
+    },
   };
 })();
+
 app.use("/", require("./routes/route.js")(app, connection, maxLabel));
 app.use("/admin", require("./routes/admin.js")(app, connection, passport, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(app, connection));
@@ -82,7 +86,8 @@ app.use((req, res) => {
 });
 
 const server = app.listen(8000, () => {
-  let now = new Date();
+  const now = new Date();
+
   console.log("Server Start : portNo. " + server.address().port);
-  console.log("Start time is : "+now);
+  console.log("Start time is : " + now);
 });

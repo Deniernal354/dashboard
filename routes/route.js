@@ -12,9 +12,9 @@ res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자�
 
 ////////////////////////////////////////////////////////////////
 */
-module.exports = function(app, connection, maxLabel){
-  var express = require("express");
-  var router = express.Router();
+module.exports = function(app, connection, maxLabel) {
+  const express = require("express");
+  const router = express.Router();
 
   router.get("/", (req, res) => {
     res.redirect("/index");
@@ -31,30 +31,27 @@ module.exports = function(app, connection, maxLabel){
   });
 
   router.get("/getCustomData/:category/:previousValue?", (req, res) => {
-    var queryText = "";
-    if(req.params.category === "project"){
+    let queryText = "";
+
+    if (req.params.category === "project") {
       queryText = "select pj_id, pj_name, pj_teamname from project";
-    }
-    else if(req.params.category === "package"){
-      queryText = "select package_id, package_name, buildno from package where pj_id = "+req.params.previousValue+";";
-    }
-    else if(req.params.category === "suite"){
-      queryText = "select su_id, su_name from suite where package_id = "+req.params.previousValue+";";
-    }
-    else if(req.params.category === "testcase"){
-      queryText = "select case_id, case_name from testcase where su_id = "+ req.params.previousValue+";";
-    }
-    else{
+    } else if (req.params.category === "package") {
+      queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "suite") {
+      queryText = "select su_id, su_name from suite where package_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "testcase") {
+      queryText = "select case_id, case_name from testcase where su_id = " + req.params.previousValue + ";";
+    } else {
       queryText = "";
     }
 
     connection.query(queryText, (err, rows) => {
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /getCustomData");
+      if (err) {
+        const now = new Date();
+
+        console.log(now + " --- 500 Error occured in /getCustomData");
         res.redirect("/500");
-      }
-      else{
+      } else {
         res.status(200).json(rows);
       }
     });
@@ -65,7 +62,8 @@ module.exports = function(app, connection, maxLabel){
   });
 
   router.get("/team/:teamNo", (req, res) => {
-    var teamNameTemp = "team"+ req.params.teamNo;
+    const teamNameTemp = "team" + req.params.teamNo;
+
     res.status(200).render(teamNameTemp);
   });
 
@@ -74,45 +72,50 @@ module.exports = function(app, connection, maxLabel){
   });
 
   router.get("/getChartData/:page/:detail?", (req, res) => {
-    var queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
-    var queryText_label = ""; var result = {};
+    let queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
+    let queryTextLabel = "";
+    const result = {};
 
-    //index page data
-    if(req.params.page === "index"){
-      queryText_label = "select pj_name, pj_id, pj_link from project;";
-    }
-    //team page data
-    else if(req.params.page === "team"){
-      var teamname = "NT"+req.params.detail;
-      if(req.params.detail === "5"){ teamname = "LT"; }
+    // index page data
+    if (req.params.page === "index") {
+      queryTextLabel = "select pj_name, pj_id, pj_link from project;";
+    } else if (req.params.page === "team") {
+      let teamname = "NT" + req.params.detail;
+
+      if (req.params.detail === "5") { teamname = "LT"; }
       queryText = queryText + " and pj.pj_teamname = '" + teamname + "'";
-      queryText_label = "select pj_name, pj_id, pj_link from project where pj_teamname = '"+teamname+"';";
-    }
-    //environment page data
-    else if(req.params.page === "platform"){
+      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_teamname = '" + teamname + "';";
+    } else if (req.params.page === "platform") {
       queryText = queryText + " and pj.pj_platform = '" + req.params.detail + "'";
-      queryText_label = "select pj_name, pj_id, pj_link from project where pj_platform = '" + req.params.detail + "';";
-    }
-    else{
+      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_platform = '" + req.params.detail + "';";
+    } else {
       queryText = "";
     }
 
     queryText += " group by pj_id, buildno;";
 
     connection.query(queryText, (err, rows) => {
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /getChartData");
+      if (err) {
+        const now = new Date();
+
+        console.log(now + " --- 500 Error occured in /getChartData");
         console.log("The queryText : " + queryText);
         res.redirect("/500");
-      }
-      else{
+      } else {
         result.data = rows;
-        connection.query(queryText_label, (err, innerrows) => {
-          result.pj_label = innerrows;
-          result.totalChartCount = innerrows.length;
-          result.maxLabel = maxLabel.getMaxLabel();
-          res.status(200).json(result);
+        connection.query(queryTextLabel, (innererr, innerrows) => {
+          if (innererr) {
+            const now = new Date();
+
+            console.log(now + " --- 500 Error occured in /getChartData");
+            console.log("The queryText : " + queryText);
+            res.redirect("/500");
+          } else {
+            result.pj_label = innerrows;
+            result.totalChartCount = innerrows.length;
+            result.maxLabel = maxLabel.getMaxLabel();
+            res.status(200).json(result);
+          }
         });
       }
     });
