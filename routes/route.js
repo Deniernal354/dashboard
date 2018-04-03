@@ -12,7 +12,7 @@ res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자�
 
 ////////////////////////////////////////////////////////////////
 */
-module.exports = function(app, connection, maxLabel) {
+module.exports = function(app, pool, maxLabel) {
   const express = require("express");
   const router = express.Router();
 
@@ -45,11 +45,11 @@ module.exports = function(app, connection, maxLabel) {
       queryText = "";
     }
 
-    connection.query(queryText, (err, rows) => {
-      if (err) {
-        const now = new Date();
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
 
-        console.log(now + " --- 500 Error occured in /getCustomData");
+      if (err) {
+        console.error("---Error : /getCustomData " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       } else {
         res.status(200).json(rows);
@@ -94,21 +94,17 @@ module.exports = function(app, connection, maxLabel) {
 
     queryText += " group by pj_id, buildno;";
 
-    connection.query(queryText, (err, rows) => {
-      if (err) {
-        const now = new Date();
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
 
-        console.log(now + " --- 500 Error occured in /getChartData");
-        console.log("The queryText : " + queryText);
+      if (err) {
+        console.error("---Error : /getChartData " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       } else {
         result.data = rows;
-        connection.query(queryTextLabel, (innererr, innerrows) => {
+        pool.query(queryTextLabel, (innererr, innerrows) => {
           if (innererr) {
-            const now = new Date();
-
-            console.log(now + " --- 500 Error occured in /getChartData");
-            console.log("The queryText : " + queryText);
+            console.error("---Error : /getChartData " + innererr.code + "\n---Error Time : " + now);
             res.redirect("/500");
           } else {
             result.pj_label = innerrows;

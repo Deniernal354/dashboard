@@ -1,21 +1,38 @@
-module.exports = function(app, connection) {
+module.exports = function(app, pool) {
   const express = require("express");
   const router = express.Router();
 
-  // input valid 한지 확인 하는 로직 필요함!
+  // input valid 한지 확인 하는 로직 필요함! -> 현재는 일단 중복값 체크만 하고 있음.
   // pj_name : 제한없음
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pcWeb|mobileWeb|mobileApp
+  router.post("/beforeSuite/project", (req, res) => {
+    const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + req.body.pj_name +
+    "' and pj_team= '" + req.body.pj_team + "' and pj_platform='" + req.body.pj_platform + "' and pj_author= '" + req.body.pj_author + "'), -1) pj_id;";
+    const insertQueryText = "INSERT INTO `api_db`.`project` (`pj_name`, `pj_team`, `pj_platform`, `pj_author`) VALUES ('" + req.body.pj_name + "', '" + req.body.pj_team + "', '" + req.body.pj_platform + "', '" + req.body.pj_author + "'); ";
 
-  router.get("/beforeSuite/project", (req, res) => {
-    let queryText;
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
 
-    /*
-    if (project존재하면) {
-      //pj_id 리턴
-    } else {
-      //project 생성해서 pj_id 리턴
-    }*/
+      if (err) {
+        console.error("---Error : /access/beforeSuite/project -> Search : " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        console.log(queryText);
+        if (rows[0].pj_id !== -1) {
+          res.status(200).json(rows[0]);
+        } else {
+          pool.query(insertQueryText, (innererr, innerrows) => {
+            if (innererr) {
+              console.error("---Error : /access/beforeSuite/project -> Insert : " + innererr.code + "\n---Error Time : " + now);
+              res.redirect("/500");
+            } else {
+              res.status(200).json({"pj_id" : innerrows.insertId});
+            }
+          });
+        }
+      }
+    });
   });
 
   // build가 없는 경우 insert수행, 있는 경우 buildid돌려주기.
@@ -39,39 +56,7 @@ module.exports = function(app, connection) {
 
   });
 
-  router.post("/initProject", (req, res) => {
-    console.log(req.body.pj_name + "///" + req.body.pj_teamname + "///" + req.body.pj_platform);
-    console.log(req.body);
-    res.status(200).send({"success": 1});
-  });
-
-  router.post("/initProject2", (req, res) => {
-    const queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, '" + req.body.pj_name + "', '" + req.body.pj_teamname + "', '" + req.body.pj_platform + "');";
-    const resultQueryText = "select pj_id from project where pj_name = '" + req.body.pj_name + "'order by pj_id DESC limit 1";
-
-    connection.query(queryText, (err, rows) => {
-      if (err) {
-        const now = new Date();
-
-        console.log(now + " --- 500 Error occured in /inputData");
-        console.log("The queryText : " + queryText);
-        res.status(500).send({"Error occured": 0});
-      } else {
-        // result.data = row
-        connection.query(resultQueryText, (innererr, innerrows) => {
-          res.status(200).json(innerrows);
-        });
-      }
-    });
-  });
-
-  /* req 형태
-    {
-      pj_id
-    }
-  */
-
-  router.delete("/deleteProject", (req, res) => {
+  /*router.delete("/deleteProject", (req, res) => {
     const queryText = "DELETE FROM project WHERE pj_id = " + req.pj_id + ";";
 
     connection.query(queryText, (err, rows) => {
@@ -85,7 +70,7 @@ module.exports = function(app, connection) {
         res.status(200).send({"success": 1});
       }
     });
-  });
+  });*/
 
   return router;
 };
