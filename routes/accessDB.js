@@ -96,29 +96,29 @@ module.exports = function(app, pool) {
     const buildId = req.body.build_id;
     const cname = req.body.class_name;
     const pname = req.body.package_name;
-    const queryText = "";
-    const insertQueryText = "";
+    const queryText = "select ifnull((select build_id from buildno where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
+    const insertQueryText = "INSERT into class values (default, " + cname + ", " + pname + ", " + buildId + ", " + pjId + ");";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
 
       if (err) {
-        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
-            console.error("---Error : /access/beforeSuite/buildno -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now);
             res.redirect("/500");
           } else {
-            res.status(200).json({"build_id": innerrows});
+            res.status(200).json({"class_id": innerrows});
           }
         });
       } else {
-        console.error("---Error : /access/beforeSuite/buildno -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "Wrong pj_id"});
+        console.error("---Error : /access/beforeClass -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "Wrong pj_id or build_id"});
       }
     });
   });
@@ -129,6 +129,38 @@ module.exports = function(app, pool) {
     //pass:1 / fail:-1 / skip:0
     //insert 수행결과 success, fail로 리턴.
 
+    const pjId = req.body.pj_id;
+    const buildId = req.body.build_id;
+    const classId = req.body.class_id;
+    const mname = req.body.method_name;
+    const start_t = req.body.start_t;
+    const end_t = req.body.end_t;
+    const testResult = req.body.result;
+    const queryText = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) build_id;";
+    const insertQueryText = "INSERT into class values (default, " + mname + ", " + start_t + ", " + end_t + ", " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      }
+
+      if (rows[0].pj_id !== -1) {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            res.redirect("/500");
+          } else {
+            res.status(200).json({"success": 1});
+          }
+        });
+      } else {
+        console.error("---Error : /access/afterMethod -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "Wrong pj_id or build_id or class_id"});
+      }
+    });
   });
 
   /*router.delete("/deleteProject", (req, res) => {
