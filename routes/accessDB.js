@@ -97,7 +97,7 @@ module.exports = function(app, pool) {
     const cname = req.body.class_name;
     const pname = req.body.package_name;
     const queryText = "select ifnull((select build_id from buildno where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
-    const insertQueryText = "INSERT into class values (default, " + cname + ", " + pname + ", " + buildId + ", " + pjId + ");";
+    const insertQueryText = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
@@ -137,7 +137,7 @@ module.exports = function(app, pool) {
     const end_t = req.body.end_t;
     const testResult = req.body.result;
     const queryText = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) build_id;";
-    const insertQueryText = "INSERT into class values (default, " + mname + ", " + start_t + ", " + end_t + ", " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
+    const insertQueryText = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
