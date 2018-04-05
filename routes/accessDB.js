@@ -6,10 +6,16 @@ module.exports = function(app, pool) {
   // pj_name : 제한없음
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pcWeb|mobileWeb|mobileApp
+
+  // Project Insert API
   router.post("/beforeSuite/project", (req, res) => {
-    const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + req.body.pj_name +
-    "' and pj_team= '" + req.body.pj_team + "' and pj_platform='" + req.body.pj_platform + "' and pj_author= '" + req.body.pj_author + "'), -1) pj_id;";
-    const insertQueryText = "INSERT INTO `api_db`.`project` (`pj_name`, `pj_team`, `pj_platform`, `pj_author`) VALUES ('" + req.body.pj_name + "', '" + req.body.pj_team + "', '" + req.body.pj_platform + "', '" + req.body.pj_author + "'); ";
+    const name = req.body.pj_name;
+    const team = req.body.pj_team;
+    const plat = req.body.pj_platform;
+    const auth = req.body.pj_author;
+    const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
+    "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
+    const insertQueryText = "INSERT INTO `api_db`.`project` (`pj_name`, `pj_team`, `pj_platform`, `pj_author`) VALUES ('" + name + "', '" + team + "', '" + plat + "', '" + auth + "'); ";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
@@ -17,35 +23,104 @@ module.exports = function(app, pool) {
       if (err) {
         console.error("---Error : /access/beforeSuite/project -> Search : " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
+      }
+
+      if (rows[0].pj_id !== -1) {
+        res.status(200).json(rows[0]);
       } else {
-        console.log(queryText);
-        if (rows[0].pj_id !== -1) {
-          res.status(200).json(rows[0]);
-        } else {
-          pool.query(insertQueryText, (innererr, innerrows) => {
-            if (innererr) {
-              console.error("---Error : /access/beforeSuite/project -> Insert : " + innererr.code + "\n---Error Time : " + now);
-              res.redirect("/500");
-            } else {
-              res.status(200).json({"pj_id" : innerrows.insertId});
-            }
-          });
-        }
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/beforeSuite/project -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            res.redirect("/500");
+          } else {
+            res.status(200).json({"pj_id" : innerrows.insertId});
+          }
+        });
       }
     });
   });
 
-  // build가 없는 경우 insert수행, 있는 경우 buildid돌려주기.
-  router.post("/beforeSuite/buildno", (req, res) => {
-    //req에서 pj_id가져와서 비교.
-    //이전 Buildno 최신값 가져오고, 그 다음 거 insert수행
-    //insert 수행 결과 새 buildno 리턴
+  // Get buildno from buildId
+  router.get("/beforeSuite/getbuildno/:build_id", (req, res) => {
+    const buildId = req.params.build_id;
+    const queryText = "select buildno from buildno where build_id = " + buildId + ";";
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      }
+      else{
+        res.status(200).json(rows[0]);
+      }
+    });
+  });
+
+  // Buildno Insert API
+  router.post("/beforeSuite/buildno/", (req, res) => {
+    const id = req.body.pj_id;
+    const queryText = "select ifnull((select pj_id from project where pj_id = " + id + "), -1) pj_id;";
+    const insertQueryText = "insert into buildno values (default, (select max(buildno) from buildno b where pj_id = " + id + ")+1, " + id + ");";
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      }
+
+      if (rows[0].pj_id !== -1) {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/beforeSuite/buildno -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            res.redirect("/500");
+          } else {
+            res.status(200).json({"build_id": innerrows});
+          }
+        });
+      } else {
+        console.error("---Error : /access/beforeSuite/buildno -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "Wrong pj_id"});
+      }
+    });
   });
 
   router.post("/beforeClass", (req, res) => {
-    //req에서 pj_id, Buildno가져와서 비교.
+    //req에서 pj_id, Buildid가져와서 비교.
     //class생성하기.-> classname packagename입력받을것.
     //insert 수행 결과 새 classid 리턴
+    const pjId = req.body.pj_id;
+    const buildId = req.body.build_id;
+    const cname = req.body.class_name;
+    const pname = req.body.package_name;
+    const queryText = "";
+    const insertQueryText = "";
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      }
+
+      if (rows[0].pj_id !== -1) {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/beforeSuite/buildno -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            res.redirect("/500");
+          } else {
+            res.status(200).json({"build_id": innerrows});
+          }
+        });
+      } else {
+        console.error("---Error : /access/beforeSuite/buildno -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "Wrong pj_id"});
+      }
+    });
   });
 
   router.post("/afterMethod", (req, res) => {
