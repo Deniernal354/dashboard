@@ -7,8 +7,7 @@ module.exports = function(app, pool) {
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pcWeb|mobileWeb|mobileApp
 
-  // Project Insert API
-  router.post("/beforeSuite/project", (req, res) => {
+  router.post("/beforeSuite", (req, res) => {
     const name = req.body.pj_name;
     const team = req.body.pj_team;
     const plat = req.body.pj_platform;
@@ -19,24 +18,38 @@ module.exports = function(app, pool) {
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
+      let pj_id = 0;
 
       if (err) {
-        console.error("---Error : /access/beforeSuite/project -> Search : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       }
 
       if (rows[0].pj_id !== -1) {
-        res.status(200).json(rows[0]);
+        pj_id = rows[0].pj_id;
       } else {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
-            console.error("---Error : /access/beforeSuite/project -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
             res.redirect("/500");
-          } else {
-            res.status(200).json({"pj_id" : innerrows.insertId});
           }
+          pj_id = innerrows.insertId;
         });
       }
+
+      const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0))+1, " + pj_id + ");";
+
+      pool.query(insertQueryTextBuild, (err, rows) => {
+        if (err) {
+          console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
+          res.redirect("/500");
+        } else {
+          res.status(200).json({
+            "pj_id": pj_id,
+            "build_id": rows.insertId
+          });
+        }
+      });
     });
   });
 
@@ -54,36 +67,6 @@ module.exports = function(app, pool) {
       }
       else{
         res.status(200).json(rows[0]);
-      }
-    });
-  });
-
-  // Buildno Insert API
-  router.post("/beforeSuite/buildno/", (req, res) => {
-    const id = req.body.pj_id;
-    const queryText = "select ifnull((select pj_id from project where pj_id = " + id + "), -1) pj_id;";
-    const insertQueryText = "insert into buildno values (default, (select max(buildno) from buildno b where pj_id = " + id + ")+1, " + id + ");";
-
-    pool.query(queryText, (err, rows) => {
-      const now = new Date();
-
-      if (err) {
-        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
-      }
-
-      if (rows[0].pj_id !== -1) {
-        pool.query(insertQueryText, (innererr, innerrows) => {
-          if (innererr) {
-            console.error("---Error : /access/beforeSuite/buildno -> Insert : " + innererr.code + "\n---Error Time : " + now);
-            res.redirect("/500");
-          } else {
-            res.status(200).json({"build_id": innerrows});
-          }
-        });
-      } else {
-        console.error("---Error : /access/beforeSuite/buildno -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "Wrong pj_id"});
       }
     });
   });
@@ -113,7 +96,7 @@ module.exports = function(app, pool) {
             console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now);
             res.redirect("/500");
           } else {
-            res.status(200).json({"class_id": innerrows});
+            res.status(200).json({"class_id": innerrows.insertId});
           }
         });
       } else {
