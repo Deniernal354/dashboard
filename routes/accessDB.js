@@ -3,6 +3,7 @@ module.exports = function(app, pool) {
   const router = express.Router();
 
   // input valid 한지 확인 하는 로직 필요함! -> 현재는 일단 중복값 체크만 하고 있음.
+  //express-validator 참고 필요할수 있음.
   // pj_name : 제한없음
   // pj_teamname : [NL]T[1-4]?
   // pj_platform : pcWeb|mobileWeb|mobileApp
