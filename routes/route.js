@@ -12,7 +12,7 @@ res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자�
 
 ////////////////////////////////////////////////////////////////
 */
-module.exports = function(app, connection, maxLabel) {
+module.exports = function(app, pool, maxLabel) {
   const express = require("express");
   const router = express.Router();
 
@@ -34,7 +34,7 @@ module.exports = function(app, connection, maxLabel) {
     let queryText = "";
 
     if (req.params.category === "project") {
-      queryText = "select pj_id, pj_name, pj_teamname from project";
+      queryText = "select pj_id, pj_name, pj_team from project";
     } else if (req.params.category === "package") {
       queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
     } else if (req.params.category === "suite") {
@@ -45,11 +45,11 @@ module.exports = function(app, connection, maxLabel) {
       queryText = "";
     }
 
-    connection.query(queryText, (err, rows) => {
-      if (err) {
-        const now = new Date();
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
 
-        console.log(now + " --- 500 Error occured in /getCustomData");
+      if (err) {
+        console.error("---Error : /getCustomData " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       } else {
         res.status(200).json(rows);
@@ -72,7 +72,9 @@ module.exports = function(app, connection, maxLabel) {
   });
 
   router.get("/getChartData/:page/:detail?", (req, res) => {
-    let queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
+    //let queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
+
+    let queryText = "select c.pj_id pj_id, m.build_id build_id, b.buildno buildno, sum(m.pass) pass, sum(m.fail) fail, sum(m.skip) skip, min(m.start_t) start_t, sec_to_time(sum(m.duration)) duration from class c inner join (select pj_id, build_id, class_id, method_id, count(Case when result = 1 then 1 end) pass, count(Case when result = -1 then 1 end) fail, count(Case when result = 0 then 1 end) skip,	Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by pj_id, build_id, class_id, method_id) m on c.class_id = m.class_id inner join(select pj_id, build_id, buildno,         @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn,         @prev := pj_id FROM buildno inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b on b.build_id = m.build_id inner join project pj on pj.pj_id = m.pj_id where b.rn<=" + maxLabel.getMaxLabel();
     let queryTextLabel = "";
     const result = {};
 
@@ -83,8 +85,9 @@ module.exports = function(app, connection, maxLabel) {
       let teamname = "NT" + req.params.detail;
 
       if (req.params.detail === "5") { teamname = "LT"; }
-      queryText = queryText + " and pj.pj_teamname = '" + teamname + "'";
-      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_teamname = '" + teamname + "';";
+      queryText = queryText + " and pj.pj_team = '" + teamname + "'";
+      //queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_teamname = '" + teamname + "';";
+      queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_team = '" + teamname + "';";
     } else if (req.params.page === "platform") {
       queryText = queryText + " and pj.pj_platform = '" + req.params.detail + "'";
       queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_platform = '" + req.params.detail + "';";
@@ -92,23 +95,20 @@ module.exports = function(app, connection, maxLabel) {
       queryText = "";
     }
 
-    queryText += " group by pj_id, buildno;";
+    //queryText += " group by pj_id, buildno;";
+    queryText += " group by pj_id, build_id;";
 
-    connection.query(queryText, (err, rows) => {
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
       if (err) {
-        const now = new Date();
-
-        console.log(now + " --- 500 Error occured in /getChartData");
-        console.log("The queryText : " + queryText);
+        console.error("---Error : /getChartData " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       } else {
         result.data = rows;
-        connection.query(queryTextLabel, (innererr, innerrows) => {
+        pool.query(queryTextLabel, (innererr, innerrows) => {
           if (innererr) {
-            const now = new Date();
-
-            console.log(now + " --- 500 Error occured in /getChartData");
-            console.log("The queryText : " + queryText);
+            console.error("---Error : /getChartData " + innererr.code + "\n---Error Time : " + now);
             res.redirect("/500");
           } else {
             result.pj_label = innerrows;
@@ -126,40 +126,3 @@ module.exports = function(app, connection, maxLabel) {
   });
   return router;
 };
-
-
-/* post예제
-
-app.post('/addUser/:username', (req, res) => {
-  var result = {  };
-  var username = req.params.username;
-
-  // CHECK REQ VALIDITY
-  if(!(req.body.password && req.body.name)){
-    result.success= 0;
-    result.error = "invalid request";
-    res.json(result);
-    return;
-  }
-
-  // LOAD DATA & CHECK DUPLICATION
-  fs.readFile( __dirname + "/../data/user.json", 'utf8',  function(err, data){
-    var users = JSON.parse(data);
-    //ducplication check -> !만 달아주면 delete의 Not found로 사용 가능
-    if(users[username]){
-      result.success = 0;
-      result.error = "duplicate";
-      res.json(result);
-      return;
-    }
-    // ADD TO DATA
-    users[username] = req.body;
-
-    // SAVE DATA
-    fs.writeFile(__dirname + "/../data/user.json", JSON.stringify(users, null, '\t'), "utf8", function(err, data){
-      result = {"success": 1};
-      res.json(result);
-    });
-  });//readFile end
-});//post end
-*/

@@ -184,7 +184,7 @@ function init_progressbar() {
     $(".progress .progress-bar").progressbar();
   }
 }
-// Menu component functions end
+// ---- Menu component functions end
 
 // initialize menu components
 $(document).ready(function() {
@@ -692,6 +692,8 @@ function init_charts() {
     var chartloop = parsedResult.getCnt();
     var doc = document;
     var divFrag = document.createDocumentFragment();
+
+    console.log(JSON.parse(getChartData.responseText));
 
     for (var i = 0; i < chartloop; i++) {
       var div = doc.createElement("div");

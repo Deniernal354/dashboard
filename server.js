@@ -7,35 +7,14 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
 // DB
-let connection;
-
-function handleDisconnect() {
-  connection = db.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "eotlqhem",
-    database: "test_db",
-    //  multipleStatements : true
-  });
-
-  const now = new Date();
-
-  connection.connect(err => {
-    if (err) {
-      console.log("At " + now + " Error connect -- Reconnect after 3 seconds!!");
-      setTimeout(handleDisconnect, 3000);
-    }
-  });
-  connection.on("error", err => {
-    console.log("At " + now + " Error on Connection -- Reconnect after 3 seconds");
-    if (err.code === "PROTOCOL_CONNECTION_LOST") {
-      handleDisconnect();
-    } else {
-      throw err;
-    }
-  });
-}
-handleDisconnect();
+let pool = db.createPool({
+  host: "localhost",
+  user: "root",
+  password: "eotlqhem",
+  //database: "test_db",
+  database: "api_db",
+  multipleStatements : true
+});
 
 const app = express();
 
@@ -77,9 +56,9 @@ const maxLabel = (() => {
   };
 })();
 
-app.use("/", require("./routes/route.js")(app, connection, maxLabel));
-app.use("/admin", require("./routes/admin.js")(app, connection, passport, maxLabel));
-app.use("/access", require("./routes/accessDB.js")(app, connection));
+app.use("/", require("./routes/route.js")(app, pool, maxLabel));
+app.use("/admin", require("./routes/admin.js")(app, passport, maxLabel));
+app.use("/access", require("./routes/accessDB.js")(app, pool));
 
 app.use((req, res) => {
   res.status(404).render("page_404");
@@ -88,6 +67,5 @@ app.use((req, res) => {
 const server = app.listen(8000, () => {
   const now = new Date();
 
-  console.log("Server Start : portNo. " + server.address().port);
-  console.log("Start time is : " + now);
+  console.log("Server Start --- portNo : " + server.address().port + " / Time : " + now);
 });
