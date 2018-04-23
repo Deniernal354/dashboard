@@ -184,7 +184,7 @@ function init_progressbar() {
     $(".progress .progress-bar").progressbar();
   }
 }
-// Menu component functions end
+// ---- Menu component functions end
 
 // initialize menu components
 $(document).ready(function() {
