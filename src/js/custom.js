@@ -549,15 +549,18 @@ function init_select2() {
   selectCustomProject.addEventListener("load", function() {
     result[0] = JSON.parse(selectCustomProject.responseText);
 
-    for (var l = 1; l < 6; l++) {
+    for (var l = 1; l < 7; l++) {
       var teamLabel = doc.createElement("optgroup");
 
       if (l >= 1 && l <= 4) {
         teamLabel.id = "NT" + l;
         teamLabel.label = "네이버테스트" + l + "팀";
-      } else {
+      } else if(l == 5) {
         teamLabel.id = "LT";
         teamLabel.label = "라인테스트팀";
+      } else {
+        teamLabel.id = "NTS";
+        teamLabel.label = "이외";
       }
       divFrag.appendChild(teamLabel);
     }
@@ -566,7 +569,7 @@ function init_select2() {
       var optionTmp = doc.createElement("option");
 
       optionTmp.innerText = value.pj_name;
-      divFrag.getElementById(value.pj_teamname).appendChild(optionTmp);
+      divFrag.getElementById(value.pj_team).appendChild(optionTmp);
     });
     document.getElementById("select2_multiple0").appendChild(divFrag);
   });
