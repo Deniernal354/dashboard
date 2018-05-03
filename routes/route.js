@@ -2,19 +2,17 @@
 get/post 터널링 조심(get은 get만, post는 post만)
 http://myweb/users?method=update&id=terry
 
-res 메소드	설명///////////////////////////////////////////////////
+//////////////////////res Method/////////////////////////////
 res.download()	다운로드될 파일을 전송한다.
-res.jsonp()	JSONP 지원을 통해 JSON 응답을 전송한다.
 res.redirect()	요청 경로를 재지정한다.
-res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.
-(이메일이나 http에서 사용되는 content-type에서 application의 형식이 지정되어 있지 않은 경우)
+res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.(content-type의 application 형식 미지정Case)
 res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자열로 표현한 내용을 응답 본문으로서 전송한다.
-
 ////////////////////////////////////////////////////////////////
 */
 module.exports = function(app, pool, maxLabel) {
   const express = require("express");
   const router = express.Router();
+  const { check, validationResult } = require("express-validator/check");
 
   router.get("/", (req, res) => {
     res.redirect("/index");
@@ -26,49 +24,41 @@ module.exports = function(app, pool, maxLabel) {
     res.status(200).render("index.ejs");
   });
 
-  router.get("/customSort", (req, res) => {
-    res.status(200).render("customSort");
+  router.get("/team/:teamNo", [
+    check("teamNo").matches(/^[1-5]{1}$/)
+  ], (req, res) => {
+    const err = validationResult(req);
+
+    if(!err.isEmpty()){
+      return res.redirect("/404");
+    }
+    if (req.params.teamNo <= 5 && req.params.teamNo >= 1) {
+      let title_left = "네이버테스트 " + req.params.teamNo + "팀";
+
+      if (req.params.teamNo == 5) {
+        title_left = "라인테스트팀";
+      }
+      res.status(200).render("team", { title : title_left });
+    }
   });
 
-  router.get("/getCustomData/:category/:previousValue?", (req, res) => {
-    let queryText = "";
+  router.get("/platform/:category", [
+    check("category").matches(/^(pcWeb|mobileWeb|mobileApp)$/)
+  ], (req, res) => {
+    const err = validationResult(req);
 
-    if (req.params.category === "project") {
-      queryText = "select pj_id, pj_name, pj_team from project";
-    } else if (req.params.category === "package") {
-      queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
-    } else if (req.params.category === "suite") {
-      queryText = "select su_id, su_name from suite where package_id = " + req.params.previousValue + ";";
-    } else if (req.params.category === "testcase") {
-      queryText = "select case_id, case_name from testcase where su_id = " + req.params.previousValue + ";";
-    } else {
-      queryText = "";
+    if(!err.isEmpty()){
+      return res.redirect("/404");
     }
 
-    pool.query(queryText, (err, rows) => {
-      const now = new Date();
+    let title_left = "PC Web 환경";
 
-      if (err) {
-        console.error("---Error : /getCustomData " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
-      } else {
-        res.status(200).json(rows);
-      }
-    });
-  });
-
-  router.get("/guide", (req, res) => {
-    res.status(200).render("guide");
-  });
-
-  router.get("/team/:teamNo", (req, res) => {
-    const teamNameTemp = "team" + req.params.teamNo;
-
-    res.status(200).render(teamNameTemp);
-  });
-
-  router.get("/platform/:platform_category", (req, res) => {
-    res.status(200).render(req.params.platform_category);
+    if (req.params.category === "mobileApp") {
+      title_left = "Mobile App 환경";
+    } else if (req.params.category === "mobileWeb") {
+      title_left = "Mobile Web 환경";
+    }
+    res.status(200).render("platform", { title : title_left });
   });
 
   router.get("/getChartData/:page/:detail?", (req, res) => {
@@ -121,8 +111,47 @@ module.exports = function(app, pool, maxLabel) {
     });
   });
 
+  router.get("/customSort", (req, res) => {
+    res.status(200).render("customSort");
+  });
+
+  router.get("/getCustomData/:category/:previousValue?", (req, res) => {
+    let queryText = "";
+
+    if (req.params.category === "project") {
+      queryText = "select pj_id, pj_name, pj_team from project";
+    } else if (req.params.category === "package") {
+      queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "suite") {
+      queryText = "select su_id, su_name from suite where package_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "testcase") {
+      queryText = "select case_id, case_name from testcase where su_id = " + req.params.previousValue + ";";
+    } else {
+      queryText = "";
+    }
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /getCustomData " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        res.status(200).json(rows);
+      }
+    });
+  });
+
+  router.get("/guide", (req, res) => {
+    res.status(200).render("guide");
+  });
+
   router.get("/500", (req, res) => {
     res.status(500).render("page_500");
+  });
+
+  router.use("/404", (req, res) => {
+    res.status(404).render("page_404");
   });
   return router;
 };

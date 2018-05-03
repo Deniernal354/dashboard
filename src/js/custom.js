@@ -696,7 +696,7 @@ function init_charts() {
     var doc = document;
     var divFrag = document.createDocumentFragment();
 
-    console.log(JSON.parse(getChartData.responseText));
+    //console.log(JSON.parse(getChartData.responseText));
 
     for (var i = 0; i < chartloop; i++) {
       var div = doc.createElement("div");
