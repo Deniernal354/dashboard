@@ -1,14 +1,21 @@
 module.exports = function(app, pool) {
   const express = require("express");
   const router = express.Router();
+  const { body, validationResult } = require("express-validator/check");
 
-  // input valid 한지 확인 하는 로직 필요함! -> 현재는 일단 중복값 체크만 하고 있음.
-  //express-validator 참고 필요할수 있음.
-  // pj_name : 제한없음
-  // pj_teamname : [NL]T[1-4]?
-  // pj_platform : pcWeb|mobileWeb|mobileApp
+  // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
+  router.post("/beforeSuite", [
+    body("pj_name").exists(),
+    body("pj_team").exists().matches(/^[NL]T[1-4]?$/),
+    body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
+    body("pj_author").exists()
+  ], (req, res) => {
+    const err = validationResult(req);
 
-  router.post("/beforeSuite", (req, res) => {
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
+    }
+
     const name = req.body.pj_name;
     const team = req.body.pj_team;
     const plat = req.body.pj_platform;
@@ -23,7 +30,7 @@ module.exports = function(app, pool) {
 
       if (err) {
         console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
+        return res.status(500).json({"error": "Internal Server Error"});
       }
 
       if (rows[0].pj_id !== -1) {
@@ -32,7 +39,7 @@ module.exports = function(app, pool) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
-            res.redirect("/500");
+            return res.status(500).json({"error": "Internal Server Error"});
           }
           pj_id = innerrows.insertId;
         });
@@ -43,7 +50,7 @@ module.exports = function(app, pool) {
       pool.query(insertQueryTextBuild, (err, rows) => {
         if (err) {
           console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
-          res.redirect("/500");
+          return res.status(500).json({"error": "Internal Server Error"});
         } else {
           res.status(200).json({
             "pj_id": pj_id,
@@ -54,28 +61,19 @@ module.exports = function(app, pool) {
     });
   });
 
-  // Get buildno from buildId
-  router.get("/beforeSuite/getbuildno/:build_id", (req, res) => {
-    const buildId = req.params.build_id;
-    const queryText = "select buildno from buildno where build_id = " + buildId + ";";
+  // req에서 pj_id, Buildid가져와서 비교. -> class생성 -> 새 classid 리턴
+  router.post("/beforeClass", [
+    body("pj_id").exists(),
+    body("build_id").exists(),
+    body("class_name").exists(),
+    body("package_name").exists()
+  ], (req, res) => {
+    const err = validationResult(req);
 
-    pool.query(queryText, (err, rows) => {
-      const now = new Date();
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
+    }
 
-      if (err) {
-        console.error("---Error : /access/beforeSuite/buildno -> Search : " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
-      }
-      else{
-        res.status(200).json(rows[0]);
-      }
-    });
-  });
-
-  router.post("/beforeClass", (req, res) => {
-    //req에서 pj_id, Buildid가져와서 비교.
-    //class생성하기.-> classname packagename입력받을것.
-    //insert 수행 결과 새 classid 리턴
     const pjId = req.body.pj_id;
     const buildId = req.body.build_id;
     const cname = req.body.class_name;
@@ -88,30 +86,40 @@ module.exports = function(app, pool) {
 
       if (err) {
         console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
+        return res.status(500).json({"error": "Internal Server Error"});
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now);
-            res.redirect("/500");
+            return res.status(500).json({"error": "Internal Server Error"});
           } else {
             res.status(200).json({"class_id": innerrows.insertId});
           }
         });
       } else {
         console.error("---Error : /access/beforeClass -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "Wrong pj_id or build_id"});
+        res.status(500).json({"error": "There is no such pj_id, build_id"});
       }
     });
   });
 
-  router.post("/afterMethod", (req, res) => {
-    //req에서 buildno, pj_id, classid가져와서 비교
-    //method 생성하기 -> methodname, end_t, start_t, result입력받을것.
-    //pass:1 / fail:-1 / skip:0
-    //insert 수행결과 success, fail로 리턴.
+  // req에서 buildno, pj_id, classid가져와서 비교 -> method 생성하기 -> insert 수행결과 success, fail로 리턴.
+  router.post("/afterMethod", [
+    body("pj_id").exists(),
+    body("build_id").exists(),
+    body("class_id").exists(),
+    body("method_name").exists(),
+    body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
+    body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
+    body("result").exists().matches(/^-?[0-1]$/),
+  ], (req, res) => {
+    const err = validationResult(req);
+
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
+    }
 
     const pjId = req.body.pj_id;
     const buildId = req.body.build_id;
@@ -128,21 +136,21 @@ module.exports = function(app, pool) {
 
       if (err) {
         console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
+        return res.status(500).json({"error": "Internal Server Error"});
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now);
-            res.redirect("/500");
+            return res.status(500).json({"error": "Internal Server Error"});
           } else {
             res.status(200).json({"success": 1});
           }
         });
       } else {
         console.error("---Error : /access/afterMethod -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "Wrong pj_id or build_id or class_id"});
+        res.status(500).json({"error": "There is no such pj_id, build_id, class_id"});
       }
     });
   });

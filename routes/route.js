@@ -12,7 +12,7 @@ res.sendStatus()	응답 상태 코드를 설정한 후 해당 코드를 문자�
 module.exports = function(app, pool, maxLabel) {
   const express = require("express");
   const router = express.Router();
-  const { check, validationResult } = require("express-validator/check");
+  const { param, validationResult } = require("express-validator/check");
 
   router.get("/", (req, res) => {
     res.redirect("/index");
@@ -25,7 +25,7 @@ module.exports = function(app, pool, maxLabel) {
   });
 
   router.get("/team/:teamNo", [
-    check("teamNo").matches(/^[1-5]{1}$/)
+    param("teamNo").exists().matches(/^[1-5]{1}$/)
   ], (req, res) => {
     const err = validationResult(req);
 
@@ -43,14 +43,14 @@ module.exports = function(app, pool, maxLabel) {
   });
 
   router.get("/platform/:category", [
-    check("category").matches(/^(pcWeb|mobileWeb|mobileApp)$/)
+    param("category").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/)
   ], (req, res) => {
     const err = validationResult(req);
 
     if(!err.isEmpty()){
       return res.redirect("/404");
     }
-
+    
     let title_left = "PC Web 환경";
 
     if (req.params.category === "mobileApp") {
