@@ -1,89 +1,175 @@
-module.exports = function(app, connection){
-  var express = require("express");
-  var router = express.Router();
+module.exports = function(app, pool) {
+  const express = require("express");
+  const router = express.Router();
+  const { body, validationResult } = require("express-validator/check");
 
-  router.post("/beforeClass", function(req, res){
+  // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
+  router.post("/beforeSuite", [
+    body("pj_name").exists(),
+    body("pj_team").exists().matches(/^[NL]T[1-4]?$/),
+    body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
+    body("pj_author").exists()
+  ], (req, res) => {
+    const err = validationResult(req);
 
-  });
-  router.post("/afterClass", function(req, res){
-
-  });
-  router.post("/beforeSuite", function(req, res){
-
-  });
-  router.post("/afterSuite", function(req, res){
-
-  });
-  router.post("/beforeMethod", function(req, res){
-
-  });
-  router.post("/afterMethod", function(req, res){
-
-  });
-
-  /* req 형태
-    {
-      pj_name
-      pj_teamname
-      pj_platform
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
     }
-    res 형태
-    {
-      pj.id
-    }
-  */
-  //input valid 한지 확인 하는 로직 필요함!
-  //build가 없는 경우 insert수행, 있는 경우 buildid돌려주기.
-  // pj_name : 제한없음
-  // pj_teamname : [NL]T[1-4]?
-  // pj_platform : pc_web|mobile_web|mobile_app
-  router.post("/initProject", function(req, res){
-    console.log(req.body.pj_name+"///"+req.body.pj_teamname+"///"+req.body.pj_platform);
-    console.log(req.body);
-    res.status(200).send({"success" : 1});
-  });
 
-  router.post("/initProject2", function(req, res){
-    var queryText = "INSERT INTO `test_db`.`project` (`pj_id`, `pj_name`, `pj_teamname`, `pj_platform`) VALUES (DEFAULT, '"+req.body.pj_name+"', '"+req.body.pj_teamname+"', '"+req.body.pj_platform+"');";
-    var resultQueryText = "select pj_id from project where pj_name = '"+req.body.pj_name+"'order by pj_id DESC limit 1";
+    const name = req.body.pj_name;
+    const team = req.body.pj_team;
+    const plat = req.body.pj_platform;
+    const auth = req.body.pj_author;
+    const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
+    "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
+    const insertQueryText = "INSERT INTO `api_db`.`project` (`pj_name`, `pj_team`, `pj_platform`, `pj_author`) VALUES ('" + name + "', '" + team + "', '" + plat + "', '" + auth + "'); ";
 
-    connection.query(queryText, function(err, rows){
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /inputData");
-        console.log("The queryText : " + queryText);
-        res.status(500).send({"success" : 0});
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+      let pj_id = 0;
+
+      if (err) {
+        console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
+        return res.status(500).json({"error": "Internal Server Error"});
       }
-      else{
-        //result.data = row
-        connection.query(resultQueryText, function(err, innerrows){
-          res.status(200).json(innerrows);
+
+      if (rows[0].pj_id !== -1) {
+        pj_id = rows[0].pj_id;
+      } else {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
+            return res.status(500).json({"error": "Internal Server Error"});
+          }
+          pj_id = innerrows.insertId;
         });
       }
+
+      const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0))+1, " + pj_id + ");";
+
+      pool.query(insertQueryTextBuild, (err, rows) => {
+        if (err) {
+          console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
+          return res.status(500).json({"error": "Internal Server Error"});
+        } else {
+          res.status(200).json({
+            "pj_id": pj_id,
+            "build_id": rows.insertId
+          });
+        }
+      });
     });
   });
 
-  /* req 형태
-    {
-      pj_id
+  // req에서 pj_id, Buildid가져와서 비교. -> class생성 -> 새 classid 리턴
+  router.post("/beforeClass", [
+    body("pj_id").exists(),
+    body("build_id").exists(),
+    body("class_name").exists(),
+    body("package_name").exists()
+  ], (req, res) => {
+    const err = validationResult(req);
+
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
     }
-  */
 
-  router.delete("/deleteProject", function(req, res){
-    var queryText = "DELETE FROM project WHERE pj_id = "+req.pj_id+";";
+    const pjId = req.body.pj_id;
+    const buildId = req.body.build_id;
+    const cname = req.body.class_name;
+    const pname = req.body.package_name;
+    const queryText = "select ifnull((select build_id from buildno where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
+    const insertQueryText = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
 
-    connection.query(queryText, function(err, rows){
-      if(err){
-        var now = new Date();
-        console.log(now+" --- 500 Error occured in /deleteData");
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now);
+        return res.status(500).json({"error": "Internal Server Error"});
+      }
+
+      if (rows[0].pj_id !== -1) {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            return res.status(500).json({"error": "Internal Server Error"});
+          } else {
+            res.status(200).json({"class_id": innerrows.insertId});
+          }
+        });
+      } else {
+        console.error("---Error : /access/beforeClass -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "There is no such pj_id, build_id"});
+      }
+    });
+  });
+
+  // req에서 buildno, pj_id, classid가져와서 비교 -> method 생성하기 -> insert 수행결과 success, fail로 리턴.
+  router.post("/afterMethod", [
+    body("pj_id").exists(),
+    body("build_id").exists(),
+    body("class_id").exists(),
+    body("method_name").exists(),
+    body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
+    body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
+    body("result").exists().matches(/^-?[0-1]$/),
+  ], (req, res) => {
+    const err = validationResult(req);
+
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
+    }
+
+    const pjId = req.body.pj_id;
+    const buildId = req.body.build_id;
+    const classId = req.body.class_id;
+    const mname = req.body.method_name;
+    const start_t = req.body.start_t;
+    const end_t = req.body.end_t;
+    const testResult = req.body.result;
+    const queryText = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) build_id;";
+    const insertQueryText = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
+
+    pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now);
+        return res.status(500).json({"error": "Internal Server Error"});
+      }
+
+      if (rows[0].pj_id !== -1) {
+        pool.query(insertQueryText, (innererr, innerrows) => {
+          if (innererr) {
+            console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            return res.status(500).json({"error": "Internal Server Error"});
+          } else {
+            res.status(200).json({"success": 1});
+          }
+        });
+      } else {
+        console.error("---Error : /access/afterMethod -> Not Found : " + "\n---Error Time : " + now);
+        res.status(500).json({"error": "There is no such pj_id, build_id, class_id"});
+      }
+    });
+  });
+
+  /*router.delete("/deleteProject", (req, res) => {
+    const queryText = "DELETE FROM project WHERE pj_id = " + req.pj_id + ";";
+
+    connection.query(queryText, (err, rows) => {
+      if (err) {
+        const now = new Date();
+
+        console.log(now + " --- 500 Error occured in /deleteData");
         console.log("The queryText : " + queryText);
         res.redirect("/500");
-      }
-      else{
-        res.status(200).send({"success" : 1});
+      } else {
+        res.status(200).send({"success": 1});
       }
     });
-  });
+  });*/
 
   return router;
 };
