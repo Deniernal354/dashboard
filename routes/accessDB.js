@@ -113,7 +113,7 @@ module.exports = function(app, pool) {
     body("method_name").exists(),
     body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
     body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
-    body("result").exists().matches(/^-?[0-1]$/),
+    body("result").exists().matches(/^[1-3]$/),
   ], (req, res) => {
     const err = validationResult(req);
 
