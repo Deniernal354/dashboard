@@ -2,7 +2,6 @@ var gulp = require("gulp");
 var gulp_util = require("gulp-util");
 var uglify = require("gulp-uglify");
 var cleanCSS = require("gulp-clean-css");
-var imagemin = require("gulp-imagemin");
 var rename = require("gulp-rename");
 
 var DIR = {
@@ -12,17 +11,15 @@ var DIR = {
 
 var SRC = {
   JS : DIR.SRC + "/js/*.js",
-  CSS : DIR.SRC + "/css/*.css",
-  IMAGES : DIR.SRC + "/images/*"
+  CSS : DIR.SRC + "/css/*.css"
 };
 
 var DEST = {
   JS : DIR.DEST + "/js",
-  CSS : DIR.DEST + "/css",
-  IMAGES : DIR.DEST + "/images/"
+  CSS : DIR.DEST + "/css"
 };
 
-gulp.task("default", ["js", "css", "images"], function(){
+gulp.task("default", ["js", "css"], function(){
   return gulp_util.log("Gulp Default -- Other tasks are complete");
 });
 
@@ -40,14 +37,8 @@ gulp.task("css", function(){
     .pipe(gulp.dest(DEST.CSS));
 });
 
-gulp.task("images", function(){
-  return gulp.src(SRC.IMAGES)
-    .pipe(imagemin())
-    .pipe(gulp.dest(DEST.IMAGES));
-});
 /*
 gulp.task("watch", function(){
   gulp.watch(SRC.JS, ["js"]);
   gulp.watch(SRC.CSS, ["css"]);
-  gulp.watch(SRC.IMAGES, ["images"]);
 });*/
