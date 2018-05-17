@@ -2,6 +2,7 @@ module.exports = function(app, pool) {
   const express = require("express");
   const router = express.Router();
   const { body, validationResult } = require("express-validator/check");
+  const async = require("async");
 
   // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
   router.post("/beforeSuite", [
@@ -22,11 +23,26 @@ module.exports = function(app, pool) {
     const auth = req.body.pj_author;
     const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
     "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
-    const insertQueryText = "INSERT INTO `api_db`.`project` (`pj_name`, `pj_team`, `pj_platform`, `pj_author`) VALUES ('" + name + "', '" + team + "', '" + plat + "', '" + auth + "'); ";
+    const insertQueryText = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', default); ";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
-      let pj_id = 0;
+
+      function insertBuildno(pj_id){
+        const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0)+1), " + pj_id + ");";
+
+        pool.query(insertQueryTextBuild, (err, rows) => {
+          if (err) {
+            console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
+            return res.status(500).json({"error": "Internal Server Error"});
+          } else {
+            res.status(200).json({
+              "pj_id": pj_id,
+              "build_id": rows.insertId
+            });
+          }
+        });
+      }
 
       if (err) {
         console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
@@ -34,31 +50,17 @@ module.exports = function(app, pool) {
       }
 
       if (rows[0].pj_id !== -1) {
-        pj_id = rows[0].pj_id;
+        insertBuildno(rows[0].pj_id);
       } else {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
             return res.status(500).json({"error": "Internal Server Error"});
           }
-          pj_id = innerrows.insertId;
+          insertBuildno(innerrows.insertId);
         });
       }
-
-      const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0))+1, " + pj_id + ");";
-
-      pool.query(insertQueryTextBuild, (err, rows) => {
-        if (err) {
-          console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
-          return res.status(500).json({"error": "Internal Server Error"});
-        } else {
-          res.status(200).json({
-            "pj_id": pj_id,
-            "build_id": rows.insertId
-          });
-        }
-      });
-    });
+    }); // 1st pool.query end
   });
 
   // req에서 pj_id, Buildid가져와서 비교. -> class생성 -> 새 classid 리턴
@@ -113,7 +115,7 @@ module.exports = function(app, pool) {
     body("method_name").exists(),
     body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
     body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
-    body("result").exists().matches(/^-?[0-1]$/),
+    body("result").exists().matches(/^[1-3]$/),
   ], (req, res) => {
     const err = validationResult(req);
 
