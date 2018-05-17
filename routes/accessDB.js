@@ -26,7 +26,22 @@ module.exports = function(app, pool) {
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
-      let pj_id = 0;
+
+      function insertBuildno(pj_id){
+        const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0)+1), " + pj_id + ");";
+
+        pool.query(insertQueryTextBuild, (err, rows) => {
+          if (err) {
+            console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
+            return res.status(500).json({"error": "Internal Server Error"});
+          } else {
+            res.status(200).json({
+              "pj_id": pj_id,
+              "build_id": rows.insertId
+            });
+          }
+        });
+      }
 
       if (err) {
         console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
@@ -34,31 +49,17 @@ module.exports = function(app, pool) {
       }
 
       if (rows[0].pj_id !== -1) {
-        pj_id = rows[0].pj_id;
+        insertBuildno(rows[0].pj_id);
       } else {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
             return res.status(500).json({"error": "Internal Server Error"});
           }
-          pj_id = innerrows.insertId;
+          insertBuildno(innerrows.insertId);
         });
       }
-
-      const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0)+1), " + pj_id + ");";
-
-      pool.query(insertQueryTextBuild, (err, rows) => {
-        if (err) {
-          console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
-          return res.status(500).json({"error": "Internal Server Error"});
-        } else {
-          res.status(200).json({
-            "pj_id": pj_id,
-            "build_id": rows.insertId
-          });
-        }
-      });
-    });
+    }); // 1st pool.query end
   });
 
   // req에서 pj_id, Buildid가져와서 비교. -> class생성 -> 새 classid 리턴
