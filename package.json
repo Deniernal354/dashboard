@@ -8,19 +8,20 @@
     "stop": "forever stop server.js"
   },
   "keywords": [],
-  "author": "nt11253",
+  "author": "Gyeonghyeon Yoo",
+  "repository": {},
+  "license": "MIT",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
-    "body-parser": "^1.16.1",
+    "body-parser": "^1.18.3",
     "bootstrap": "^3.3.2",
     "chart.js": "^2.7.2",
     "ejs": "^2.5.6",
-    "express": "^4.15.4",
-    "express-session": "^1.15.5",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "express-validator": "^5.0.3",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.0",
     "gulp-clean-css": "^3.9.0",
-    "gulp-imagemin": "^3.3.0",
     "gulp-uglify": "^3.0.0",
     "gulp-util": "^3.0.8",
     "jquery": "^3.3.1",
@@ -34,9 +35,11 @@
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
-    "eslint": "^4.15.0",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-naver": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.8.2",
     "gulp-rename": "^1.2.2"
   }
 }

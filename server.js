@@ -46,7 +46,7 @@ app.use(passport.session());
 
 // router
 const maxLabel = (() => {
-  let realMaxLabel = 9;
+  let realMaxLabel = 5;
 
   return {
     getMaxLabel: () => realMaxLabel,
