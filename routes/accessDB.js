@@ -2,7 +2,6 @@ module.exports = function(app, pool) {
   const express = require("express");
   const router = express.Router();
   const { body, validationResult } = require("express-validator/check");
-  const async = require("async");
 
   // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
   router.post("/beforeSuite", [

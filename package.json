@@ -8,10 +8,10 @@
     "stop": "forever stop server.js"
   },
   "keywords": [],
-  "author": "nt11253",
+  "author": "Gyeonghyeon Yoo",
+  "repository": {},
   "license": "MIT",
   "dependencies": {
-    "async": "^2.6.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
     "bootstrap": "^3.3.2",
@@ -38,6 +38,8 @@
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-naver": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.8.2",
     "gulp-rename": "^1.2.2"
   }
 }

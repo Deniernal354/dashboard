@@ -19,23 +19,27 @@ var DEST = {
   CSS : DIR.DEST + "/css"
 };
 
-gulp.task("default", ["js", "css"], function(){
-  return gulp_util.log("Gulp Default -- Other tasks are complete");
-});
-
-gulp.task("js", function(){
+function minJS() {
   return gulp.src(SRC.JS)
     .pipe(uglify())
     .pipe(rename({extname : ".min.js"}))
     .pipe(gulp.dest(DEST.JS));
-});
+}
 
-gulp.task("css", function(){
+function minCSS() {
   return gulp.src(SRC.CSS)
     .pipe(cleanCSS({compatibility : "ie8"}))
     .pipe(rename({extname : ".min.css"}))
     .pipe(gulp.dest(DEST.CSS));
-});
+}
+
+exports.minJS = minJS;
+exports.minCSS = minCSS;
+
+gulp.task("default", gulp.series(minJS, minCSS, (done) => {
+  gulp_util.log("Gulp Default -- Other tasks are complete");
+  done();
+}));
 
 /*
 gulp.task("watch", function(){

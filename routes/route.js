@@ -1,7 +1,6 @@
 /*
 get/post 터널링 조심(get은 get만, post는 post만)
 http://myweb/users?method=update&id=terry
-
 //////////////////////res Method/////////////////////////////
 res.download()	다운로드될 파일을 전송한다.
 res.redirect()	요청 경로를 재지정한다.
@@ -64,7 +63,7 @@ module.exports = function(app, pool, maxLabel) {
   router.get("/getChartData/:page/:detail?", (req, res) => {
     //let queryText = "select s.pj_id pj_id, t.buildno buildno, sum(t.pass) pass, sum(t.fail) fail, sum(t.skip) skip, min(t.start_t) start_t, sec_to_time(sum(t.duration)) duration from suite s inner join (select pj_id, su_id, package_id, buildno, sum(pass) pass, sum(fail) fail, sum(skip) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from testcase group by pj_id, package_id, buildno, su_id) t on s.su_id=t.su_id inner join 	(select pj_id, package_name, package_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM package inner JOIN (SELECT @prev := NULL, @rn := 0) AS vars order by pj_id, package_id DESC, buildno DESC ) p on p.package_id= t.package_id inner join project pj on pj.pj_id = t.pj_id where p.rn<=" + maxLabel.getMaxLabel();
 
-    let queryText = "select c.pj_id pj_id, m.build_id build_id, b.buildno buildno, sum(m.pass) pass, sum(m.fail) fail, sum(m.skip) skip, min(m.start_t) start_t, sec_to_time(sum(m.duration)) duration from class c inner join (select pj_id, build_id, class_id, method_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip,	Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by pj_id, build_id, class_id, method_id) m on c.class_id = m.class_id inner join(select pj_id, build_id, buildno,         @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn,         @prev := pj_id FROM buildno inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b on b.build_id = m.build_id inner join project pj on pj.pj_id = m.pj_id where b.rn<=" + maxLabel.getMaxLabel();
+    let queryText = "select b.pj_id, b.build_id, b.buildno, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from (select pj_id, build_id, buildno, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM buildno inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b left join ( select pj_id, build_id, class_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail,  count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t,  unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by pj_id, build_id, class_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id where b.rn <=" + maxLabel.getMaxLabel();
     let queryTextLabel = "";
     const result = {};
 
