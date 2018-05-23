@@ -334,7 +334,11 @@ function processdata(responseText) {
 
     if (!value.start_t) { value.start_t = "0"; }
     if (labels[idx].length < responseText.maxLabel) {
-      labels[idx].push(value.start_t.slice(5, 10));
+      if (value.start_t === "0"){
+        labels[idx].push("Failed");
+      } else {
+        labels[idx].push(value.start_t.slice(5, 10));
+      }
     }
     chartData[idx][0].push(value.pass);
     chartData[idx][1].push(value.fail);
@@ -342,7 +346,11 @@ function processdata(responseText) {
     if (buildTime[idx][0]) {
       if (buildTime[idx][0] < value.buildno * 1) {
         buildTime[idx][0] = value.buildno;
-        buildTime[idx][1] = value.start_t;
+        if (value.start_t === "0") {
+          buildTime[idx][1] = "Build Failed";
+        } else {
+          buildTime[idx][1] = value.start_t;
+        }
         duration[idx] = value.duration.slice(0, 2) + "h " + value.duration.slice(3, 5) + "m " + value.duration.slice(6, 8) + "s";
       }
     } else {
@@ -695,8 +703,6 @@ function init_charts() {
     var chartloop = parsedResult.getCnt();
     var doc = document;
     var divFrag = document.createDocumentFragment();
-
-    //console.log(JSON.parse(getChartData.responseText));
 
     for (var i = 0; i < chartloop; i++) {
       var div = doc.createElement("div");
