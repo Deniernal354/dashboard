@@ -297,7 +297,7 @@ function selectDataApi(category) {
   } else if (category === "knob") {
     apiResult = "/admin/getKnobData/";
   } else if (category.substring(0, 7) === "custom_") {
-    var customCategory = ["project/", "package/", "suite/", "testcase/"];
+    var customCategory = ["project/", "buildno/", "class/", "testcase/"];
 
     apiResult = "/getCustomData/" + customCategory[category.substring(7, 8) * 1];
     if (category.substring(8) !== "") {
@@ -422,6 +422,41 @@ function processdata(responseText) {
     }
   };
 }// processdata end
+
+/* select2 Custom function */
+function customSubmitBtnListener() {
+  if ($("#select2_multiple0").val() === "Project 명") { return; }
+
+  var divFrag = document.createDocumentFragment();
+  var doc = document;
+  var panel = doc.createElement("div");
+  var title = doc.createElement("div");
+  var h2 = doc.createElement("h2");
+  var clearfix = doc.createElement("div");
+  var content = doc.createElement("div");
+  var chartDiv = doc.createElement("div");
+
+  panel.setAttribute("class", "x_panel");
+  title.setAttribute("class", "x_title");
+  h2.innerText = "결과 Chart";
+  clearfix.setAttribute("class", "clearfix");
+  content.setAttribute("class", "x_content");
+  chartDiv.setAttribute("id", "chartDiv");
+
+  panel.appendChild(title);
+  title.appendChild(h2);
+  title.appendChild(clearfix);
+  panel.appendChild(content);
+  content.appendChild(chartDiv);
+  chartDiv.innerText = "기능 준비중입니다";
+  divFrag.appendChild(panel);
+  document.getElementById("customSortDiv").appendChild(divFrag);
+
+  // init_charts();
+
+  document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
+}
+/* select2 Custom function END*/
 // My functions end
 
 /* KNOB */
@@ -533,45 +568,43 @@ function init_select2() {
     });
   }
 
-  // Get initial Data and Draw it
+  var result = [[], [], [], []];
   var doc = document;
   var divFrag = document.createDocumentFragment();
   var tmp = doc.createElement("option");
   tmp.innerText = "Project 명";
   tmp.setAttribute("display", "none");
   divFrag.appendChild(tmp);
-  var result = [[], [], [], []];
 
-  var selectCustomProject = new XMLHttpRequest();
+  for (var l = 1; l < 7; l++) {
+    var teamLabel = doc.createElement("optgroup");
 
-  selectCustomProject.onreadystatechange = function() {
-    if (selectCustomProject.status === 404) {
+    if (l >= 1 && l <= 4) {
+      teamLabel.id = "NT" + l;
+      teamLabel.label = "네이버테스트" + l + "팀";
+    } else if(l == 5) {
+      teamLabel.id = "LT";
+      teamLabel.label = "라인테스트팀";
+    } else {
+      teamLabel.id = "NTS";
+      teamLabel.label = "이외";
+    }
+    divFrag.appendChild(teamLabel);
+  }
+
+  var customInit = new XMLHttpRequest();
+
+  customInit.onreadystatechange = function() {
+    if (customInit.status === 404) {
       window.location = "/404";
-    } else if (selectCustomProject.status === 500) {
+    } else if (customInit.status === 500) {
       window.location = "/500";
     }
   };
-
-  selectCustomProject.open("GET", selectDataApi("custom_0"), true);
-  selectCustomProject.send();
-  selectCustomProject.addEventListener("load", function() {
-    result[0] = JSON.parse(selectCustomProject.responseText);
-
-    for (var l = 1; l < 7; l++) {
-      var teamLabel = doc.createElement("optgroup");
-
-      if (l >= 1 && l <= 4) {
-        teamLabel.id = "NT" + l;
-        teamLabel.label = "네이버테스트" + l + "팀";
-      } else if(l == 5) {
-        teamLabel.id = "LT";
-        teamLabel.label = "라인테스트팀";
-      } else {
-        teamLabel.id = "NTS";
-        teamLabel.label = "이외";
-      }
-      divFrag.appendChild(teamLabel);
-    }
+  customInit.open("GET", selectDataApi("custom_0"), true);
+  customInit.send();
+  customInit.addEventListener("load", function() {
+    result[0] = JSON.parse(customInit.responseText);
 
     result[0].forEach(function(value) {
       var optionTmp = doc.createElement("option");
@@ -581,12 +614,12 @@ function init_select2() {
     });
     document.getElementById("select2_multiple0").appendChild(divFrag);
   });
-  // End initial Data process
 
   function eachSelect2GetData(idx) {
     return function() {
       console.log(result);
       var previousValue = $("#select2_multiple" + idx).val();
+
       if (previousValue === null || previousValue === "Project 명") {
         for (var q = 3; q > idx; q--) {
           $("#select2_multiple" + (q)).attr("disabled", true);
@@ -599,13 +632,13 @@ function init_select2() {
           })[0].pj_id;
         } else if (idx === 1) {
           preValId = result[idx].filter(function(item) {
-            return item.buildno === 1 * previousValue[0].substring(previousValue[0].indexOf("(") + 4, previousValue[0].indexOf(")"));
-          })[0].package_id;
-          console.log(preValId);
+            return item.buildno === 1 * previousValue[0].substring(previousValue[0].indexOf("(") + 10, previousValue[0].indexOf(")"));
+          })[0].build_id;
         } else {
           preValId = result[idx].filter(function(item) {
-            return item.su_name === previousValue[0];
-          })[0].su_id;
+            return item.class_name === previousValue[0].substring(previousValue[0].indexOf("/") + 2);
+          })[0].class_id;
+          console.log(preValId);
         }
 
         var selectCustomData = new XMLHttpRequest();
@@ -613,6 +646,7 @@ function init_select2() {
         selectCustomData.send();
         selectCustomData.addEventListener("load", function() {
           var divFragMini = document.createDocumentFragment();
+
           // Delete previous select info
           result[idx + 1] = [];
           $("#select2_multiple" + (idx + 1)).empty();
@@ -621,12 +655,12 @@ function init_select2() {
           result[idx + 1] = JSON.parse(selectCustomData.responseText);
           result[idx + 1].forEach(function(value) {
             var optionTmp = doc.createElement("option");
-            if (value.package_name) {
-              optionTmp.innerText = "(No." + value.buildno + ") " + value.package_name;
-            } else if (value.su_name) {
-              optionTmp.innerText = value.su_name;
-            } else if (value.case_name) {
-              optionTmp.innerText = value.case_name;
+            if (value.buildno) {
+              optionTmp.innerText = "(Build No." + value.buildno + ") ";
+            } else if (value.class_name) {
+              optionTmp.innerText = value.package_name + " / " + value.class_name;
+            } else if (value.method_name) {
+              optionTmp.innerText = value.method_name;
             }
 
             divFragMini.append(optionTmp);
@@ -643,37 +677,6 @@ function init_select2() {
     $("#select2_multiple" + j).on("change", eachSelect2GetData(j));
   }
 
-  function customSubmitBtnListener() {
-    if ($("#select2_multiple0").val() === "Project 명") { return; }
-
-    divFrag = document.createDocumentFragment();
-    doc = document;
-    var panel = doc.createElement("div");
-    var title = doc.createElement("div");
-    var h2 = doc.createElement("h2");
-    var clearfix = doc.createElement("div");
-    var content = doc.createElement("div");
-    var chartDiv = doc.createElement("div");
-
-    panel.setAttribute("class", "x_panel");
-    title.setAttribute("class", "x_title");
-    h2.innerText = "결과 Chart";
-    clearfix.setAttribute("class", "clearfix");
-    content.setAttribute("class", "x_content");
-    chartDiv.setAttribute("id", "chartDiv");
-
-    panel.appendChild(title);
-    title.appendChild(h2);
-    title.appendChild(clearfix);
-    panel.appendChild(content);
-    content.appendChild(chartDiv);
-    divFrag.appendChild(panel);
-    document.getElementById("customSortDiv").appendChild(divFrag);
-
-    // init_charts();
-
-    document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
-  }
   // Add Event Listener to customSubmitBtn
   document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener);
 }
