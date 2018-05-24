@@ -119,12 +119,12 @@ module.exports = function(app, pool, maxLabel) {
 
     if (req.params.category === "project") {
       queryText = "select pj_id, pj_name, pj_team from project";
-    } else if (req.params.category === "package") {
-      queryText = "select package_id, package_name, buildno from package where pj_id = " + req.params.previousValue + ";";
-    } else if (req.params.category === "suite") {
-      queryText = "select su_id, su_name from suite where package_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "buildno") {
+      queryText = "select build_id, buildno from buildno where pj_id = " + req.params.previousValue + ";";
+    } else if (req.params.category === "class") {
+      queryText = "select class_id, package_name, class_name from class where build_id = " + req.params.previousValue + ";";
     } else if (req.params.category === "testcase") {
-      queryText = "select case_id, case_name from testcase where su_id = " + req.params.previousValue + ";";
+      queryText = "select method_id, method_name from method where class_id = " + req.params.previousValue + ";";
     } else {
       queryText = "";
     }
