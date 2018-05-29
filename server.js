@@ -7,12 +7,12 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
 // DB
+const dbConfig = require("./config/dbConfig.json");
 let pool = db.createPool({
-  host: "localhost",
-  user: "root",
-  password: "eotlqhem",
-  //database: "test_db",
-  database: "api_db",
+  host: dbConfig.hostconfig,
+  user: dbConfig.user,
+  password: dbConfig.password,
+  database: dbConfig.database,
   multipleStatements : true
 });
 
@@ -46,7 +46,7 @@ app.use(passport.session());
 
 // router
 const maxLabel = (() => {
-  let realMaxLabel = 9;
+  let realMaxLabel = 5;
 
   return {
     getMaxLabel: () => realMaxLabel,
