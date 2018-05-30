@@ -199,10 +199,6 @@ if (typeof NProgress !== "undefined") {
   $(document).ready(function() {
     NProgress.start();
   });
-
-  $(window).load(function() {
-    NProgress.done();
-  });
 }
 
 /* ION RANGE SLIDER */
@@ -617,7 +613,7 @@ function init_select2() {
 
   function eachSelect2GetData(idx) {
     return function() {
-      console.log(result);
+      //console.log(result);
       var previousValue = $("#select2_multiple" + idx).val();
 
       if (previousValue === null || previousValue === "Project 명") {
@@ -638,7 +634,6 @@ function init_select2() {
           preValId = result[idx].filter(function(item) {
             return item.class_name === previousValue[0].substring(previousValue[0].indexOf("/") + 2);
           })[0].class_id;
-          console.log(preValId);
         }
 
         var selectCustomData = new XMLHttpRequest();
@@ -809,3 +804,10 @@ $(document).ready(function() {
 
   // init_IonRangeSlider();
 });
+
+// NProgress
+if (typeof NProgress !== "undefined") {
+  $(document).ready(function() {
+    NProgress.done();
+  });
+}
