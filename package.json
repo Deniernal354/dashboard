@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "forever start --minUptime 3000 --spinSleepTime 1000 -w -o ../out.log -e ../err.log server.js",
+    "start": "forever start --minUptime 3000 --spinSleepTime 1000 -o ../out.log -e ../err.log server.js",
     "stop": "forever stop server.js"
   },
   "keywords": [],

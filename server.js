@@ -60,11 +60,11 @@ app.use("/", require("./routes/route.js")(app, pool, maxLabel));
 app.use("/admin", require("./routes/admin.js")(app, passport, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(app, pool));
 
-app.use((req, res) => {
+/*app.use((req, res) => {
   res.status(404).render("page_404");
-});
+});*/
 
-const server = app.listen(8000, () => {
+const server = app.listen(80, () => {
   const now = new Date();
 
   console.log("Server Start --- portNo : " + server.address().port + " / Time : " + now);

@@ -287,9 +287,10 @@ function urlByBrowser() {
 function selectDataApi(category) {
   var apiResult = "";
   var url = urlByBrowser();
+  url = url.substring(url.indexOf(":")+3);
 
   if (category === "chart") {
-    apiResult = "/getChartData/" + url.substring(url.lastIndexOf(":") + 6);
+    apiResult = "/getChartData" + url.substring(url.indexOf("/"));
   } else if (category === "knob") {
     apiResult = "/admin/getKnobData/";
   } else if (category.substring(0, 7) === "custom_") {
