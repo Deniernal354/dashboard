@@ -17,9 +17,6 @@ let pool = db.createPool({
 });
 
 const app = express();
-const admin = require("nodeadmin");
-
-app.use(admin(app));
 
 app.set("views", path.join(__dirname, "/views"));
 app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
