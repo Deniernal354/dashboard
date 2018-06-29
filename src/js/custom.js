@@ -356,43 +356,46 @@ function processdata(responseText) {
     }
   });
 
+  var pass = "rgba(102, 194, 255,";
+  var fail = "rgba(255, 115, 115,";
+  var skip = "rgba(130, 130, 130,";
   for (var h = 0; h < cnt; h++) {
     innerData[h] = {
       labels: labels[h],
       datasets: [
         {
-          label: "Pass",
-          backgroundColor: "rgba(52, 152, 219, 0.31)",
-          borderColor: "rgba(52, 152, 219, 0.7)",
-          pointBorderColor: "rgba(52, 152, 219, 0.7)",
-          pointBackgroundColor: "rgba(52, 152, 219, 0.7)",
-          pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: "rgba(52, 152, 219, 1)",
-          pointBorderWidth: 2,
-          pointHitRadius: 50,
-          data: chartData[h][0]
-        }, {
           label: "Fail",
-          backgroundColor: "rgba(233, 54, 79, 0.3)",
-          borderColor: "rgba(233, 54, 79, 0.70)",
-          pointBorderColor: "rgba(233, 54, 79, 0.70)",
-          pointBackgroundColor: "rgba(233, 54, 79, 0.70)",
+          backgroundColor: fail+" 0.7)",
+          borderColor: fail+" 0.8)",
+          pointBorderColor: fail+" 0.8)",
+          pointBackgroundColor: fail+" 0.8)",
           pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: "rgba(233, 54, 79, 1)",
+          pointHoverBorderColor: fail+" 1)",
           pointBorderWidth: 2,
           pointHitRadius: 50,
           data: chartData[h][1]
         }, {
           label: "Skip",
-          backgroundColor: "rgba(155, 89, 182, 0.3)",
-          borderColor: "rgba(155, 89, 182, 0.70)",
-          pointBorderColor: "rgba(155, 89, 182, 0.70)",
-          pointBackgroundColor: "rgba(155, 89, 182, 0.70)",
+          backgroundColor: skip+" 0.7)",
+          borderColor: skip+" 0.8)",
+          pointBorderColor: skip+" 0.8)",
+          pointBackgroundColor: skip+" 0.8)",
           pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: "rgba(155, 89, 182, 1)",
+          pointHoverBorderColor: skip+" 1)",
           pointBorderWidth: 2,
           pointHitRadius: 50,
           data: chartData[h][2]
+        }, {
+          label: "Pass",
+          backgroundColor: pass+" 0.7)",
+          borderColor: pass+" 0.8)",
+          pointBorderColor: pass+" 0.8)",
+          pointBackgroundColor: pass+" 0.8)",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: pass+" 1)",
+          pointBorderWidth: 2,
+          pointHitRadius: 50,
+          data: chartData[h][0]
         }
       ]
     };
@@ -426,33 +429,79 @@ function customSubmitBtnListener() {
 
   var divFrag = document.createDocumentFragment();
   var doc = document;
-  var panel = doc.createElement("div");
-  var title = doc.createElement("div");
-  var h2 = doc.createElement("h2");
-  var clearfix = doc.createElement("div");
-  var content = doc.createElement("div");
-  var chartDiv = doc.createElement("div");
+  var deleteData = new XMLHttpRequest();
+  var deleteDataTarget = {
+    "unit": 0,
+    "detail": []
+  };
+  var chosenUnit = [];
 
-  panel.setAttribute("class", "x_panel");
-  title.setAttribute("class", "x_title");
-  h2.innerText = "결과 Chart";
-  clearfix.setAttribute("class", "clearfix");
-  content.setAttribute("class", "x_content");
-  chartDiv.setAttribute("id", "chartDiv");
+  for (var i = 0; i < 4; i++) {
+    chosenUnit[i] = $("#select2_multiple"+i).val();
+    if (chosenUnit[i] && chosenUnit[i] != []) {
+      deleteDataTarget.unit = i;
+      deleteDataTarget.detail.push(chosenUnit[i]);
+    }
+  }
 
-  panel.appendChild(title);
-  title.appendChild(h2);
-  title.appendChild(clearfix);
-  panel.appendChild(content);
-  content.appendChild(chartDiv);
-  chartDiv.innerText = "기능 준비중입니다";
-  divFrag.appendChild(panel);
-  document.getElementById("customSortDiv").appendChild(divFrag);
 
-  // init_charts();
 
-  document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
+/*  if (chosenUnit[3] && chosenUnit[3] != []) {
+    deleteDataTarget.unit = "method";
+    deleteDataTarget.detail = chosenUnit[3];
+  } else if(chosenUnit[2]) {
+    deleteDataTarget.unit = "class";
+    deleteDataTarget.detail = chosenUnit[2].substring(chosenUnit[2].indexOf("/")+2);
+  } else if(chosenUnit[1]) {
+    deleteDataTarget.unit = "buildno";
+    deleteDataTarget.detail = chosenUnit[1].substring(chosenUnit[1].indexOf("No."), chosenUnit[1].indexOf(")"));
+  } else if(chosenUnit[0]) {
+    deleteDataTarget.unit = "project";
+    deleteDataTarget.detail = chosenUnit[0];
+  }*/
+
+  console.log(deleteDataTarget);
+
+  /*  deleteData.open("POST", "/access/deleteData", true);
+  deleteData.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  deleteData.onreadystatechange = function() {
+    if (deleteData.status === 404) {
+      window.location = "/404";
+    } else if (deleteData.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  deleteData.send(deleteDataTarget);
+  deleteData.addEventListener("load", function() {
+    var panel = doc.createElement("div");
+    var title = doc.createElement("div");
+    var h2 = doc.createElement("h2");
+    var clearfix = doc.createElement("div");
+    var content = doc.createElement("div");
+    var resultDiv = doc.createElement("div");
+
+    panel.setAttribute("class", "x_panel");
+    title.setAttribute("class", "x_title");
+    h2.innerText = "결과";
+    h2.setAttribute("text-align", "center");
+    clearfix.setAttribute("class", "clearfix");
+    content.setAttribute("class", "x_content");
+    resultDiv.setAttribute("id", "resultDiv");
+
+    panel.appendChild(title);
+    title.appendChild(h2);
+    title.appendChild(clearfix);
+    panel.appendChild(content);
+    content.appendChild(resultDiv);
+    resultDiv.innerText = deleteData.responseText;
+    divFrag.appendChild(panel);
+    document.getElementById("customSortDiv").appendChild(divFrag);
+  });*/
+
+  //document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
 }
+
 /* select2 Custom function END*/
 // My functions end
 
@@ -466,8 +515,7 @@ function init_knob() {
   var doc = document;
 
   doc.getElementById("labelSubmit").addEventListener("click", function() {
-    doc.getElementById("newMaxLabel").value =
-    doc.getElementById("newMaxLabel_text").innerText;
+    doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
   });
 
   knobData.open("GET", selectDataApi("knob"), true);
@@ -485,7 +533,6 @@ function init_knob() {
       "displayPrevious": true,
       "inputColor": "#34495E",
       "fgColor": "#34495E",
-
       change: function(value) {
         // console.log("change : " + value);
       },
@@ -767,19 +814,27 @@ function init_charts() {
           tooltips: {
             mode: "label",
             intersect: true
+          },
+          scales: {
+            yAxes: [{
+              stacked: true
+            }]
+          },
+          elements: {
+            line: {
+              tension: 0
+            },
+            point: {
+              radius: 0
+            }
           }
-          /* animation: {
-          duration: 0
-        },
-        hover: {
-        animationDuration: 0
-      },
-      responsiveAnimationDuration: 0,
-      elements: {
-      line: {
-      tension: 0
-    }
-  }Improve Chart performance options */
+          /*animation: {
+            duration: 0
+          },
+          hover: {
+            animationDuration: 0
+          },
+          responsiveAnimationDuration: 0*/
         }
       });
     }// add chart for loop end
