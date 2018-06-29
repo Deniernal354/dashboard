@@ -366,35 +366,29 @@ function processdata(responseText) {
         {
           label: "Fail",
           backgroundColor: fail+" 0.7)",
-          borderColor: fail+" 0.8)",
-          pointBorderColor: fail+" 0.8)",
-          pointBackgroundColor: fail+" 0.8)",
+          borderColor: fail+" 0.7)",
+          pointBorderColor: fail+" 0.7)",
+          pointBackgroundColor: fail+" 0.7)",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: fail+" 1)",
-          pointBorderWidth: 2,
-          pointHitRadius: 50,
           data: chartData[h][1]
         }, {
           label: "Skip",
           backgroundColor: skip+" 0.7)",
-          borderColor: skip+" 0.8)",
-          pointBorderColor: skip+" 0.8)",
-          pointBackgroundColor: skip+" 0.8)",
+          borderColor: skip+" 0.7)",
+          pointBorderColor: skip+" 0.7)",
+          pointBackgroundColor: skip+" 0.7)",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: skip+" 1)",
-          pointBorderWidth: 2,
-          pointHitRadius: 50,
           data: chartData[h][2]
         }, {
           label: "Pass",
           backgroundColor: pass+" 0.7)",
-          borderColor: pass+" 0.8)",
-          pointBorderColor: pass+" 0.8)",
-          pointBackgroundColor: pass+" 0.8)",
+          borderColor: pass+" 0.7)",
+          pointBorderColor: pass+" 0.7)",
+          pointBackgroundColor: pass+" 0.7)",
           pointHoverBackgroundColor: "#fff",
           pointHoverBorderColor: pass+" 1)",
-          pointBorderWidth: 2,
-          pointHitRadius: 50,
           data: chartData[h][0]
         }
       ]
@@ -528,7 +522,7 @@ function init_knob() {
 
     $(".knob").knob({
       "min": 1,
-      "max": 50,
+      "max": 20,
       "thickness": 0.2,
       "displayPrevious": true,
       "inputColor": "#34495E",
@@ -813,7 +807,7 @@ function init_charts() {
         options: {
           tooltips: {
             mode: "label",
-            intersect: true
+            intersect: false
           },
           scales: {
             yAxes: [{
@@ -822,10 +816,13 @@ function init_charts() {
           },
           elements: {
             line: {
-              tension: 0
+              tension: 0,
+              borderWidth: 1
             },
             point: {
-              radius: 0
+              radius: 0,
+              borderWidth: 2,
+              hitRadius: 20,
             }
           }
           /*animation: {
