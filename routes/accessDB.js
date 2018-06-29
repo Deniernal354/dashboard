@@ -156,21 +156,30 @@ module.exports = function(app, pool) {
     });
   });
 
-  /*router.delete("/deleteProject", (req, res) => {
-    const queryText = "DELETE FROM project WHERE pj_id = " + req.pj_id + ";";
+  router.post("/deleteData", [
+    body("deleteDataTarget").exists()
+  ], (req, res) => {
+    const err = validationResult(req);
 
-    connection.query(queryText, (err, rows) => {
+    if(!err.isEmpty()){
+      return res.status(400).json({"error": "Bad Request"});
+    }
+
+    const queryText = req.body.deleteDataTarget;
+    console.log(queryText);
+
+    /*pool.query(queryText, (err, rows) => {
+      const now = new Date();
+
       if (err) {
-        const now = new Date();
-
-        console.log(now + " --- 500 Error occured in /deleteData");
-        console.log("The queryText : " + queryText);
-        res.redirect("/500");
+        console.error("---Error : /access/deleteData : " + err.code + "\n---Error Time : " + now);
+        return res.status(500).json({"error": "Internal Server Error"});
       } else {
-        res.status(200).send({"success": 1});
+        res.status(200).send({"success": "올바르게 삭제되었습니다."});
       }
-    });
-  });*/
+    });*/
+    res.status(200).send("올바르게 삭제되었습니다.");
+  });
 
   return router;
 };
