@@ -356,9 +356,7 @@ function processdata(responseText) {
     }
   });
 
-  var pass = "rgba(102, 194, 255,";
-  var fail = "rgba(255, 115, 115,";
-  var skip = "rgba(130, 130, 130,";
+  var pass = "rgba(102, 194, 255,";  var fail = "rgba(255, 115, 115,";  var skip = "rgba(130, 130, 130,";
   for (var h = 0; h < cnt; h++) {
     innerData[h] = {
       labels: labels[h],
@@ -438,9 +436,7 @@ function customSubmitBtnListener() {
     }
   }
 
-
-
-/*  if (chosenUnit[3] && chosenUnit[3] != []) {
+  /*  if (chosenUnit[3] && chosenUnit[3] != []) {
     deleteDataTarget.unit = "method";
     deleteDataTarget.detail = chosenUnit[3];
   } else if(chosenUnit[2]) {
@@ -805,6 +801,9 @@ function init_charts() {
         type: "line",
         data: parsedResult.getInnerData()[i],
         options: {
+          hover: {
+            intersect: false
+          },
           tooltips: {
             mode: "label",
             intersect: false
@@ -822,7 +821,7 @@ function init_charts() {
             point: {
               radius: 0,
               borderWidth: 2,
-              hitRadius: 20,
+              hitRadius: 10,
             }
           }
           /*animation: {
