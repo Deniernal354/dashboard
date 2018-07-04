@@ -306,13 +306,16 @@ function selectDataApi(category) {
 
 function processdata(responseText) {
   var labels = []; var chartData = []; var innerData = [];
-  var pjIndex = []; var pjLabel = []; var pjlink = [];
-  var buildTime = []; var duration = []; var cnt;
+  var pjIndex = [];
 
-  cnt = responseText.totalChartCount;
+  // UI info - pj_name / pj_id / pj_link / build_id
+  var pjLabel = [];
+  var pjlink = [];  var buildTime = []; var duration = [];
+
+  var totalChartCount = responseText.totalChartCount;
   pjLabel = responseText.pj_label.slice();
 
-  for (var k = 0; k < cnt; k++) {
+  for (var k = 0; k < totalChartCount; k++) {
     labels[k] = [];
     chartData[k] = [];
     chartData[k][0] = [];
@@ -324,11 +327,13 @@ function processdata(responseText) {
     buildTime[k][0] = [];// buildno
     buildTime[k][1] = [];// start_t
     duration[k] = [];// duration
+    pjLabel[k].build_id = [];
   }
 
   responseText.data.forEach(function(value) {
     var idx = pjIndex.indexOf(value.pj_id);
 
+    pjLabel[idx].build_id.push(value.build_id);
     if (!value.start_t) { value.start_t = "0"; }
     if (labels[idx].length < responseText.maxLabel) {
       if (value.start_t === "0"){
@@ -357,7 +362,7 @@ function processdata(responseText) {
   });
 
   var pass = "rgba(102, 194, 255,";  var fail = "rgba(255, 115, 115,";  var skip = "rgba(130, 130, 130,";
-  for (var h = 0; h < cnt; h++) {
+  for (var h = 0; h < totalChartCount; h++) {
     innerData[h] = {
       labels: labels[h],
       datasets: [
@@ -397,20 +402,20 @@ function processdata(responseText) {
     getInnerData: function() {
       return innerData;
     },
+    getPjLabel: function() {
+      return pjLabel;
+    },
     getBuildTime: function() {
       return buildTime;
     },
     getDuration: function() {
       return duration;
     },
-    getCnt: function() {
-      return cnt;
-    },
-    getPjLabel: function() {
-      return pjLabel;
-    },
     getPjLink: function() {
       return pjlink;
+    },
+    getTotalChartCount: function() {
+      return totalChartCount;
     }
   };
 }// processdata end
@@ -736,7 +741,7 @@ function init_charts() {
   getChartData.send();
   getChartData.addEventListener("load", function() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
-    var chartloop = parsedResult.getCnt();
+    var chartloop = parsedResult.getTotalChartCount();
     var doc = document;
     var divFrag = document.createDocumentFragment();
 
@@ -796,8 +801,22 @@ function init_charts() {
     // add fragment to DOM
     document.getElementById("chartDiv").appendChild(divFrag);
 
+    function lineEventListener(lineChart, idx) {
+      document.getElementById("lineChart"+i).addEventListener("click", function(evt) {
+        var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
+          intersect: false
+        });
+        if (pointData.length != 0){
+          console.log("pj_id : " + parsedResult.getPjLabel()[idx].pj_id + ", build_id : " + parsedResult.getPjLabel()[idx].build_id[pointData[0]._index]);
+
+          // Detail page popup function location
+        }
+      });
+    }
+
     for (i = 0; i < chartloop; i++) {
-      var lineChart = new Chart(document.getElementById("lineChart"+i), {
+      var lineChartTarget = document.getElementById("lineChart"+i);
+      var lineChart = new Chart(lineChartTarget, {
         type: "line",
         data: parsedResult.getInnerData()[i],
         options: {
@@ -805,7 +824,7 @@ function init_charts() {
             intersect: false
           },
           tooltips: {
-            mode: "label",
+            mode: "index",
             intersect: false
           },
           scales: {
@@ -821,7 +840,7 @@ function init_charts() {
             point: {
               radius: 0,
               borderWidth: 2,
-              hitRadius: 10,
+              hitRadius: 20,
             }
           }
           /*animation: {
@@ -833,6 +852,8 @@ function init_charts() {
           responsiveAnimationDuration: 0*/
         }
       });
+
+      lineEventListener(lineChart, i);
     }// add chart for loop end
   }); // EventListener end
 }
