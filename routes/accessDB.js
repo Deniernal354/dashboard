@@ -11,7 +11,6 @@ module.exports = function(app, pool) {
     body("pj_author").exists()
   ], (req, res) => {
     const err = validationResult(req);
-
     if(!err.isEmpty()){
       return res.status(400).json({"error": "Bad Request"});
     }
@@ -70,7 +69,6 @@ module.exports = function(app, pool) {
     body("package_name").exists()
   ], (req, res) => {
     const err = validationResult(req);
-
     if(!err.isEmpty()){
       return res.status(400).json({"error": "Bad Request"});
     }
@@ -117,7 +115,6 @@ module.exports = function(app, pool) {
     body("result").exists().matches(/^[1-3]$/),
   ], (req, res) => {
     const err = validationResult(req);
-
     if(!err.isEmpty()){
       return res.status(400).json({"error": "Bad Request"});
     }
@@ -157,28 +154,37 @@ module.exports = function(app, pool) {
   });
 
   router.post("/deleteData", [
-    body("deleteDataTarget").exists()
+    body("selectId").exists()
   ], (req, res) => {
     const err = validationResult(req);
-
     if(!err.isEmpty()){
       return res.status(400).json({"error": "Bad Request"});
     }
 
-    const queryText = req.body.deleteDataTarget;
-    console.log(queryText);
+    const selectId = req.body.selectId;
+    const len = selectId.length;
+    const tableName = ["project", "buildno", "class", "method"];
+    const tableId = ["pj_id", "build_id", "class_id", "method_id"];
+    let queryText = "";
 
-    /*pool.query(queryText, (err, rows) => {
+    if (len > 0 && len < 5) {
+      queryText = "delete from " + tableName[len-1] + " where ";
+      queryText += tableId[len-1] + " = " + selectId[len-1] + ";";
+    } else {
+      return res.status(400).json({"error": "Bad Request"});
+    }
+
+    pool.query(queryText, (err, rows) => {
       const now = new Date();
 
       if (err) {
         console.error("---Error : /access/deleteData : " + err.code + "\n---Error Time : " + now);
         return res.status(500).json({"error": "Internal Server Error"});
       } else {
-        res.status(200).send({"success": "올바르게 삭제되었습니다."});
+        console.log("Delete At " + tableName[len-1] + "(Id : " + selectId[len-1] + ")\n---Time : "+ now);
+        res.status(200).send("올바르게 삭제되었습니다.");
       }
-    });*/
-    res.status(200).send("올바르게 삭제되었습니다.");
+    });
   });
 
   return router;
