@@ -306,13 +306,16 @@ function selectDataApi(category) {
 
 function processdata(responseText) {
   var labels = []; var chartData = []; var innerData = [];
-  var pjIndex = []; var pjLabel = []; var pjlink = [];
-  var buildTime = []; var duration = []; var cnt;
+  var pjIndex = [];
 
-  cnt = responseText.totalChartCount;
+  // UI info - pj_name / pj_id / pj_link / build_id
+  var pjLabel = [];
+  var pjlink = [];  var buildTime = []; var duration = [];
+
+  var totalChartCount = responseText.totalChartCount;
   pjLabel = responseText.pj_label.slice();
 
-  for (var k = 0; k < cnt; k++) {
+  for (var k = 0; k < totalChartCount; k++) {
     labels[k] = [];
     chartData[k] = [];
     chartData[k][0] = [];
@@ -324,11 +327,13 @@ function processdata(responseText) {
     buildTime[k][0] = [];// buildno
     buildTime[k][1] = [];// start_t
     duration[k] = [];// duration
+    pjLabel[k].build_id = [];
   }
 
   responseText.data.forEach(function(value) {
     var idx = pjIndex.indexOf(value.pj_id);
 
+    pjLabel[idx].build_id.push(value.build_id);
     if (!value.start_t) { value.start_t = "0"; }
     if (labels[idx].length < responseText.maxLabel) {
       if (value.start_t === "0"){
@@ -357,7 +362,7 @@ function processdata(responseText) {
   });
 
   var pass = "rgba(102, 194, 255,";  var fail = "rgba(255, 115, 115,";  var skip = "rgba(130, 130, 130,";
-  for (var h = 0; h < cnt; h++) {
+  for (var h = 0; h < totalChartCount; h++) {
     innerData[h] = {
       labels: labels[h],
       datasets: [
@@ -397,102 +402,23 @@ function processdata(responseText) {
     getInnerData: function() {
       return innerData;
     },
+    getPjLabel: function() {
+      return pjLabel;
+    },
     getBuildTime: function() {
       return buildTime;
     },
     getDuration: function() {
       return duration;
     },
-    getCnt: function() {
-      return cnt;
-    },
-    getPjLabel: function() {
-      return pjLabel;
-    },
     getPjLink: function() {
       return pjlink;
+    },
+    getTotalChartCount: function() {
+      return totalChartCount;
     }
   };
 }// processdata end
-
-/* select2 Custom function */
-function customSubmitBtnListener() {
-  if ($("#select2_multiple0").val() === "Project 명") { return; }
-
-  var divFrag = document.createDocumentFragment();
-  var doc = document;
-  var deleteData = new XMLHttpRequest();
-  var deleteDataTarget = {
-    "unit": 0,
-    "detail": []
-  };
-  var chosenUnit = [];
-
-  for (var i = 0; i < 4; i++) {
-    chosenUnit[i] = $("#select2_multiple"+i).val();
-    if (chosenUnit[i] && chosenUnit[i] != []) {
-      deleteDataTarget.unit = i;
-      deleteDataTarget.detail.push(chosenUnit[i]);
-    }
-  }
-
-  /*  if (chosenUnit[3] && chosenUnit[3] != []) {
-    deleteDataTarget.unit = "method";
-    deleteDataTarget.detail = chosenUnit[3];
-  } else if(chosenUnit[2]) {
-    deleteDataTarget.unit = "class";
-    deleteDataTarget.detail = chosenUnit[2].substring(chosenUnit[2].indexOf("/")+2);
-  } else if(chosenUnit[1]) {
-    deleteDataTarget.unit = "buildno";
-    deleteDataTarget.detail = chosenUnit[1].substring(chosenUnit[1].indexOf("No."), chosenUnit[1].indexOf(")"));
-  } else if(chosenUnit[0]) {
-    deleteDataTarget.unit = "project";
-    deleteDataTarget.detail = chosenUnit[0];
-  }*/
-
-  console.log(deleteDataTarget);
-
-  /*  deleteData.open("POST", "/access/deleteData", true);
-  deleteData.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  deleteData.onreadystatechange = function() {
-    if (deleteData.status === 404) {
-      window.location = "/404";
-    } else if (deleteData.status === 500) {
-      window.location = "/500";
-    }
-  };
-
-  deleteData.send(deleteDataTarget);
-  deleteData.addEventListener("load", function() {
-    var panel = doc.createElement("div");
-    var title = doc.createElement("div");
-    var h2 = doc.createElement("h2");
-    var clearfix = doc.createElement("div");
-    var content = doc.createElement("div");
-    var resultDiv = doc.createElement("div");
-
-    panel.setAttribute("class", "x_panel");
-    title.setAttribute("class", "x_title");
-    h2.innerText = "결과";
-    h2.setAttribute("text-align", "center");
-    clearfix.setAttribute("class", "clearfix");
-    content.setAttribute("class", "x_content");
-    resultDiv.setAttribute("id", "resultDiv");
-
-    panel.appendChild(title);
-    title.appendChild(h2);
-    title.appendChild(clearfix);
-    panel.appendChild(content);
-    content.appendChild(resultDiv);
-    resultDiv.innerText = deleteData.responseText;
-    divFrag.appendChild(panel);
-    document.getElementById("customSortDiv").appendChild(divFrag);
-  });*/
-
-  //document.getElementById("customSubmitBtn").removeEventListener("click", customSubmitBtnListener);
-}
-
-/* select2 Custom function END*/
 // My functions end
 
 /* KNOB */
@@ -587,14 +513,121 @@ function init_SmartWizard() {
 
 /* SELECT2 */
 function init_select2() {
-
   if (!document.getElementById("select2Div0")) { return; }
   console.log("init_select2");
+
+  var result = [[], [], [], []];
+  var selectId = [];
+  var doc = document;
+  var divFrag = document.createDocumentFragment();
+
+  // Select2 Custom Functions
+  function eachSelect2GetData(idx) {
+    return function() {
+      //console.log(result);
+      var previousValue = $("#select2_multiple" + idx).val();
+      var selectedIndex = $("#select2_multiple" + idx)[0].selectedIndex;
+
+      if ($.isEmptyObject(previousValue) || previousValue === "Project 명") {
+        for (var q = 3; q > idx; q--) {
+          $("#select2_multiple" + (q)).attr("disabled", true);
+        }
+        selectId.splice(idx);
+      } else {
+        var preValId;
+        if (idx === 0) {
+          preValId = result[0][selectedIndex-1].pj_id;
+        } else if (idx === 1) {
+          preValId = result[1][selectedIndex].build_id;
+        } else if (idx === 2) {
+          preValId = result[2][selectedIndex].class_id;
+        } else {
+          preValId = result[3][selectedIndex].method_id;
+        }
+        selectId[idx] = preValId;
+
+        if (idx >=0 && idx <=2) {
+          var selectCustomData = new XMLHttpRequest();
+          selectCustomData.open("GET", selectDataApi("custom_" + (idx + 1) + "/" + preValId), true);
+          selectCustomData.send();
+          selectCustomData.addEventListener("load", function() {
+            var divFragMini = document.createDocumentFragment();
+
+            // Delete previous select info
+            result[idx + 1] = [];
+            $("#select2_multiple" + (idx + 1)).empty();
+
+            // New
+            result[idx + 1] = JSON.parse(selectCustomData.responseText);
+            result[idx + 1].forEach(function(value) {
+              var optionTmp = doc.createElement("option");
+              if (value.buildno) {
+                optionTmp.innerText = "(Build No." + value.buildno + ") ";
+              } else if (value.class_name) {
+                optionTmp.innerText = value.package_name + " / " + value.class_name;
+              } else if (value.method_name) {
+                optionTmp.innerText = value.method_name;
+              }
+              divFragMini.append(optionTmp);
+            });
+            $("#select2_multiple" + (idx + 1)).append(divFragMini);
+          });
+          $("#select2_multiple" + (idx + 1)).removeAttr("disabled");
+        } // if (idx >=0 && idx <=2) End
+      } // Null check else End
+    };
+  }
+
+  function customSubmitBtnListener() {
+    return function() {
+      if ($("#select2_multiple0").val() === "Project 명") { return; }
+      var divFrag = document.createDocumentFragment();
+      var deleteData = new XMLHttpRequest();
+
+      deleteData.open("POST", "/access/deleteData", true);
+      deleteData.setRequestHeader("Content-type", "application/json");
+      deleteData.onreadystatechange = function() {
+        if (deleteData.status === 404) {
+          window.location = "/404";
+        } else if (deleteData.status === 500) {
+          window.location = "/500";
+        }
+      };
+
+      deleteData.send(JSON.stringify({ "selectId" : selectId }));
+      deleteData.addEventListener("load", function() {
+        var panel = doc.createElement("div");
+        var title = doc.createElement("div");
+        var h2 = doc.createElement("h2");
+        var clearfix = doc.createElement("div");
+        var content = doc.createElement("div");
+        var resultDiv = doc.createElement("div");
+
+        panel.setAttribute("class", "x_panel");
+        title.setAttribute("class", "x_title");
+        h2.innerText = "결과";
+        h2.setAttribute("text-align", "center");
+        clearfix.setAttribute("class", "clearfix");
+        content.setAttribute("class", "x_content");
+        resultDiv.setAttribute("id", "resultDiv");
+
+        panel.appendChild(title);
+        title.appendChild(h2);
+        title.appendChild(clearfix);
+        panel.appendChild(content);
+        content.appendChild(resultDiv);
+        resultDiv.innerHTML = deleteData.responseText;
+        divFrag.appendChild(panel);
+        document.getElementById("customSortDiv").appendChild(divFrag);
+      });
+    };
+  }
+  // Select2 Custom Functions End
 
   // draw select2
   for (var i = 0; i < 4; i++) {
     $("#select2_multiple" + i).select2({
-      maximumSelectionLength: 4,
+      maximumSelectionLength: 2,
       placeholder: "이전 항목을 선택해주세요",
       containerCssClass: ":all:",
       allowClear: true,
@@ -602,29 +635,10 @@ function init_select2() {
     });
   }
 
-  var result = [[], [], [], []];
-  var doc = document;
-  var divFrag = document.createDocumentFragment();
   var tmp = doc.createElement("option");
   tmp.innerText = "Project 명";
   tmp.setAttribute("display", "none");
   divFrag.appendChild(tmp);
-
-  for (var l = 1; l < 7; l++) {
-    var teamLabel = doc.createElement("optgroup");
-
-    if (l >= 1 && l <= 4) {
-      teamLabel.id = "NT" + l;
-      teamLabel.label = "네이버테스트" + l + "팀";
-    } else if(l == 5) {
-      teamLabel.id = "LT";
-      teamLabel.label = "라인테스트팀";
-    } else {
-      teamLabel.id = "NTS";
-      teamLabel.label = "이외";
-    }
-    divFrag.appendChild(teamLabel);
-  }
 
   var customInit = new XMLHttpRequest();
 
@@ -639,79 +653,22 @@ function init_select2() {
   customInit.send();
   customInit.addEventListener("load", function() {
     result[0] = JSON.parse(customInit.responseText);
-
     result[0].forEach(function(value) {
       var optionTmp = doc.createElement("option");
 
       optionTmp.innerText = value.pj_name;
-      divFrag.getElementById(value.pj_team).appendChild(optionTmp);
+      divFrag.appendChild(optionTmp);
     });
     document.getElementById("select2_multiple0").appendChild(divFrag);
   });
-
-  function eachSelect2GetData(idx) {
-    return function() {
-      //console.log(result);
-      var previousValue = $("#select2_multiple" + idx).val();
-
-      if (previousValue === null || previousValue === "Project 명") {
-        for (var q = 3; q > idx; q--) {
-          $("#select2_multiple" + (q)).attr("disabled", true);
-        }
-      } else {
-        var preValId;
-        if (idx === 0) {
-          preValId = result[idx].filter(function(item) {
-            return item.pj_name === previousValue;
-          })[0].pj_id;
-        } else if (idx === 1) {
-          preValId = result[idx].filter(function(item) {
-            return item.buildno === 1 * previousValue[0].substring(previousValue[0].indexOf("(") + 10, previousValue[0].indexOf(")"));
-          })[0].build_id;
-        } else {
-          preValId = result[idx].filter(function(item) {
-            return item.class_name === previousValue[0].substring(previousValue[0].indexOf("/") + 2);
-          })[0].class_id;
-        }
-
-        var selectCustomData = new XMLHttpRequest();
-        selectCustomData.open("GET", selectDataApi("custom_" + (idx + 1) + "/" + preValId), true);
-        selectCustomData.send();
-        selectCustomData.addEventListener("load", function() {
-          var divFragMini = document.createDocumentFragment();
-
-          // Delete previous select info
-          result[idx + 1] = [];
-          $("#select2_multiple" + (idx + 1)).empty();
-
-          // New
-          result[idx + 1] = JSON.parse(selectCustomData.responseText);
-          result[idx + 1].forEach(function(value) {
-            var optionTmp = doc.createElement("option");
-            if (value.buildno) {
-              optionTmp.innerText = "(Build No." + value.buildno + ") ";
-            } else if (value.class_name) {
-              optionTmp.innerText = value.package_name + " / " + value.class_name;
-            } else if (value.method_name) {
-              optionTmp.innerText = value.method_name;
-            }
-
-            divFragMini.append(optionTmp);
-          });
-          $("#select2_multiple" + (idx + 1)).append(divFragMini);
-        });
-        $("#select2_multiple" + (idx + 1)).removeAttr("disabled");
-      }
-    };
-  }
+  // Custom Page initialization complete
 
   // Add Event Listener to each select2
-  for (var j = 0; j < 3; j++) {
+  for (var j = 0; j < 4; j++) {
     $("#select2_multiple" + j).on("change", eachSelect2GetData(j));
   }
-
   // Add Event Listener to customSubmitBtn
-  document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener);
+  document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener());
 }
 
 function init_charts() {
@@ -736,7 +693,7 @@ function init_charts() {
   getChartData.send();
   getChartData.addEventListener("load", function() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
-    var chartloop = parsedResult.getCnt();
+    var chartloop = parsedResult.getTotalChartCount();
     var doc = document;
     var divFrag = document.createDocumentFragment();
 
@@ -796,8 +753,22 @@ function init_charts() {
     // add fragment to DOM
     document.getElementById("chartDiv").appendChild(divFrag);
 
+    function lineEventListener(lineChart, idx) {
+      document.getElementById("lineChart"+i).addEventListener("click", function(evt) {
+        var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
+          intersect: false
+        });
+        if (pointData.length != 0){
+          console.log("pj_id : " + parsedResult.getPjLabel()[idx].pj_id + ", build_id : " + parsedResult.getPjLabel()[idx].build_id[pointData[0]._index]);
+
+          // Detail page popup function location
+        }
+      });
+    }
+
     for (i = 0; i < chartloop; i++) {
-      var lineChart = new Chart(document.getElementById("lineChart"+i), {
+      var lineChartTarget = document.getElementById("lineChart"+i);
+      var lineChart = new Chart(lineChartTarget, {
         type: "line",
         data: parsedResult.getInnerData()[i],
         options: {
@@ -805,7 +776,7 @@ function init_charts() {
             intersect: false
           },
           tooltips: {
-            mode: "label",
+            mode: "index",
             intersect: false
           },
           scales: {
@@ -821,7 +792,7 @@ function init_charts() {
             point: {
               radius: 0,
               borderWidth: 2,
-              hitRadius: 10,
+              hitRadius: 20,
             }
           }
           /*animation: {
@@ -833,6 +804,8 @@ function init_charts() {
           responsiveAnimationDuration: 0*/
         }
       });
+
+      lineEventListener(lineChart, i);
     }// add chart for loop end
   }); // EventListener end
 }

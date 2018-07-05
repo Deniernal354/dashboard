@@ -23,11 +23,39 @@
 
           <% include ./partials/sideBar.ejs %>
 
-          <% include ./partials/menuFooter.ejs %>
+          <div class="sidebar-footer hidden-small">
+            <div id = "footer_side" display="none">
+              <a data-toggle="tooltip" data-placement="top" title="logout" href="/admin/logout">
+                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
-      <% include ./partials/topNav.ejs %>
+      <!-- Top Nav -->
+      <div class="top_nav">
+        <div class="nav_menu">
+          <nav>
+            <div class="nav toggle">
+              <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+            </div>
+
+            <ul class="nav navbar-nav navbar-right">
+              <li class="">
+                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <span class=" fa fa-angle-down"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-usermenu pull-right">
+                  <li><a href="/admin/logout"><i class="fa fa-sign-out pull-right"></i> Logout </a></li>
+                </ul>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <!-- Top Nav -->
 
       <!-- page content -->
       <div class="right_col" role="main">
@@ -73,6 +101,12 @@
             <div class="x_panel">
               <div class="x_title">
                 <h2>삭제하려는 단위를 선택하고 삭제버튼을 누르세요.</h2>
+                <div class="clearfix"></div>
+                <p>
+                  <b>주의 : 선택한 단위를 참조하는 모든 하위 컬럼들이 함께 삭제됩니다. </b><hr />
+                  ex) 특정 Project만 선택하고 삭제 -> 해당 Project에 속한 모든 정보가 삭제됩니다. <br />
+                  ex2) 특정 Package까지 선택하고 삭제 -> 해당 Package의 모든 Testcase정보가 삭제됩니다.
+                </p>
                 <div class="clearfix"></div>
               </div>
               <div class="x_content">
