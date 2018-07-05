@@ -67,5 +67,5 @@ app.use((req, res) => {
 const server = app.listen(80, () => {
   const now = new Date();
 
-  console.log("Server Start --- portNo : " + server.address().port + " / Time : " + now);
+  console.log("Server Start Time : " + now);
 });
