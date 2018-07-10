@@ -31,7 +31,7 @@ module.exports = function(app, pool) {
 
         pool.query(insertQueryTextBuild, (err, rows) => {
           if (err) {
-            console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryTextBuild);
             return res.status(500).json({"error": "Internal Server Error"});
           } else {
             res.status(200).json({
@@ -43,7 +43,7 @@ module.exports = function(app, pool) {
       }
 
       if (err) {
-        console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
         return res.status(500).json({"error": "Internal Server Error"});
       }
 
@@ -52,7 +52,7 @@ module.exports = function(app, pool) {
       } else {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
-            console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
             return res.status(500).json({"error": "Internal Server Error"});
           }
           insertBuildno(innerrows.insertId);
@@ -84,14 +84,14 @@ module.exports = function(app, pool) {
       const now = new Date();
 
       if (err) {
-        console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
         return res.status(500).json({"error": "Internal Server Error"});
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
-            console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
             return res.status(500).json({"error": "Internal Server Error"});
           } else {
             res.status(200).json({"class_id": innerrows.insertId});
@@ -133,14 +133,14 @@ module.exports = function(app, pool) {
       const now = new Date();
 
       if (err) {
-        console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
         return res.status(500).json({"error": "Internal Server Error"});
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
-            console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now);
+            console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
             return res.status(500).json({"error": "Internal Server Error"});
           } else {
             res.status(200).json({"success": 1});
@@ -178,10 +178,10 @@ module.exports = function(app, pool) {
       const now = new Date();
 
       if (err) {
-        console.error("---Error : /access/deleteData : " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /access/deleteData : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
         return res.status(500).json({"error": "Internal Server Error"});
       } else {
-        console.log("Delete At " + tableName[len-1] + "(Id : " + selectId[len-1] + ")\n---Time : "+ now);
+        console.log("Delete At " + tableName[len-1] + "(Id : " + selectId[len-1] + ") ---Time : "+ now);
         res.status(200).send("올바르게 삭제되었습니다.");
       }
     });
