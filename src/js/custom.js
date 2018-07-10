@@ -1,7 +1,6 @@
 /* Resize function without multiple trigger
- * Usage:
  * $(window).smartresize(function(){
- *     // code here
+ *     // code
  * });
  */
 
@@ -53,7 +52,6 @@ var $FOOTER = $("footer");
 
 // Menu components functions
 function init_sidebar() {
-  // TODO: This is some kind of easy fix, maybe we can improve this
   var setContentHeight = function() {
     // reset height
     $RIGHT_COL.css("min-height", $(window).height());
@@ -202,7 +200,6 @@ if (typeof NProgress !== "undefined") {
 }
 
 /* ION RANGE SLIDER */
-// 슬라이더 바. 날짜조절용으로 custom_sort에 사용할것.
 // http://ionden.com/a/plugins/ion.rangeslider/demo.html
 function init_IonRangeSlider() {
 
@@ -324,9 +321,9 @@ function processdata(responseText) {
     pjIndex[k] = responseText.pj_label[k].pj_id;
     pjlink[k] = responseText.pj_label[k].pj_link;
     buildTime[k] = [];
-    buildTime[k][0] = [];// buildno
-    buildTime[k][1] = [];// start_t
-    duration[k] = [];// duration
+    buildTime[k][0] = []; // buildno
+    buildTime[k][1] = []; // start_t
+    duration[k] = []; // duration
     pjLabel[k].build_id = [];
   }
 
@@ -492,7 +489,7 @@ function init_knob() {
         return false;
       }
     });
-  });// knobData listener end
+  }); // knobData listener end
 }
 
 /* SMART WIZARD */
@@ -663,11 +660,10 @@ function init_select2() {
   });
   // Custom Page initialization complete
 
-  // Add Event Listener to each select2
+  // Add Event Listener to each select2, submitBtn
   for (var j = 0; j < 4; j++) {
     $("#select2_multiple" + j).on("change", eachSelect2GetData(j));
   }
-  // Add Event Listener to customSubmitBtn
   document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener());
 }
 
@@ -749,8 +745,6 @@ function init_charts() {
 
       divFrag.appendChild(div);
     }// Add DOM Fragment for Loop End
-
-    // add fragment to DOM
     document.getElementById("chartDiv").appendChild(divFrag);
 
     function lineEventListener(lineChart, idx) {
@@ -806,7 +800,7 @@ function init_charts() {
       });
 
       lineEventListener(lineChart, i);
-    }// add chart for loop end
+    } // add chart forloop end
   }); // EventListener end
 }
 
@@ -826,7 +820,6 @@ $(document).ready(function() {
   init_charts();
   init_select2();
   init_compose();
-
   // init_IonRangeSlider();
 });
 

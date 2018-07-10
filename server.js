@@ -8,13 +8,32 @@ const LocalStrategy = require("passport-local").Strategy;
 
 // DB
 const dbConfig = require("./config/dbConfig.json");
-let pool = db.createPool({
-  host: dbConfig.hostconfig,
-  user: dbConfig.user,
-  password: dbConfig.password,
-  database: dbConfig.database,
-  multipleStatements : true
-});
+let pool;
+
+function handleDisconnect() {
+  pool = db.createPool(dbConfig);
+
+  pool.on("connection", (err) => {
+    const now = new Date();
+
+    if (err) {
+      console.log("Attempting Reconnection : " + now);
+      setTimeout(handleDisconnect, 3000);
+    }
+  });
+
+  pool.on("error", (err) => {
+    const now = new Date();
+
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
+      console.log("Connection Lost : " + now);
+      handleDisconnect();
+    } else {
+      throw err;
+    }
+  });
+}
+handleDisconnect();
 
 const app = express();
 
