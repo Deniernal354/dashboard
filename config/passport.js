@@ -17,11 +17,12 @@ module.exports = function(passport, LocalStrategy) {
   }));
 
   passport.serializeUser((user, done) => {
-    console.log("serialize / User -- " + user.user_id);
+    const now = new Date();
+
+    console.log("Time : " + now + " / Serialize-User -- " + user.user_id);
     done(null, user);
   });
   passport.deserializeUser((user, done) => {
-    // console.log("deserialize / User-- " + user.user_id);
     done(null, user);
   });
 };
