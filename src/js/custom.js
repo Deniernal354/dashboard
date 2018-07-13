@@ -771,7 +771,10 @@ function init_charts() {
           },
           tooltips: {
             mode: "index",
-            intersect: false
+            intersect: false,
+            itemSort: function(a, b) {
+              return b.datasetIndex - a.datasetIndex;
+            }
           },
           scales: {
             yAxes: [{
