@@ -15,7 +15,18 @@ module.exports = function(app, pool, maxLabel) {
     res.redirect("/index");
   });
   router.get("/index", (req, res) => {
-    res.status(200).render("index.ejs");
+    pool.query("select pj_id from project", (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /indexCnt " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        res.status(200).render("index.ejs", {
+          cnt: rows.length
+        });
+      }
+    });
   });
 
   router.get("/team/:teamNo", [
@@ -28,11 +39,26 @@ module.exports = function(app, pool, maxLabel) {
     }
     if (req.params.teamNo <= 5 && req.params.teamNo >= 1) {
       let title_left = "네이버테스트 " + req.params.teamNo + "팀";
+      let teamname = "NT" + req.params.teamNo;
 
       if (req.params.teamNo == 5) {
         title_left = "라인테스트팀";
+        teamname = "LT";
       }
-      res.status(200).render("team", { title : title_left });
+
+      pool.query("select pj_id from project where pj_team = '" + teamname + "';", (err, rows) => {
+        const now = new Date();
+
+        if (err) {
+          console.error("---Error : /teamCnt " + err.code + "\n---Error Time : " + now);
+          res.redirect("/500");
+        } else {
+          res.status(200).render("team", {
+            title : title_left,
+            cnt: rows.length
+          });
+        }
+      });
     }
   });
 
@@ -52,7 +78,20 @@ module.exports = function(app, pool, maxLabel) {
     } else if (req.params.category === "mobileWeb") {
       title_left = "Mobile Web 환경";
     }
-    res.status(200).render("platform", { title : title_left });
+
+    pool.query("select pj_id from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /platfromCnt " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        res.status(200).render("platform", {
+          title : title_left,
+          cnt: rows.length
+        });
+      }
+    });
   });
 
   router.get("/getChartData/:page/:detail?", (req, res) => {

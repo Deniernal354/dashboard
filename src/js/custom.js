@@ -691,61 +691,14 @@ function init_charts() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
     var chartloop = parsedResult.getTotalChartCount();
     var doc = document;
-    var divFrag = document.createDocumentFragment();
 
     for (var i = 0; i < chartloop; i++) {
-      var div = doc.createElement("div");
-      var panel = doc.createElement("div");
-      var title = doc.createElement("div");
-      var h3 = doc.createElement("h3");
-      var clearfix = doc.createElement("div");
-      var content = doc.createElement("div");
-      var canvas = doc.createElement("canvas");
-      var build = doc.createElement("div");
-      var duration = doc.createElement("div");
-      var moreinfo = doc.createElement("div");
-      var h4B = doc.createElement("h4");
-      var h4D = doc.createElement("h4");
-      var h4M = doc.createElement("h4");
-      var link = doc.createElement("a");
-
-      div.setAttribute("class", "col-lg-3 col-md-6 col-sm-6 col-xs-12");
-      panel.setAttribute("class", "x_panel");
-      title.setAttribute("class", "x_title");
-      h3.innerText = parsedResult.getPjLabel()[i].pj_name;
-      clearfix.setAttribute("class", "clearfix");
-      content.setAttribute("class", "x_content");
-      canvas.setAttribute("id", "lineChart" + i);
-      h4B.setAttribute("id", "h4_b" + i);
-      h4D.setAttribute("id", "h4_d" + i);
-      h4M.setAttribute("id", "h4_m" + i);
-      h4B.innerText = "Last Build : No." + parsedResult.getBuildTime()[i][0] + " (" + parsedResult.getBuildTime()[i][1] + ")";
-      h4D.innerText = "Duration : " + parsedResult.getDuration()[i];
-
-      // Extern Report, HTML Report 구분 필요
-      h4M.innerText = "More Info : ";
-      link.setAttribute("target", "_blank");
-      link.setAttribute("href", parsedResult.getPjLink()[i]);
+      doc.getElementById("title"+i).innerText = parsedResult.getPjLabel()[i].pj_name;
+      doc.getElementById("build"+i).innerText = "Last Build : No." + parsedResult.getBuildTime()[i][0] + " (" + parsedResult.getBuildTime()[i][1] + ")";
+      doc.getElementById("duration"+i).innerText = "Duration : " + parsedResult.getDuration()[i];
+      doc.getElementById("link"+i).setAttribute("href", parsedResult.getPjLink()[i]);
       // link.setAttribute("href", "http://10.12.45.150:8080/jenkins/view/" + result.pj_label[i].pj_name);
-      link.innerText = "Report Link";
-
-      div.appendChild(panel);
-      panel.appendChild(title);
-      title.appendChild(h3);
-      title.appendChild(clearfix);
-      panel.appendChild(content);
-      content.appendChild(canvas);
-      content.appendChild(build);
-      content.appendChild(duration);
-      content.appendChild(moreinfo);
-      build.appendChild(h4B);
-      duration.appendChild(h4D);
-      moreinfo.appendChild(h4M);
-      h4M.appendChild(link);
-
-      divFrag.appendChild(div);
     }// Add DOM Fragment for Loop End
-    document.getElementById("chartDiv").appendChild(divFrag);
 
     function lineEventListener(lineChart, idx) {
       document.getElementById("lineChart"+i).addEventListener("click", function(evt) {
