@@ -199,85 +199,15 @@ if (typeof NProgress !== "undefined") {
   });
 }
 
-/* ION RANGE SLIDER */
-// http://ionden.com/a/plugins/ion.rangeslider/demo.html
-function init_IonRangeSlider() {
-
-  if (typeof ($.fn.ionRangeSlider) === "undefined") { return; }
-  console.log("init_IonRangeSlider");
-
-  $("#range_27").ionRangeSlider({
-    type: "double",
-    min: 1000000,
-    max: 2000000,
-    grid: true,
-    force_edges: true
-  });
-  $("#range").ionRangeSlider({
-    hide_min_max: true,
-    keyboard: true,
-    min: 0,
-    max: 5000,
-    from: 1000,
-    to: 4000,
-    type: "double",
-    step: 1,
-    prefix: "$",
-    grid: true
-  });
-  $("#range_25").ionRangeSlider({
-    type: "double",
-    min: 1000000,
-    max: 2000000,
-    grid: true
-  });
-  $("#range_26").ionRangeSlider({
-    type: "double",
-    min: 0,
-    max: 10000,
-    step: 500,
-    grid: true,
-    grid_snap: true
-  });
-  $("#range_31").ionRangeSlider({
-    type: "double",
-    min: 0,
-    max: 100,
-    from: 30,
-    to: 70,
-    from_fixed: true
-  });
-  $(".range_min_max").ionRangeSlider({
-    type: "double",
-    min: 0,
-    max: 100,
-    from: 30,
-    to: 70,
-    max_interval: 50
-  });
-/*  $(".range_time24").ionRangeSlider({
-    min: +moment().subtract(12, "hours").format("X"),
-    max: +moment().format("X"),
-    from: +moment().subtract(6, "hours").format("X"),
-    grid: true,
-    force_edges: true,
-    prettify: function(num) {
-      var m = moment(num, "X");
-      return m.format("Do MMMM, HH:mm");
-    }
-  });*/
-}
-
 // Custom functions
 function urlByBrowser() {
-  var doc = document;
   var agent = navigator.userAgent.toLowerCase();
 
   // IE Case
   if (agent.indexOf("msie") > -1 || agent.indexOf("trident" > -1)) {
-    return doc.URL;
+    return document.URL;
   } else {
-    return doc.documentURI;
+    return document.documentURI;
   }
 }
 
@@ -331,7 +261,9 @@ function processdata(responseText) {
     var idx = pjIndex.indexOf(value.pj_id);
 
     pjLabel[idx].build_id.push(value.build_id);
+
     if (!value.start_t) { value.start_t = "0"; }
+
     if (labels[idx].length < responseText.maxLabel) {
       if (value.start_t === "0"){
         labels[idx].push("Failed");
@@ -339,17 +271,15 @@ function processdata(responseText) {
         labels[idx].push(value.start_t.slice(5, 10));
       }
     }
+
     chartData[idx][0].push(value.pass);
     chartData[idx][1].push(value.fail);
     chartData[idx][2].push(value.skip);
+
     if (buildTime[idx][0]) {
       if (buildTime[idx][0] < value.buildno * 1) {
         buildTime[idx][0] = value.buildno;
-        if (value.start_t === "0") {
-          buildTime[idx][1] = "Build Failed";
-        } else {
-          buildTime[idx][1] = value.start_t;
-        }
+        buildTime[idx][1] = (value.start_t === "0") ? "Build Failed" : value.start_t;
         duration[idx] = value.duration.slice(0, 2) + "h " + value.duration.slice(3, 5) + "m " + value.duration.slice(6, 8) + "s";
       }
     } else {
@@ -776,7 +706,6 @@ $(document).ready(function() {
   init_charts();
   init_select2();
   init_compose();
-  // init_IonRangeSlider();
 });
 
 // NProgress

@@ -65,6 +65,5 @@ module.exports = function(app, passport, maxLabel) {
     }
   });
 
-
   return router;
 };
