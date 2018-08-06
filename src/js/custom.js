@@ -638,6 +638,7 @@ function init_charts() {
         if (pointData.length != 0){
           console.log("pj_id : " + parsedResult.getPjLabel()[idx].pj_id + ", build_id : " + parsedResult.getPjLabel()[idx].build_id[pointData[0]._index]);
 
+          $("#detailPage").modal("show");
           // Detail page popup function location
         }
       });
