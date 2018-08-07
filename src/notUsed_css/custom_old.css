@@ -11,6 +11,115 @@ html , body{
   height:100%;
 }
 
+.daterangepicker .ranges li {
+  color: #73879C
+}
+.daterangepicker .ranges li.active,
+.daterangepicker .ranges li:hover {
+  background: #536A7F;
+  border: 1px solid #536A7F;
+  color: #fff
+}
+.daterangepicker .input-mini {
+  background-color: #eee;
+  border: 1px solid #ccc;
+  box-shadow: none !important
+}
+.daterangepicker .input-mini.active {
+  border: 1px solid #ccc
+}
+.daterangepicker select.monthselect,
+.daterangepicker select.yearselect,
+.daterangepicker select.hourselect,
+.daterangepicker select.minuteselect,
+.daterangepicker select.secondselect,
+.daterangepicker select.ampmselect {
+  font-size: 12px;
+  padding: 1px;
+  height: auto;
+  margin: 0;
+  cursor: default;
+  height: 30px;
+  border: 1px solid #ADB2B5;
+  line-height: 30px;
+  border-radius: 0px !important
+}
+.daterangepicker select.monthselect {
+  margin-right: 2%
+}
+.daterangepicker td.in-range {
+  background: #E4E7EA;
+  color: #73879C
+}
+.daterangepicker td.active,
+.daterangepicker td.active:hover {
+  background-color: #536A7F;
+  color: #fff
+}
+.daterangepicker th.available:hover {
+  background: #eee;
+  color: #34495E
+}
+.daterangepicker:before,
+.daterangepicker:after {
+  content: none
+}
+.daterangepicker .calendar.single {
+  margin: 0 0 4px 0
+}
+.daterangepicker .calendar.single .calendar-table {
+  width: 224px;
+  padding: 0 0 4px 0 !important
+}
+.daterangepicker .calendar.single .calendar-table thead tr:first-child th {
+  padding: 8px 5px
+}
+.daterangepicker .calendar.single .calendar-table thead th {
+  border-radius: 0
+}
+.daterangepicker.picker_1 {
+  color: #fff;
+  background: #34495E
+}
+.daterangepicker.picker_1 .calendar-table {
+  background: #34495E
+}
+.daterangepicker.picker_1 .calendar-table thead tr {
+  background: #213345
+}
+.daterangepicker.picker_1 .calendar-table thead tr:first-child {
+  background: #1ABB9C
+}
+.daterangepicker.picker_1 .calendar-table td.off {
+  background: #34495E;
+  color: #999
+}
+.daterangepicker.picker_1 .calendar-table td.available:hover {
+  color: #34495E
+}
+.daterangepicker.picker_2 .calendar-table thead tr {
+  color: #1ABB9C
+}
+.daterangepicker.picker_2 .calendar-table thead tr:first-child {
+  color: #73879C
+}
+.daterangepicker.picker_3 .calendar-table thead tr:first-child {
+  color: #fff;
+  background: #1ABB9C
+}
+.daterangepicker.picker_4 .calendar-table thead tr:first-child {
+  color: #fff;
+  background: #34495E
+}
+.daterangepicker.picker_4 .calendar-table td,
+.daterangepicker.picker_4 .calendar-table td.off {
+  background: #ECF0F1;
+  border: 1px solid #fff;
+  border-radius: 0
+}
+.daterangepicker.picker_4 .calendar-table td.active {
+  background: #34495E
+}
 .calendar-exibit .show-calendar {
   float: none;
   display: block;
@@ -1907,9 +2016,9 @@ button,
   margin-right: 5px
 }
 .modal-open {
-  overflow: auto;
+  overflow: hidden;
   overflow-y: scroll;
-  padding-right:0 !important;
+  padding-right:0
 }
 .modal.modal-center {
   text-align: center;
@@ -3625,7 +3734,137 @@ fieldset {
   margin: 0;
   padding: 0
 }
-
+.cropper .img-container,
+.cropper .img-preview {
+  background-color: #f7f7f7;
+  width: 100%;
+  text-align: center
+}
+.cropper .img-container {
+  min-height: 200px;
+  max-height: 516px;
+  margin-bottom: 20px
+}
+@media (min-width: 768px) {
+  .cropper .img-container {
+    min-height: 516px
+  }
+}
+.cropper .img-container>img {
+  max-width: 100%
+}
+.cropper .docs-preview {
+  margin-right: -15px
+}
+.cropper .img-preview {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  overflow: hidden
+}
+.cropper .img-preview>img {
+  max-width: 100%
+}
+.cropper .preview-lg {
+  width: 263px;
+  height: 148px
+}
+.cropper .preview-md {
+  width: 139px;
+  height: 78px
+}
+.cropper .preview-sm {
+  width: 69px;
+  height: 39px
+}
+.cropper .preview-xs {
+  width: 35px;
+  height: 20px;
+  margin-right: 0
+}
+.cropper .docs-data>.input-group {
+  margin-bottom: 10px
+}
+.cropper .docs-data>.input-group>label {
+  min-width: 80px
+}
+.cropper .docs-data>.input-group>span {
+  min-width: 50px
+}
+.cropper .docs-buttons>.btn,
+.cropper .docs-buttons>.btn-group,
+.cropper .docs-buttons>.form-control {
+  margin-right: 5px;
+  margin-bottom: 10px
+}
+.cropper .docs-toggles>.btn,
+.cropper .docs-toggles>.btn-group,
+.cropper .docs-toggles>.dropdown {
+  margin-bottom: 10px
+}
+.cropper .docs-tooltip {
+  display: block;
+  margin: -6px -12px;
+  padding: 6px 12px
+}
+.cropper .docs-tooltip>.icon {
+  margin: 0 -3px;
+  vertical-align: top
+}
+.cropper .tooltip-inner {
+  white-space: normal
+}
+.cropper .btn-upload .tooltip-inner,
+.cropper .btn-toggle .tooltip-inner {
+  white-space: nowrap
+}
+.cropper .btn-toggle {
+  padding: 6px
+}
+.cropper .btn-toggle>.docs-tooltip {
+  margin: -6px;
+  padding: 6px
+}
+@media (max-width: 400px) {
+  .cropper .btn-group-crop {
+    margin-right: -15px !important
+  }
+  .cropper .btn-group-crop>.btn {
+    padding-left: 5px;
+    padding-right: 5px
+  }
+  .cropper .btn-group-crop .docs-tooltip {
+    margin-left: -5px;
+    margin-right: -5px;
+    padding-left: 5px;
+    padding-right: 5px
+  }
+}
+.cropper .docs-options .dropdown-menu {
+  width: 100%
+}
+.cropper .docs-options .dropdown-menu>li {
+  padding: 3px 20px
+}
+.cropper .docs-options .dropdown-menu>li:hover {
+  background-color: #f7f7f7
+}
+.cropper .docs-options .dropdown-menu>li>label {
+  display: block
+}
+.cropper .docs-cropped .modal-body {
+  text-align: center
+}
+.cropper .docs-cropped .modal-body>img,
+.cropper .docs-cropped .modal-body>canvas {
+  max-width: 100%
+}
+.cropper .docs-diagram .modal-dialog {
+  max-width: 352px
+}
+.cropper .docs-cropped canvas {
+  max-width: 100%
+}
 .form_wizard .stepContainer {
   display: block;
   position: relative;
@@ -3958,6 +4197,12 @@ ul.notifications {
   border: 1px solid #e5e5e5
 }
 
+/*
+.x_content {
+direction: rtl;
+}
+*/
+
 .main_menu .label {
   line-height: 11px;
   margin-top: 4px;
@@ -3972,9 +4217,64 @@ ul.notifications {
   }
 }
 
+
 @media (max-width: 767px) {
   .dataTables_length { float:none; }
 }
+
+
+
+
+/* CSS3 Checkbox */
+/*
+.checkbox-input { display:block;position:relative; }
+.checkbox-input:before { display:block;content:"";position:absolute;top:2px;left:0;height:20px;width:20px;background:red;border-radius:3px; }
+
+
+#input + label:after {
+content: 'click my input';
+color: blue;
+}
+
+#input:focus + label:after {
+content: 'not valid yet';
+color: blue;
+}
+
+#input:valid + label:after {
+content: 'looks good';
+color: red;
+}
+
+/* CSS3 Checkbox - end */
+/*
+
+/*
+.checkbox 																										{ display: block;position:relative;cursor:pointer; }
+.checkbox input 																								{ position:absolute;z-index:-1;opacity:0;left:0;top:0; }
+.checkbox div 																									{ position:absolute;top:2px;left:0;height:20px;width:20px;background:#e6e6e6;border-radius:3px; }
+.checkbox input:checked ~ div 																			{ background: #1ABC9C; }
+.checkbox:hover input:not([disabled]):checked ~ div,
+.checkbox input:checked:focus ~ div 																	{ background: #1ABC9C; }
+.checkbox input:disabled ~ div 																			{ background: #1ABC9C;opacity: 0.6;pointer-events: none; }
+.checkbox div:after 																							{ content: '';position: absolute;display: none; }
+.checkbox input:checked ~ div:after 																	{ display: block; }
+.checkbox-wp div:after 																					{ left: 7px;top: 3px;width: 7px;height: 11px;border: solid #fff;border-width: 0 2px 2px 0;transform: rotate(40deg); }
+.checkbox-wp input:disabled ~ div:after 																{ border-color: #F2F2F2; }
+
+
+.checkbox-radio div 																							{ border-radius: 50%; }
+.checkbox-radio div:after 																					{ left: 7px;top: 7px;height: 6px;width: 6px;border-radius: 50%;background: #fff; }
+.checkbox-radio input:disabled ~ div:after 															{ background: #F2F2F2; }
+
+
+.checkbox, .radio { margin-top:-3px; }
+
+table thead .checkbox { margin-top:-7px;margin-top:-21px; }
+table thead .checkbox.radio { margin-top:-7px;margin-top:-21px; }
+*/
+
+.daterangepicker.xdisplay { width:228px; }
 
 .dataTables_wrapper > .row{
   overflow:auto !important; /*prevent datatables overflowing its container*/
