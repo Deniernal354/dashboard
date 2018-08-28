@@ -69,6 +69,7 @@ const maxLabel = (() => {
 
   return {
     getMaxLabel: () => realMaxLabel,
+    getAbsoluteMaxLabel: () => 20,
     setMaxLabel: value => {
       realMaxLabel = value;
     },

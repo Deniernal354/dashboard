@@ -211,7 +211,7 @@ function urlByBrowser() {
   }
 }
 
-function selectDataApi(category) {
+function selectDataApi(category, params) {
   var apiResult = "";
   var url = urlByBrowser();
   url = url.substring(url.indexOf(":")+3);
@@ -220,13 +220,10 @@ function selectDataApi(category) {
     apiResult = "/getChartData" + url.substring(url.indexOf("/"));
   } else if (category === "knob") {
     apiResult = "/admin/getKnobData/";
-  } else if (category.substring(0, 7) === "custom_") {
-    var customCategory = ["project/", "buildno/", "class/", "testcase/"];
-
-    apiResult = "/getCustomData/" + customCategory[category.substring(7, 8) * 1];
-    if (category.substring(8) !== "") {
-      apiResult += category.substring(category.indexOf("/") + 1);
-    }
+  } else if (category === "custom") {
+    apiResult = "/getCustomData/" + params.unit + "/" + params.preValId;
+  } else if(category === "modal") {
+    apiResult = "/getModalData/" + params.pj_id + "/" + params.build_id;
   }
   return apiResult;
 }
@@ -361,7 +358,7 @@ function init_knob() {
     doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
   });
 
-  knobData.open("GET", selectDataApi("knob"), true);
+  knobData.open("GET", selectDataApi("knob", null), true);
   knobData.send();
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
@@ -473,9 +470,15 @@ function init_select2() {
         }
         selectId[idx] = preValId;
 
+
+        var unitPool = ["buildno", "class", "testcase"];
+
         if (idx >=0 && idx <=2) {
           var selectCustomData = new XMLHttpRequest();
-          selectCustomData.open("GET", selectDataApi("custom_" + (idx + 1) + "/" + preValId), true);
+          selectCustomData.open("GET", selectDataApi("custom", {
+            "unit": unitPool[idx],
+            "preValId": preValId
+          }), true);
           selectCustomData.send();
           selectCustomData.addEventListener("load", function() {
             var divFragMini = document.createDocumentFragment();
@@ -576,7 +579,10 @@ function init_select2() {
       window.location = "/500";
     }
   };
-  customInit.open("GET", selectDataApi("custom_0"), true);
+  customInit.open("GET", selectDataApi("custom", {
+    "unit": "project",
+    "preValId": -1
+  }), true);
   customInit.send();
   customInit.addEventListener("load", function() {
     result[0] = JSON.parse(customInit.responseText);
@@ -597,6 +603,75 @@ function init_select2() {
   document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener());
 }
 
+function init_modal(pj_id, build_id) {
+  return function() {
+    if (!document.getElementById("detailPage")) { return; }
+
+    //document.getElementById("chartTitle").innerText = "pj_id : " + pj_id + ", build_id : " + build_id;
+
+    var getModalData = new XMLHttpRequest();
+
+    getModalData.onreadystatechange = function() {
+      if (getModalData.status === 404) {
+        window.location = "/404";
+      } else if (getModalData.status === 500) {
+        window.location = "/500";
+      }
+    };
+
+    getModalData.open("GET", selectDataApi("modal", {
+      "pj_id": pj_id,
+      "build_id": build_id
+    }), true);
+    getModalData.send();
+    getModalData.addEventListener("load", function() {
+      var parsedResult = processdata(JSON.parse(getModalData.responseText));
+
+      console.log(parsedResult.getInnerData()[0]);
+
+      var lineChart = new Chart(document.getElementById("lineChart_mo"), {
+        type: "line",
+        data: parsedResult.getInnerData()[0],
+        options: {
+          hover: {
+            intersect: false
+          },
+          tooltips: {
+            mode: "index",
+            intersect: false,
+            itemSort: function(a, b) {
+              return b.datasetIndex - a.datasetIndex;
+            }
+          },
+          scales: {
+            yAxes: [{
+              stacked: true
+            }]
+          },
+          elements: {
+            line: {
+              tension: 0,
+              borderWidth: 1
+            },
+            point: {
+              radius: 0,
+              borderWidth: 2,
+              hitRadius: 20,
+            }
+          }
+          /*animation: {
+            duration: 0
+          },
+          hover: {
+            animationDuration: 0
+          },
+          responsiveAnimationDuration: 0*/
+        }
+      });
+    });
+  };
+}
+
 function init_charts() {
   if (!document.getElementById("chartDiv")) { return; }
   if (typeof (Chart) === "undefined") { return; }
@@ -615,7 +690,7 @@ function init_charts() {
     }
   };
 
-  getChartData.open("GET", selectDataApi("chart"), true);
+  getChartData.open("GET", selectDataApi("chart", null), true);
   getChartData.send();
   getChartData.addEventListener("load", function() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
@@ -636,10 +711,15 @@ function init_charts() {
           intersect: false
         });
         if (pointData.length != 0){
-          console.log("pj_id : " + parsedResult.getPjLabel()[idx].pj_id + ", build_id : " + parsedResult.getPjLabel()[idx].build_id[pointData[0]._index]);
-
           $("#detailPage").modal("show");
-          // Detail page popup function location
+          init_modal(parsedResult.getPjLabel()[idx].pj_id, parsedResult.getPjLabel()[idx].build_id[pointData[0]._index])();
+          $("#detailPage").on("hidden.bs.modal", function () {
+            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
+            var newChart = document.createElement("canvas");
+            newChart.setAttribute("id", "lineChart_mo");
+            newChart.setAttribute("height", "50%");
+            document.getElementById("panel_mo").appendChild(newChart);
+          });
         }
       });
     }
