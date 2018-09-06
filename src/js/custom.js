@@ -789,9 +789,6 @@ $(document).ready(function() {
   init_compose();
 });
 
-// NProgress
-if (typeof NProgress !== "undefined") {
-  $(document).ready(function() {
-    NProgress.done();
-  });
-}
+$(window).on("load", function(){
+  NProgress.done();
+});
