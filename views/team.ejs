@@ -2,9 +2,6 @@
 <html lang="en">
 <head>
   <% include ./partials/header.ejs %>
-
-  <!-- Custom Theme Style -->
-  <link href="/css/custom.min.css" rel="stylesheet">
   <title>Dashboard</title>
 </head>
 
@@ -38,14 +35,18 @@
             <% include ./partials/titleRight.ejs %>
           </div>
           <div class="clearfix"></div>
-          <div id="chartDiv" class="row"></div>
+          <div id="chartDiv" class="row">
+            <% for(var i=0; i< cnt; i++) { %>
+              <%- include("./partials/eachChart.ejs", {i: i}) %>
+              <% } %>
+            </div>
+          </div>
         </div>
-      </div>
-      <!-- /page content -->
+        <!-- /page content -->
 
-      <% include ./partials/footer.ejs %>
+        <% include ./partials/footer.ejs %>
+      </div>
     </div>
-  </div>
-  <% include ./partials/srcChart.ejs %>
-</body>
-</html>
+    <% include ./partials/srcChart.ejs %>
+  </body>
+  </html>

@@ -1,0 +1,81 @@
+.mail_list_column {
+  border-left: 1px solid #DBDBDB
+}
+.mail_view {
+  border-left: 1px solid #DBDBDB
+}
+.mail_list {
+  width: 100%;
+  border-bottom: 1px solid #DBDBDB;
+  margin-bottom: 2px;
+  display: inline-block
+}
+.mail_list .left {
+  width: 5%;
+  float: left;
+  margin-right: 3%
+}
+.mail_list .right {
+  width: 90%;
+  float: left
+}
+.mail_list h3 {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0px 0 6px
+}
+.mail_list h3 small {
+  float: right;
+  color: #ADABAB;
+  font-size: 11px;
+  line-height: 20px
+}
+.mail_list .badge {
+  padding: 3px 6px;
+  font-size: 8px;
+  background: #BAB7B7
+}
+@media (max-width: 767px) {
+  .mail_list {
+    margin-bottom: 5px;
+    display: inline-block
+  }
+}
+.mail_heading h4 {
+  font-size: 18px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-top: 20px
+}
+.attachment {
+  margin-top: 30px
+}
+.attachment ul {
+  width: 100%;
+  list-style: none;
+  padding-left: 0;
+  display: inline-block;
+  margin-bottom: 30px
+}
+.attachment ul li {
+  float: left;
+  width: 150px;
+  margin-right: 10px;
+  margin-bottom: 10px
+}
+.attachment ul li img {
+  height: 150px;
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin-bottom: 10px
+}
+.attachment ul li span {
+  float: right
+}
+.attachment .file-name {
+  float: left
+}
+.attachment .links {
+  width: 100%;
+  display: inline-block
+}

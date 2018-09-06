@@ -26,7 +26,7 @@ module.exports = function(app, passport, maxLabel) {
     if (req.body.newMaxLabel) {
       const newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개")) * 1;
 
-      if ((newLabel >= 1 && newLabel <= 20) && (maxLabel.getMaxLabel() !== newLabel)) {
+      if ((newLabel >= 1 && newLabel <= maxLabel.getAbsoluteMaxLabel()) && (maxLabel.getMaxLabel() !== newLabel)) {
         console.log("maxLabel is changed : " + maxLabel.getMaxLabel() + " -> " + newLabel);
         maxLabel.setMaxLabel(newLabel);
       }
@@ -64,7 +64,6 @@ module.exports = function(app, passport, maxLabel) {
       res.redirect("/");
     }
   });
-
 
   return router;
 };
