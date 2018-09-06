@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <% include ./partials/header.ejs %>
+  <% include ./partials/header_select2.ejs %>
   <title>Dashboard</title>
-
-  <!-- Select2 -->
-  <link href="/scripts/select2/dist/css/select2.min.css" rel="stylesheet" />
-  <!-- Custom Theme Style -->
-  <link href="/css/custom.min.css" rel="stylesheet">
 </head>
 
 <body class="nav-md">
@@ -88,13 +83,11 @@
     </div>
   </div>
 
-  <% include ./partials/srcDefault.ejs %>
-
+  <script src="/js/libraries.min.js"></script>
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
   <!-- Select2 -->
   <script src="/scripts/select2/dist/js/select2.full.min.js"></script>
-
   <!-- Custom Theme Scripts -->
   <script src="/js/custom.min.js"></script>
 </body>

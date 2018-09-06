@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <% include ./partials/header.ejs %>
+  <% include ./partials/header_select2.ejs %>
   <title>Dashboard</title>
-
-  <!-- Select2 -->
-  <link href="/scripts/select2/dist/css/select2.min.css" rel="stylesheet" />
-  <!-- Custom Theme Style -->
-  <link href="/css/custom.min.css" rel="stylesheet">
 </head>
 
 <body class="nav-md">
@@ -43,7 +38,7 @@
 
             <ul class="nav navbar-nav navbar-right">
               <li class="">
-                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false" aria-label="dropdown">
                   <span class=" fa fa-angle-down"></span>
                 </a>
                 <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -152,13 +147,11 @@
     </div>
   </div>
 
-  <% include ./partials/srcDefault.ejs %>
-
+  <script src="/js/libraries.min.js"></script>
   <!-- jQuery knob -->
   <script src="/scripts/jquery-knob/dist/jquery.knob.min.js"></script>
   <!-- Select2 -->
   <script src="/scripts/select2/dist/js/select2.full.min.js"></script>
-
   <!-- Custom Theme Scripts -->
   <script src="/js/custom.min.js"></script>
 </body>
