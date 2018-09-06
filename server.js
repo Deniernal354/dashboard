@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const compression = require("compression");
 
 // DB
 const dbConfig = require("./config/dbConfig.json");
@@ -36,6 +37,8 @@ function handleDisconnect() {
 handleDisconnect();
 
 const app = express();
+
+app.use(compression());
 
 app.set("views", path.join(__dirname, "/views"));
 app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));

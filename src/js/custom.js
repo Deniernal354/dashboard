@@ -627,7 +627,7 @@ function init_modal(pj_id, build_id) {
     getModalData.addEventListener("load", function() {
       var parsedResult = processdata(JSON.parse(getModalData.responseText));
 
-      console.log(parsedResult.getInnerData()[0]);
+      //console.log(parsedResult.getInnerData()[0]);
 
       var lineChart = new Chart(document.getElementById("lineChart_mo"), {
         type: "line",
