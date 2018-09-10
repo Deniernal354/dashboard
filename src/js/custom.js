@@ -194,9 +194,7 @@ $(document).ready(function() {
 
 // NProgress
 if (typeof NProgress !== "undefined") {
-  $(document).ready(function() {
-    NProgress.start();
-  });
+  NProgress.start();
 }
 
 // Custom functions
