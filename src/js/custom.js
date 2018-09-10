@@ -194,9 +194,7 @@ $(document).ready(function() {
 
 // NProgress
 if (typeof NProgress !== "undefined") {
-  $(document).ready(function() {
-    NProgress.start();
-  });
+  NProgress.start();
 }
 
 // Custom functions
@@ -789,9 +787,6 @@ $(document).ready(function() {
   init_compose();
 });
 
-// NProgress
-if (typeof NProgress !== "undefined") {
-  $(document).ready(function() {
-    NProgress.done();
-  });
-}
+$(window).on("load", function(){
+  NProgress.done();
+});
