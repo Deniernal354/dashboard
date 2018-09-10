@@ -40,6 +40,13 @@
 * To change this template file, choose Tools | Templates and open the template in the editor.
 */
 
+(function(){
+  // NProgress
+  if (typeof NProgress !== "undefined") {
+    NProgress.start();
+  }
+})();
+
 var CURRENT_URL = window.location.href.split("#")[0].split("?")[0];
 var $BODY = $("body");
 var $MENU_TOGGLE = $("#menu_toggle");
@@ -191,11 +198,6 @@ $(document).ready(function() {
   init_tooltip();
   init_progressbar();
 });
-
-// NProgress
-if (typeof NProgress !== "undefined") {
-  NProgress.start();
-}
 
 // Custom functions
 function urlByBrowser() {
