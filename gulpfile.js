@@ -36,7 +36,7 @@ function concatJS(){
 
 function customMinCSS() {
   return gulp.src(SRC.CSS)
-    .pipe(cleanCSS({compatibility : "ie8"}))
+    .pipe(cleanCSS())
     .pipe(rename({extname : ".min.css"}))
     .pipe(gulp.dest(DEST.CSS));
 }
