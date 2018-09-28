@@ -12,19 +12,21 @@ const dbConfig = require("./config/dbConfig.json");
 let pool;
 
 function handleDisconnect() {
+  let now = new Date();
+  console.log("Connection handler called at : " + now);
   pool = db.createPool(dbConfig);
 
   pool.on("connection", (err) => {
-    const now = new Date();
+    now = new Date();
 
     if (err) {
-      console.log("Attempting Reconnection : " + now);
+      console.log("Error in Making a connection : " + now);
       setTimeout(handleDisconnect, 3000);
     }
   });
 
   pool.on("error", (err) => {
-    const now = new Date();
+    now = new Date();
 
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
       console.log("Connection Lost : " + now);
