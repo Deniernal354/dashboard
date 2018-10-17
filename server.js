@@ -60,6 +60,9 @@ app.use(session({
   secret: "!@#nts#@!",
   resave: false,
   saveUninitialized: true,
+  cookie: {
+    maxAge: 8*60*60*1000 // 8 hours
+  }
 }));
 
 // passport
