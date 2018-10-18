@@ -1512,6 +1512,9 @@ button,
   min-height: 100%;
   border-radius: 0;
 }
+modal-backdrop.show{
+  z-index:1;
+}
 .btn-group-vertical .btn,
 .btn-group .btn {
   margin-bottom: 0;
