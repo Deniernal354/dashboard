@@ -1503,9 +1503,10 @@ button,
   text-align: left;
   vertical-align: middle;
   width: 70%;
-  height: 80%;
+  height: 85%;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
 }
 .modal-content.modal-custom {
   height: auto;
@@ -3088,6 +3089,15 @@ fieldset {
 }
 .progress.progress_sm .progress-bar {
   height: 10px !important
+}
+.progress-pass {
+  background-color: rgba(102, 194, 255, 1.0) !important;
+}
+.progress-fail {
+  background-color: rgba(255, 115, 115, 1.0) !important;
+}
+.progress-skip {
+  background-color: rgba(130, 130, 130, 1.0) !important;
 }
 .dashboard_graph p {
   margin: 0 0 4px
