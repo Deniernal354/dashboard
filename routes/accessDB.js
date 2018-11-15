@@ -6,7 +6,7 @@ module.exports = function(app, pool) {
   // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
   router.post("/beforeSuite", [
     body("pj_name").exists(),
-    body("pj_team").exists().matches(/^[NL]T[1-4]?$/),
+    body("pj_team").exists().matches(/^(Contents QA|Portal QA|Works QA|Community QA|Service QA|Clova QA)$/),
     body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
     body("pj_author").exists()
   ], (req, res) => {
@@ -16,7 +16,7 @@ module.exports = function(app, pool) {
     }
 
     const name = req.body.pj_name;
-    const team = req.body.pj_team;
+    const team = (req.body.pj_team === "Service QA" || req.body.pj_team === "Clova QA") ? "Service QA & Clova QA" : req.body.pj_team;
     const plat = req.body.pj_platform;
     const auth = req.body.pj_author;
     const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
