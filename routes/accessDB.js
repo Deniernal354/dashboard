@@ -1,22 +1,48 @@
-module.exports = function(app, pool) {
+module.exports = function(app, pool, teamConfig) {
   const express = require("express");
   const router = express.Router();
   const { body, validationResult } = require("express-validator/check");
 
+  function convertTeamName(pj_team) {
+    let result = "";
+
+    teamConfig.rules.map((value, idx) => {
+      var tmp = new RegExp(value, "i");
+      if (tmp.test(pj_team)) {
+        result = teamConfig.name[idx];
+      }
+    });
+
+    return result;
+  }
+
+  router.post("/nametest", [body("pj_team").exists()], (req, res) => {
+    const err = validationResult(req);
+    const team = convertTeamName(req.body.pj_team);
+    if ((!err.isEmpty()) || (team === "")) {
+      return res.status(400).json({"error": "Bad Request"});
+    }
+
+    return res.status(200).json({
+      "team": team
+    });
+  });
+
   // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
   router.post("/beforeSuite", [
     body("pj_name").exists(),
-    body("pj_team").exists().matches(/^[NL]T[1-4]?$/),
+    body("pj_team").exists(),
     body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
     body("pj_author").exists()
   ], (req, res) => {
     const err = validationResult(req);
-    if(!err.isEmpty()){
+    const team = convertTeamName(req.body.pj_team);
+
+    if ((!err.isEmpty()) || (team === "")) {
       return res.status(400).json({"error": "Bad Request"});
     }
 
     const name = req.body.pj_name;
-    const team = req.body.pj_team;
     const plat = req.body.pj_platform;
     const auth = req.body.pj_author;
     const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +

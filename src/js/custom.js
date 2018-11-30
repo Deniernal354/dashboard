@@ -280,7 +280,7 @@ function processdata(responseText) {
   var totalChartCount = responseText.totalChartCount;
   pjLabel = responseText.pj_label.slice();
 
-  if(responseText.pj_label[0].pj_platform) {
+  if (totalChartCount) {
     initialModalData.push(responseText.pj_label[0].pj_platform);
     initialModalData.push(responseText.pj_label[0].pj_team);
     initialModalData.push(responseText.pj_label[0].pj_author);
@@ -944,7 +944,7 @@ function init_charts() {
 
     for (var i = 0; i < chartloop; i++) {
       doc.getElementById("title"+i).innerText = parsedResult.getPjLabel()[i].pj_name;
-      doc.getElementById("build"+i).innerText = "Last Build : No." + parsedResult.getBuildTime()[i][0] + " (" + parsedResult.getBuildTime()[i][1] + ")";
+      doc.getElementById("build"+i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
       doc.getElementById("duration"+i).innerText = "Duration : " + parsedResult.getDuration()[i];
       doc.getElementById("link"+i).setAttribute("href", parsedResult.getPjLink()[i]);
       // link.setAttribute("href", "http://10.12.45.150:8080/jenkins/view/" + result.pj_label[i].pj_name);

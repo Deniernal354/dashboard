@@ -3,7 +3,7 @@ get/post 터널링 조심(get은 get만, post는 post만) http://myweb/users?met
 res.download()	다운로드될 파일을 전송한다.
 res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.(content-type의 application 형식 미지정Case)
 */
-module.exports = function(app, pool, maxLabel) {
+module.exports = function(app, pool, maxLabel, teamConfig) {
   const express = require("express");
   const router = express.Router();
   const { param, validationResult } = require("express-validator/check");
@@ -30,36 +30,29 @@ module.exports = function(app, pool, maxLabel) {
   });
 
   router.get("/team/:teamNo", [
-    param("teamNo").exists().matches(/^[1-5]{1}$/)
+    param("teamNo").exists().matches(/^[1-6]{1}$/)
   ], (req, res) => {
     const err = validationResult(req);
 
     if(!err.isEmpty()){
       return res.redirect("/404");
     }
-    if (req.params.teamNo <= 5 && req.params.teamNo >= 1) {
-      let title_left = "네이버테스트 " + req.params.teamNo + "팀";
-      let teamname = "NT" + req.params.teamNo;
 
-      if (req.params.teamNo == 5) {
-        title_left = "라인테스트팀";
-        teamname = "LT";
+    let teamName = teamConfig.name[req.params.teamNo];
+
+    pool.query("select pj_id from project where pj_team = '" + teamName + "';", (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /teamCnt " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        res.status(200).render("team", {
+          title : teamName,
+          cnt: rows.length
+        });
       }
-
-      pool.query("select pj_id from project where pj_team = '" + teamname + "';", (err, rows) => {
-        const now = new Date();
-
-        if (err) {
-          console.error("---Error : /teamCnt " + err.code + "\n---Error Time : " + now);
-          res.redirect("/500");
-        } else {
-          res.status(200).render("team", {
-            title : title_left,
-            cnt: rows.length
-          });
-        }
-      });
-    }
+    });
   });
 
   router.get("/platform/:category", [
@@ -103,9 +96,8 @@ module.exports = function(app, pool, maxLabel) {
     if (req.params.page === "index") {
       queryTextLabel = "select pj_name, pj_id, pj_link from project;";
     } else if (req.params.page === "team") {
-      let teamname = "NT" + req.params.detail;
+      let teamname = teamConfig.name[req.params.detail];
 
-      if (req.params.detail === "5") { teamname = "LT"; }
       queryText = queryText + " and pj.pj_team = '" + teamname + "'";
       queryTextLabel = "select pj_name, pj_id, pj_link from project where pj_team = '" + teamname + "';";
     } else if (req.params.page === "platform") {
