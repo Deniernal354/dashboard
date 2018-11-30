@@ -9,6 +9,7 @@ const compression = require("compression");
 
 // DB
 const dbConfig = require("./config/dbConfig.json");
+const teamConfig = require("./config/teamConfig.json");
 let pool;
 
 function handleDisconnect() {
@@ -84,9 +85,9 @@ const maxLabel = (() => {
   };
 })();
 
-app.use("/", require("./routes/route.js")(app, pool, maxLabel));
+app.use("/", require("./routes/route.js")(app, pool, maxLabel, teamConfig));
 app.use("/admin", require("./routes/admin.js")(app, passport, maxLabel));
-app.use("/access", require("./routes/accessDB.js")(app, pool));
+app.use("/access", require("./routes/accessDB.js")(app, pool, teamConfig));
 
 app.use((req, res) => {
   res.status(404).render("page_404");

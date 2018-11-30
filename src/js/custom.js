@@ -280,7 +280,7 @@ function processdata(responseText) {
   var totalChartCount = responseText.totalChartCount;
   pjLabel = responseText.pj_label.slice();
 
-  if(responseText.pj_label[0].pj_platform) {
+  if (totalChartCount) {
     initialModalData.push(responseText.pj_label[0].pj_platform);
     initialModalData.push(responseText.pj_label[0].pj_team);
     initialModalData.push(responseText.pj_label[0].pj_author);
