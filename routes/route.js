@@ -15,14 +15,30 @@ module.exports = function(app, pool, maxLabel, teamConfig) {
     res.redirect("/index");
   });
   router.get("/index", (req, res) => {
+    /*pool.query("select pj_id from project", (err, rows) => {
+      const now = new Date();
+
+      if (err) {
+        console.error("---Error : /index " + err.code + "\n---Error Time : " + now);
+        res.redirect("/500");
+      } else {
+        res.status(200).render("all.ejs", {
+          cnt: rows.length
+        });
+      }
+    });*/
+    res.status(200).render("index.ejs");
+  });
+
+  router.get("/all", (req, res) => {
     pool.query("select pj_id from project", (err, rows) => {
       const now = new Date();
 
       if (err) {
-        console.error("---Error : /indexCnt " + err.code + "\n---Error Time : " + now);
+        console.error("---Error : /all " + err.code + "\n---Error Time : " + now);
         res.redirect("/500");
       } else {
-        res.status(200).render("index.ejs", {
+        res.status(200).render("all.ejs", {
           cnt: rows.length
         });
       }
@@ -92,8 +108,8 @@ module.exports = function(app, pool, maxLabel, teamConfig) {
     let queryTextLabel = "";
     const result = {};
 
-    // index page data
-    if (req.params.page === "index") {
+    // All page data
+    if (req.params.page === "all") {
       queryTextLabel = "select pj_name, pj_id, pj_link from project;";
     } else if (req.params.page === "team") {
       let teamname = teamConfig.name[req.params.detail];
