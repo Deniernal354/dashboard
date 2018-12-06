@@ -85,7 +85,8 @@ const maxLabel = (() => {
   };
 })();
 
-app.use("/", require("./routes/route.js")(app, pool, maxLabel, teamConfig));
+app.use("/", require("./routes/route.js")(app, pool, teamConfig));
+app.use("/getData", require("./routes/getData.js")(app, pool, maxLabel, teamConfig));
 app.use("/admin", require("./routes/admin.js")(app, passport, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(app, pool, teamConfig));
 
