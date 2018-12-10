@@ -248,20 +248,20 @@ function urlByBrowser() {
 }
 
 function selectDataApi(category, params) {
-  var apiResult = "";
+  var apiResult = "/getData";
   var url = urlByBrowser();
   url = url.substring(url.indexOf(":")+3);
 
   if (category === "chart") {
-    apiResult = "/getChartData" + url.substring(url.indexOf("/"));
+    apiResult += "/getChartData" + url.substring(url.indexOf("/"));
   } else if (category === "knob") {
     apiResult = "/admin/getKnobData/";
   } else if (category === "custom") {
-    apiResult = "/getCustomData/" + params.unit + "/" + params.preValId;
+    apiResult += "/getCustomData/" + params.unit + "/" + params.preValId;
   } else if (category === "initialModal") {
-    apiResult = "/getInitialModalData/" + params.pj_id;
+    apiResult += "/getInitialModalData/" + params.pj_id;
   } else if (category === "modalDetail") {
-    apiResult = "/getModalDataDetail/" + params.pj_id + "/" + params.build_id;
+    apiResult += "/getModalDataDetail/" + params.pj_id + "/" + params.build_id;
   }
   return apiResult;
 }

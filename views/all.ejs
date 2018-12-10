@@ -29,13 +29,17 @@
         <div class="">
           <div class="page-title">
             <div class="title_left">
-              <h3>통계</h3>
+              <h3>Main Dashboard</h3>
             </div>
 
             <% include ./partials/titleRight.ejs %>
           </div>
           <div class="clearfix"></div>
-
+          <div id="chartDiv" class="row">
+            <% for(var i=0; i< cnt; i++) { %>
+              <%- include("./partials/eachChart.ejs", {i: i}) %>
+            <% } %>
+          </div>
         </div>
       </div>
       <!-- /page content -->
