@@ -15,19 +15,9 @@ module.exports = function(app, pool, teamConfig) {
     res.redirect("/index");
   });
   router.get("/index", (req, res) => {
-    /*pool.query("select pj_id from project", (err, rows) => {
-      const now = new Date();
-
-      if (err) {
-        console.error("---Error : /index " + err.code + "\n---Error Time : " + now);
-        res.redirect("/500");
-      } else {
-        res.status(200).render("all.ejs", {
-          cnt: rows.length
-        });
-      }
-    });*/
-    res.status(200).render("index.ejs");
+    res.status(200).render("index.ejs", {
+      cnt: teamConfig.name.length-1
+    });
   });
 
   router.get("/all", (req, res) => {
