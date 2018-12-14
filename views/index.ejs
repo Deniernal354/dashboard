@@ -30,7 +30,7 @@
           <div class="row top_tiles">
             <div class="animated flipInY col-lg-4 col-md-4 col-sm-4 col-xs-12">
               <div class="tile-stats">
-                <div class="icon"><i class="fa fa-caret-square-o-right"></i></div>
+                <div class="icon"><i class="fa fa-folder-open"></i></div>
                 <div id="allCnt" class="count"></div>
                 <h3>SQA 전체 Project 수</h3>
                 <p>라이브러리 적용 Project</p>
@@ -38,7 +38,7 @@
             </div>
             <div class="animated flipInY col-lg-4 col-md-4 col-sm-4 col-xs-12">
               <div class="tile-stats">
-                <div class="icon"><i class="fa fa-comments-o"></i></div>
+                <div class="icon"><i class="fa fa-area-chart"></i></div>
                 <div id="todayCnt" class="count"></div>
                 <h3>오늘 수행된 Build 개수</h3>
                 <p id="todayProject">2018.12.05 기준</p>
@@ -75,7 +75,7 @@
                     <h2>Platform별 현황</h2>
                     <div class="clearfix"></div>
                   </div>
-                  <div class="x_content" style="padding-top:30px">
+                  <div class="x_contentcustom" style="padding-top:30px">
                     <table style="width:100%;">
                       <tr>
                         <th class="col-lg-5 col-md-5 col-sm-5 col-xs-5"></th>
@@ -130,22 +130,20 @@
                     </div>
                     <div class="clearfix"></div>
                   </div>
-                  <div class="x_content">
+                  <div class="x_contentcustom">
                     <div class="col-md-9 col-sm-12 col-xs-12">
                       <div id="failChartDiv" class="demo-container">
                         <canvas id="failChart"></canvas>
                       </div>
                     </div>
-
                     <div class="col-md-3 col-sm-12 col-xs-12">
-
+                      <div class="customborder"></div>
                       <div class="x_title">
                         <h3 id="failProjectTitle">Project 상세</h3>
                         <div class="clearfix"></div>
                       </div>
-                      <div class="fixed_height_390" style="overflow-y:scroll">
-                        <ul id="failProject" class="list-unstyled top_profiles scroll-view">
-                        </ul>
+                      <div style="max-height:530px; overflow-y: auto;">
+                        <ul id="failProject" class="list-unstyled top_profiles scroll-view"></ul>
                       </div>
                     </div>
                   </div>
