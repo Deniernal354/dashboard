@@ -12,3 +12,7 @@ Good luck!
 
 17.09.20
 G.H.Yoo
+
++Same for css.
++indexCustom.js = custom.js + daterangepicker.js (Only function init_daterangepicker() )
+18.12.10

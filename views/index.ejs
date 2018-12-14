@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <% include ./partials/header.ejs %>
+  <% include ./partials/index/header_index.ejs %>
   <title>Dashboard</title>
 </head>
 
@@ -27,26 +27,147 @@
       <!-- page content -->
       <div class="right_col" role="main">
         <div class="">
-          <div class="page-title">
-            <div class="title_left">
-              <h3>Main Dashboard</h3>
+          <div class="row top_tiles">
+            <div class="animated flipInY col-lg-4 col-md-4 col-sm-4 col-xs-12">
+              <div class="tile-stats">
+                <div class="icon"><i class="fa fa-caret-square-o-right"></i></div>
+                <div id="allCnt" class="count"></div>
+                <h3>SQA 전체 Project 수</h3>
+                <p>라이브러리 적용 Project</p>
+              </div>
+            </div>
+            <div class="animated flipInY col-lg-4 col-md-4 col-sm-4 col-xs-12">
+              <div class="tile-stats">
+                <div class="icon"><i class="fa fa-comments-o"></i></div>
+                <div id="todayCnt" class="count"></div>
+                <h3>오늘 수행된 Build 개수</h3>
+                <p id="todayProject">2018.12.05 기준</p>
+              </div>
+            </div>
+            <div class="animated flipInY col-lg-4 col-md-4 col-sm-4 col-xs-12">
+              <div class="tile-stats">
+                <div class="icon"><i class="fa fa-check-square-o"></i></div>
+                <div id="passCnt" class="count"></div>
+                <h3>Project 평균 성공률</h3>
+                <p>최근 1주일 기준</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 col-sm-6 col-xs-12">
+              <div class="x_panel tile fixed_height_350 overflow_hidden">
+                <div class="x_title">
+                  <h2>Team별 현황</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <% for(var i=0; i< cnt; i++) { %>
+                    <%- include("./partials/index/teamSummary.ejs", {i: i}) %>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="x_panel tile fixed_height_350 overflow_hidden">
+                  <div class="x_title">
+                    <h2>Platform별 현황</h2>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content" style="padding-top:30px">
+                    <table style="width:100%;">
+                      <tr>
+                        <th class="col-lg-5 col-md-5 col-sm-5 col-xs-5"></th>
+                        <th class="col-lg-7 col-md-7 col-sm-7 col-xs-7"></th>
+                      </tr>
+                      <tr>
+                        <td>
+                          <canvas id="platformChartDiv" class="canvasDoughnut"></canvas>
+                        </td>
+                        <td>
+                          <table style="width:100%;table-layout:fixed" class="tile_info">
+                            <tr>
+                              <td>
+                                <h3 id="plat_info0" class="plat_info"><i class="fa fa-square pass"></i>
+                                   PC Web
+                                 </h3>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <h3 id="plat_info1" class="plat_info"><i class="fa fa-square fail"></i>
+                                   Mobile Web
+                                 </h3>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <h3 id="plat_info2" class="plat_info"><i class="fa fa-square skip"></i>
+                                   Mobile App
+                                 </h3>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <% include ./partials/titleRight.ejs %>
-          </div>
-          <div class="clearfix"></div>
-          <div id="chartDiv" class="row">
-            <% for(var i=0; i< cnt; i++) { %>
-              <%- include("./partials/eachChart.ejs", {i: i}) %>
-            <% } %>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h3><b>10%</b>이상 Fail인 Project</h3>
+                    <div class="filter">
+                      <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                        <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                      </div>
+                    </div>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div class="col-md-9 col-sm-12 col-xs-12">
+                      <div id="failChartDiv" class="demo-container">
+                        <canvas id="failChart"></canvas>
+                      </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+
+                      <div class="x_title">
+                        <h3 id="failProjectTitle">Project 상세</h3>
+                        <div class="clearfix"></div>
+                      </div>
+                      <div class="fixed_height_390" style="overflow-y:scroll">
+                        <ul id="failProject" class="list-unstyled top_profiles scroll-view">
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- /page content -->
+        <!-- /page content -->
 
-      <% include ./partials/footer.ejs %>
+        <% include ./partials/footer.ejs %>
+      </div>
     </div>
-  </div>
-  <% include ./partials/srcChart.ejs %>
+
+  <script src="/js/libraries.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+  <!-- Moment.js -->
+  <script src="/scripts/daterangepicker/moment.min.js"></script>
+  <!-- daterangepicker -->
+  <script src="/scripts/daterangepicker/daterangepicker.js"></script>
+  <!-- Custom Theme Scripts -->
+  <script src="/js/indexCustom.min.js"></script>
 </body>
 </html>
