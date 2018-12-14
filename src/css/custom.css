@@ -16,6 +16,17 @@ html , body{
   color: rgba(130, 130, 130, 1.0);
 }
 
+.customborder:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 3;
+  height: 100%;
+  border-left: 2px solid #E6E9ED;
+  margin-top: 10px;
+  margin-bottom: 10px
+}
+
 .media .profile_thumb {
   border: 1px solid;
   width: 50px;
@@ -991,6 +1002,15 @@ h2 {
   float: left;
   clear: both;
   margin-top: 5px;
+}
+.x_contentcustom {
+  padding: 0 5px 6px;
+  position: relative;
+  width: 100%;
+  float: left;
+  clear: both;
+  margin-top: 5px;
+  display:flex;
 }
 .x_content h4 {
   font-size: 16px;
