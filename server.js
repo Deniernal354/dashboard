@@ -10,11 +10,11 @@ const compression = require("compression");
 // DB
 const dbConfig = require("./config/dbConfig.json");
 const teamConfig = require("./config/teamConfig.json");
+const platformConfig = require("./config/platformConfig.json");
 let pool;
 
 function handleDisconnect() {
   let now = new Date();
-  console.log("Connection handler called at : " + now);
   pool = db.createPool(dbConfig);
 
   pool.on("connection", (err) => {
@@ -86,7 +86,7 @@ const maxLabel = (() => {
 })();
 
 app.use("/", require("./routes/route.js")(app, pool, teamConfig));
-app.use("/getData", require("./routes/getData.js")(app, pool, maxLabel, teamConfig));
+app.use("/getData", require("./routes/getData.js")(app, pool, maxLabel, teamConfig, platformConfig));
 app.use("/admin", require("./routes/admin.js")(app, passport, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(app, pool, teamConfig));
 
