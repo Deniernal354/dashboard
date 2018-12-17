@@ -200,91 +200,55 @@ $(document).ready(function() {
 });
 
 // Custom functions
-function failEventListener(failChart, labels, data) {
-  document.getElementById("failChart").addEventListener("click", function(evt) {
-    var pointData = failChart.getElementsAtEventForMode(evt, "index", {
-      intersect: false
-    });
-
+function updateProjectDetail(labels, data, idx) {
+  return function() {
     var divFrag = document.createDocumentFragment();
     var uiParent = document.getElementById("failProject");
-    if (pointData.length != 0) {
-      while(uiParent.hasChildNodes()) {
-        uiParent.removeChild(uiParent.firstChild);
-      }
 
-      var idx = pointData[0]._index;
-      document.getElementById("failProjectTitle").innerText = "Project 상세 - " + labels[idx];
-      for(var i=0; i<data[0][idx]; i++) {
-        var rawdata = data[1][idx][i];
-        var li = document.createElement("li");
-        var a1 = document.createElement("a");
-        var itmp = document.createElement("i");
-
-        li.setAttribute("class", "media event");
-        a1.setAttribute("class", "pull-left border-pass profile_thumb");
-        itmp.setAttribute("class", "fa fa-user pass");
-        a1.appendChild(itmp);
-        li.appendChild(a1);
-
-        var divtmp = document.createElement("div");
-        divtmp.setAttribute("class", "media-body");
-        var a2 = document.createElement("a");
-        setAttributes(a2, {
-          "id": "failTitle" + i,
-          "class": "title",
-        });
-        a2.innerText = rawdata.pj_name;
-        var p1 = document.createElement("p");
-        var tmpTotal = rawdata.pass + rawdata.skip + rawdata.fail;
-        var tmprate = Math.round(rawdata.fail/tmpTotal*100).toFixed(1);
-        p1.setAttribute("id", "failp"+i);
-        p1.innerText = tmpTotal + "개 TC중 " + rawdata.fail + "개 TC Fail (" + tmprate + "%)";
-        var p2 = document.createElement("p");
-        var sm = document.createElement("small");
-        sm.setAttribute("id", "failauthor"+i);
-        sm.innerText = rawdata.pj_author;
-
-        p2.appendChild(sm);
-        divtmp.appendChild(a2);
-        divtmp.appendChild(p1);
-        divtmp.appendChild(p2);
-        li.appendChild(divtmp);
-        divFrag.appendChild(li);
-      }
-      document.getElementById("failProject").appendChild(divFrag);
+    while(uiParent.hasChildNodes()) {
+      uiParent.removeChild(uiParent.firstChild);
     }
-  });
-}
 
-function change_failChart(start, end) {
-  document.getElementById("failChartDiv").removeChild(document.getElementById("failChart"));
-  var newChart = document.createElement("canvas");
-  newChart.setAttribute("id", "failChart");
-  document.getElementById("failChartDiv").appendChild(newChart);
+    document.getElementById("failProjectTitle").innerText = "Project 상세 - " + labels[idx];
+    for(var i=0; i<data[0][idx]; i++) {
+      var rawdata = data[1][idx][i];
+      var li = document.createElement("li");
+      var a1 = document.createElement("a");
+      var itmp = document.createElement("i");
 
-  var uiParent = document.getElementById("failProject");
-  while(uiParent.hasChildNodes()) {
-    uiParent.removeChild(uiParent.firstChild);
-  }
+      li.setAttribute("class", "media event");
+      a1.setAttribute("class", "pull-left border-pass profile_thumb");
+      itmp.setAttribute("class", "fa fa-archive pass");
+      a1.appendChild(itmp);
+      li.appendChild(a1);
 
-  var getFailChartData = new XMLHttpRequest();
+      var divtmp = document.createElement("div");
+      divtmp.setAttribute("class", "media-body");
+      var a2 = document.createElement("a");
+      setAttributes(a2, {
+        "id": "failTitle" + i,
+        "class": "title",
+      });
+      a2.innerText = rawdata.pj_name;
+      var p1 = document.createElement("p");
+      var tmpTotal = rawdata.pass + rawdata.skip + rawdata.fail;
+      var tmprate = Math.round(rawdata.fail/tmpTotal*100).toFixed(1);
+      p1.setAttribute("id", "failp"+i);
+      p1.innerText = tmpTotal + "개 TC중 " + rawdata.fail + "개 TC Fail (" + tmprate + "%)";
+      var p2 = document.createElement("p");
+      var sm = document.createElement("small");
+      sm.setAttribute("id", "failauthor"+i);
+      sm.innerText = rawdata.pj_author;
 
-  getFailChartData.onreadystatechange = function() {
-    if (getFailChartData.status === 404) {
-      window.location = "/404";
-    } else if (getFailChartData.status === 500) {
-      window.location = "/500";
+      p2.appendChild(sm);
+      divtmp.appendChild(a2);
+      divtmp.appendChild(p1);
+      divtmp.appendChild(p2);
+      li.appendChild(divtmp);
+      divFrag.appendChild(li);
     }
+    document.getElementById("failProject").appendChild(divFrag);
   };
-
-  getFailChartData.open("GET", "/getData/getFailChartData?start=" + start + "&end=" + end, true);
-  getFailChartData.send();
-  getFailChartData.addEventListener("load", function() {
-    var parsedResult = JSON.parse(getFailChartData.responseText);
-
-    init_failChart(parsedResult, parsedResult.diff, parsedResult.end);
-  });
 }
 
 function init_failChart(parsedResult, diff, endDate) {
@@ -331,7 +295,47 @@ function init_failChart(parsedResult, diff, endDate) {
     }
   });
 
-  failEventListener(failChart, labels, data);
+  updateProjectDetail(labels, data, diff)();
+
+  document.getElementById("failChart").addEventListener("click", function(evt) {
+    var pointData = failChart.getElementsAtEventForMode(evt, "index", {
+      intersect: false
+    });
+
+    if (pointData.length != 0) {
+      updateProjectDetail(labels, data, pointData[0]._index)();
+    }
+  });
+}
+
+function change_failChart(start, end) {
+  document.getElementById("failChartDiv").removeChild(document.getElementById("failChart"));
+  var newChart = document.createElement("canvas");
+  newChart.setAttribute("id", "failChart");
+  document.getElementById("failChartDiv").appendChild(newChart);
+
+  var uiParent = document.getElementById("failProject");
+  while(uiParent.hasChildNodes()) {
+    uiParent.removeChild(uiParent.firstChild);
+  }
+
+  var getFailChartData = new XMLHttpRequest();
+
+  getFailChartData.onreadystatechange = function() {
+    if (getFailChartData.status === 404) {
+      window.location = "/404";
+    } else if (getFailChartData.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  getFailChartData.open("GET", "/getData/getFailChartData?start=" + start + "&end=" + end, true);
+  getFailChartData.send();
+  getFailChartData.addEventListener("load", function() {
+    var parsedResult = JSON.parse(getFailChartData.responseText);
+
+    init_failChart(parsedResult, parsedResult.diff, parsedResult.end);
+  });
 }
 
 function init_platformChart(parsedResult) {
