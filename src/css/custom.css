@@ -33,7 +33,7 @@ html , body{
   height: 50px;
   margin: 5px 10px 5px 0;
   border-radius: 50%;
-  padding: 9px 12px
+  padding: 9px 12px 9px 10px
 }
 .media .profile_thumb i {
   font-size: 30px
@@ -194,9 +194,7 @@ html , body{
   margin: 13px 0 0 3px
 }
 .site_title i {
-  border: 1px solid #EAEAEA;
-  padding: 5px 6px;
-  border-radius: 50%
+  padding: 5px 7px;
 }
 .site_title img {
   max-height: 66px;
@@ -1445,6 +1443,9 @@ span.right {
   margin: 0;
   line-height: 27px;
   font-weight: bold
+}
+.event .media-body {
+  text-align: center;
 }
 .event .media-body a.title {
   font-weight: bold
