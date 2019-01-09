@@ -4,7 +4,7 @@ module.exports = {
     "commonjs": true,
     "es6": true,
     "node": true,
-    "jquery":true
+    "jquery": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
@@ -15,11 +15,11 @@ module.exports = {
     "sourceType": "module"
   },
   "rules": {
-    "indent" : [
+    "indent": [
       "error",
       2
     ],
-    "quotes" : [
+    "quotes": [
       "error",
       "double"
     ],
@@ -27,10 +27,12 @@ module.exports = {
       "error",
       "always"
     ],
-    "no-unused-vars": ["off", { "varsIgnorePattern": "^h$" }],
-    "no-console" : "off"
+    "no-unused-vars": ["off", {
+      "varsIgnorePattern": "^h$"
+    }],
+    "no-console": "off"
   },
-  "globals":{
+  "globals": {
     "NProgress": false,
     "PNotify": false,
     "Chart": false

@@ -8,8 +8,8 @@ module.exports = function(app, pool, maxLabel, teamConfig, platformConfig) {
     let data = rows.slice();
 
     data.forEach(function(value) {
-      value.passrate = Math.round(value.pass/(value.pass + value.skip + value.fail)*100).toFixed(1);
-      value.failrate = Math.round(value.fail/(value.pass + value.skip + value.fail)*100).toFixed(1);
+      value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+      value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
     });
 
     result.data = data;
@@ -22,19 +22,28 @@ module.exports = function(app, pool, maxLabel, teamConfig, platformConfig) {
   function processIndexData(firstrows, secondrows) {
     const now = moment().format("YYYY/MM/DD");
     let result = {};
-    let teamResult = [[], [], []];
-    let platResult = [[], [], []];
+    let teamResult = [
+      [],
+      [],
+      []
+    ];
+    let platResult = [
+      [],
+      [],
+      []
+    ];
     let data = secondrows.slice();
-    let todayCnt = 0;    let prevProject = -1;
+    let todayCnt = 0;
+    let prevProject = -1;
 
     //firstrows
     result.allCnt = firstrows.length;
-    for(let i=1;i<teamConfig.name.length;i++) {
+    for (let i = 1; i < teamConfig.name.length; i++) {
       teamResult[0].push(teamConfig.name[i]);
       teamResult[1].push(0);
     }
 
-    for(let i=0;i<platformConfig.name.length;i++) {
+    for (let i = 0; i < platformConfig.name.length; i++) {
       platResult[0].push(platformConfig.name[i]);
       platResult[1].push(0);
     }
@@ -45,10 +54,10 @@ module.exports = function(app, pool, maxLabel, teamConfig, platformConfig) {
     });
 
     teamResult[1].forEach(function(value) {
-      teamResult[2].push(Math.round(value/result.allCnt*100).toFixed(1));
+      teamResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
     });
     platResult[1].forEach(function(value) {
-      platResult[2].push(Math.round(value/result.allCnt*100).toFixed(1));
+      platResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
     });
 
     result.teamResult = teamResult;
@@ -59,8 +68,8 @@ module.exports = function(app, pool, maxLabel, teamConfig, platformConfig) {
       if (value.start_t.slice(0, 10) === now) {
         todayCnt++;
       }
-      value.passrate = Math.round(value.pass/(value.pass + value.skip + value.fail)*100).toFixed(1);
-      value.failrate = Math.round(value.fail/(value.pass + value.skip + value.fail)*100).toFixed(1);
+      value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+      value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
     });
 
     result.todayCnt = todayCnt;
