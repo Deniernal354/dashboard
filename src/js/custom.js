@@ -767,7 +767,23 @@ function init_select2() {
 }
 
 function init_modal_detail(pj_id, build_id) {
-  return function() {
+  var getModalDataDetail = new XMLHttpRequest();
+
+  getModalDataDetail.onreadystatechange = function() {
+    if (getModalDataDetail.status === 404) {
+      window.location = "/404";
+    } else if (getModalDataDetail.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  getModalDataDetail.open("GET", selectDataApi("modalDetail", {
+    "pj_id": pj_id,
+    "build_id": build_id,
+  }), true);
+  getModalDataDetail.send();
+  getModalDataDetail.addEventListener("load", function() {
+    var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
     var noChart = document.getElementById("noChart");
     var noInfo = document.getElementById("noInfo");
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
@@ -786,128 +802,109 @@ function init_modal_detail(pj_id, build_id) {
     pieChart_timeInfo.innerText = "";
     pieChart_passInfo.innerText = "";
 
-    var getModalDataDetail = new XMLHttpRequest();
+    if (parsedResult.getClassCount() === 0) {
+      noChart.innerText = "실패한 Build입니다";
+      noInfo.innerText = "실패한 Build입니다";
+    } else {
+      var divFrag = document.createDocumentFragment();
+      var prevPackName = "";
+      var packCnt = -1;
+      var tmptbody;
 
-    getModalDataDetail.onreadystatechange = function() {
-      if (getModalDataDetail.status === 404) {
-        window.location = "/404";
-      } else if (getModalDataDetail.status === 500) {
-        window.location = "/500";
-      }
-    };
+      for (var i = 0; i < parsedResult.getClassCount(); i++) {
+        if (parsedResult.getNameData()[i][0] !== prevPackName) {
+          prevPackName = parsedResult.getNameData()[i][0];
+          packCnt++;
 
-    getModalDataDetail.open("GET", selectDataApi("modalDetail", {
-      "pj_id": pj_id,
-      "build_id": build_id,
-    }), true);
-    getModalDataDetail.send();
-    getModalDataDetail.addEventListener("load", function() {
-      var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
+          tmptbody = document.createElement("tbody");
+          tmptbody.setAttribute("id", "tbody" + packCnt);
 
-      if (parsedResult.getClassCount() === 0) {
-        noChart.innerText = "실패한 Build입니다";
-        noInfo.innerText = "실패한 Build입니다";
-      } else {
-        var divFrag = document.createDocumentFragment();
-        var prevPackName = "";
-        var packCnt = -1;
-        var tmptbody;
-
-        for (var i = 0; i < parsedResult.getClassCount(); i++) {
-          if (parsedResult.getNameData()[i][0] !== prevPackName) {
-            prevPackName = parsedResult.getNameData()[i][0];
-            packCnt++;
-
-            tmptbody = document.createElement("tbody");
-            tmptbody.setAttribute("id", "tbody" + packCnt);
-
-            var tmptable = document.createElement("table");
-            setAttributes(tmptable, {
-              "id": "detailTable" + packCnt,
-              "class": "table table-hover",
-              "style": "text-align:center;"
-            });
-
-            var tmpthead = document.createElement("thead");
-            var tmptr = document.createElement("tr");
-            var tmpth = document.createElement("th");
-
-            tmpth.innerText = parsedResult.getNameData()[i][0];
-            tmptr.appendChild(tmpth);
-            tmpthead.appendChild(tmptr);
-
-            tmptable.appendChild(tmpthead);
-            tmptable.appendChild(tmptbody);
-            divFrag.appendChild(tmptable);
-          }
-
-          var tmptr2 = document.createElement("tr");
-          var tmpth2 = document.createElement("th");
-          var tmpth3 = document.createElement("th");
-          tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
-          tmpth2.innerText = parsedResult.getNameData()[i][1];
-          tmptr2.appendChild(tmpth2);
-          tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
-
-          var progresstmp = document.createElement("div");
-          progresstmp.setAttribute("class", "progress");
-          var propass = document.createElement("div");
-          var profail = document.createElement("div");
-          var proskip = document.createElement("div");
-
-          setAttributes(propass, {
-            "id": "propass" + i,
-            "class": "progress-bar progress-bar-striped progress-pass",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().pass[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: " + parsedResult.getProgressData().passrate[i] + "%"
+          var tmptable = document.createElement("table");
+          setAttributes(tmptable, {
+            "id": "detailTable" + packCnt,
+            "class": "table table-hover",
+            "style": "text-align:center;"
           });
-          propass.innerText = parsedResult.getProgressData().pass[i];
-          setAttributes(profail, {
-            "id": "profail" + i,
-            "class": "progress-bar progress-bar-striped progress-fail",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().fail[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: " + parsedResult.getProgressData().failrate[i] + "%"
-          });
-          profail.innerText = parsedResult.getProgressData().fail[i];
-          setAttributes(proskip, {
-            "id": "proskip" + i,
-            "class": "progress-bar progress-bar-striped progress-skip",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().skip[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: " + parsedResult.getProgressData().skiprate[i] + "%"
-          });
-          proskip.innerText = parsedResult.getProgressData().skip[i];
 
-          progresstmp.appendChild(propass);
-          progresstmp.appendChild(profail);
-          progresstmp.appendChild(proskip);
-          tmpth3.appendChild(progresstmp);
-          tmptr2.appendChild(tmpth3);
-          tmptbody.appendChild(tmptr2);
+          var tmpthead = document.createElement("thead");
+          var tmptr = document.createElement("tr");
+          var tmpth = document.createElement("th");
+
+          tmpth.innerText = parsedResult.getNameData()[i][0];
+          tmptr.appendChild(tmpth);
+          tmpthead.appendChild(tmptr);
+
+          tmptable.appendChild(tmpthead);
+          tmptable.appendChild(tmptbody);
+          divFrag.appendChild(tmptable);
         }
-        document.getElementById("classinfo").appendChild(divFrag);
 
-        pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
-        pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+        var tmptr2 = document.createElement("tr");
+        var tmpth2 = document.createElement("th");
+        var tmpth3 = document.createElement("th");
+        tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
+        tmpth2.innerText = parsedResult.getNameData()[i][1];
+        tmptr2.appendChild(tmpth2);
+        tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
 
-        var pieChart = new Chart(document.getElementById("pieChart_mo"), {
-          type: "pie",
-          data: parsedResult.getpieChartData(),
-          options: {
-            legend: false
-          }
+        var progresstmp = document.createElement("div");
+        progresstmp.setAttribute("class", "progress");
+        var propass = document.createElement("div");
+        var profail = document.createElement("div");
+        var proskip = document.createElement("div");
+
+        setAttributes(propass, {
+          "id": "propass" + i,
+          "class": "progress-bar progress-bar-striped progress-pass",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().pass[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().passrate[i] + "%"
         });
+        propass.innerText = parsedResult.getProgressData().pass[i];
+        setAttributes(profail, {
+          "id": "profail" + i,
+          "class": "progress-bar progress-bar-striped progress-fail",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().fail[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().failrate[i] + "%"
+        });
+        profail.innerText = parsedResult.getProgressData().fail[i];
+        setAttributes(proskip, {
+          "id": "proskip" + i,
+          "class": "progress-bar progress-bar-striped progress-skip",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().skip[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().skiprate[i] + "%"
+        });
+        proskip.innerText = parsedResult.getProgressData().skip[i];
+
+        progresstmp.appendChild(propass);
+        progresstmp.appendChild(profail);
+        progresstmp.appendChild(proskip);
+        tmpth3.appendChild(progresstmp);
+        tmptr2.appendChild(tmpth3);
+        tmptbody.appendChild(tmptr2);
       }
-    });
-  };
+      document.getElementById("classinfo").appendChild(divFrag);
+
+      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
+      pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+
+      var pieChart = new Chart(document.getElementById("pieChart_mo"), {
+        type: "pie",
+        data: parsedResult.getpieChartData(),
+        options: {
+          legend: false
+        }
+      });
+    }
+  });
 }
 
 function init_modal(pj_id, build_id) {
@@ -947,11 +944,11 @@ function init_modal(pj_id, build_id) {
         });
 
         if (pointData.length != 0) {
-          init_modal_detail(parsedResult.getPjLabel()[0].pj_id, parsedResult.getPjLabel()[0].build_id[pointData[0]._index])();
+          init_modal_detail(parsedResult.getPjLabel()[0].pj_id, parsedResult.getPjLabel()[0].build_id[pointData[0]._index]);
         }
       });
     });
-    init_modal_detail(pj_id, build_id)();
+    init_modal_detail(pj_id, build_id);
   };
 }
 
