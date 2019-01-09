@@ -5,14 +5,15 @@
  */
 
 (function($, sr) {
-// debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+  // debouncing function from John Hann
+  // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
   var debounce = function(func, threshold, execAsap) {
     var timeout;
 
     return function debounced() {
       var obj = this;
       var args = arguments;
+
       function delayed() {
         if (!execAsap) {
           func.apply(obj, args);
@@ -36,19 +37,19 @@
 })(jQuery, "smartresize");
 
 /**
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates and open the template in the editor.
-*/
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates and open the template in the editor.
+ */
 
 // First written by Ariel
 // https://stackoverflow.com/questions/12274748/
 function setAttributes(el, attrs) {
-  for(var key in attrs) {
+  for (var key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
 }
 
-(function(){
+(function() {
   // NProgress
   if (typeof NProgress !== "undefined") {
     NProgress.start();
@@ -152,7 +153,9 @@ function init_sidebar() {
     $(".menu_fixed").mCustomScrollbar({
       autoHideScrollbar: true,
       theme: "minimal",
-      mouseWheel: {preventDefault: true}
+      mouseWheel: {
+        preventDefault: true
+      }
     });
   }
 }
@@ -205,12 +208,12 @@ function updateProjectDetail(labels, data, idx) {
     var divFrag = document.createDocumentFragment();
     var uiParent = document.getElementById("failProject");
 
-    while(uiParent.hasChildNodes()) {
+    while (uiParent.hasChildNodes()) {
       uiParent.removeChild(uiParent.firstChild);
     }
 
     document.getElementById("failProjectTitle").innerText = "Project 상세 - " + labels[idx];
-    for(var i=0; i<data[0][idx]; i++) {
+    for (var i = 0; i < data[0][idx]; i++) {
       var rawdata = data[1][idx][i];
       var li = document.createElement("li");
       var a1 = document.createElement("a");
@@ -232,12 +235,12 @@ function updateProjectDetail(labels, data, idx) {
       a2.innerText = rawdata.pj_name;
       var p1 = document.createElement("p");
       var tmpTotal = rawdata.pass + rawdata.skip + rawdata.fail;
-      var tmprate = Math.round(rawdata.fail/tmpTotal*100).toFixed(1);
-      p1.setAttribute("id", "failp"+i);
+      var tmprate = Math.round(rawdata.fail / tmpTotal * 100).toFixed(1);
+      p1.setAttribute("id", "failp" + i);
       p1.innerText = tmpTotal + "개 TC중 " + rawdata.fail + "개 TC Fail (" + tmprate + "%)";
       var p2 = document.createElement("p");
       var sm = document.createElement("small");
-      sm.setAttribute("id", "failauthor"+i);
+      sm.setAttribute("id", "failauthor" + i);
       sm.innerText = rawdata.pj_author;
 
       p2.appendChild(sm);
@@ -252,20 +255,27 @@ function updateProjectDetail(labels, data, idx) {
 }
 
 function init_failChart(parsedResult, diff, endDate) {
-  if (!document.getElementById("failChart")) { return; }
-  if (typeof (Chart) === "undefined") { return; }
+  if (!document.getElementById("failChart")) {
+    return;
+  }
+  if (typeof(Chart) === "undefined") {
+    return;
+  }
 
   var labels = [];
-  var data = [[], []];
+  var data = [
+    [],
+    []
+  ];
 
-  for(var i=diff; i>-1; i--) {
+  for (var i = diff; i > -1; i--) {
     data[0][i] = 0;
     data[1][i] = [];
     labels.push(moment(endDate, "YYYY/MM/DD").subtract(i, "day").format("MM/DD"));
   }
 
   parsedResult.data.forEach(function(value) {
-    if (value.failrate*1 > 10.0) {
+    if (value.failrate * 1 > 10.0) {
       data[0][labels.indexOf(value.start_t.slice(5, 10))]++;
       data[1][labels.indexOf(value.start_t.slice(5, 10))].push(value);
     }
@@ -275,13 +285,11 @@ function init_failChart(parsedResult, diff, endDate) {
     type: "bar",
     data: {
       labels: labels,
-      datasets: [
-        {
-          label: "Project수",
-          backgroundColor: "rgba(102, 194, 255, 0.7)",
-          data: data[0]
-        }
-      ]
+      datasets: [{
+        label: "Project수",
+        backgroundColor: "rgba(102, 194, 255, 0.7)",
+        data: data[0]
+      }]
     },
     options: {
       scales: {
@@ -315,7 +323,7 @@ function change_failChart(start, end) {
   document.getElementById("failChartDiv").appendChild(newChart);
 
   var uiParent = document.getElementById("failProject");
-  while(uiParent.hasChildNodes()) {
+  while (uiParent.hasChildNodes()) {
     uiParent.removeChild(uiParent.firstChild);
   }
 
@@ -339,35 +347,37 @@ function change_failChart(start, end) {
 }
 
 function init_platformChart(parsedResult) {
-  if (!document.getElementById("platformChartDiv")) { return; }
-  if (typeof (Chart) === "undefined") { return; }
+  if (!document.getElementById("platformChartDiv")) {
+    return;
+  }
+  if (typeof(Chart) === "undefined") {
+    return;
+  }
 
-  for(var i=0;i<3;i++){
-    document.getElementById("plat_info"+i).innerHTML += "(" + parsedResult.platResult[2][i] + "%)";
+  for (var i = 0; i < 3; i++) {
+    document.getElementById("plat_info" + i).innerHTML += "(" + parsedResult.platResult[2][i] + "%)";
   }
 
   var platformChart = new Chart(document.getElementById("platformChartDiv"), {
     type: "doughnut",
     data: {
       labels: ["PC Web", "Mobile Web", "Mobile App"],
-      datasets: [
-        {
-          data: parsedResult.platResult[1],
-          backgroundColor: [
-            "rgba(102, 194, 255, 0.7)",
-            "rgba(255, 115, 115, 0.7)",
-            "rgba(130, 130, 130, 0.7)"
-          ],
-          hoverBackgroundColor: [
-            "rgba(102, 194, 255, 1.0)",
-            "rgba(255, 115, 115, 1.0)",
-            "rgba(130, 130, 130, 1.0)"
-          ],
-          label: [
-            "PC Web", "Mobile Web", "Mobile App"
-          ]
-        }
-      ]
+      datasets: [{
+        data: parsedResult.platResult[1],
+        backgroundColor: [
+          "rgba(102, 194, 255, 0.7)",
+          "rgba(255, 115, 115, 0.7)",
+          "rgba(130, 130, 130, 0.7)"
+        ],
+        hoverBackgroundColor: [
+          "rgba(102, 194, 255, 1.0)",
+          "rgba(255, 115, 115, 1.0)",
+          "rgba(130, 130, 130, 1.0)"
+        ],
+        label: [
+          "PC Web", "Mobile Web", "Mobile App"
+        ]
+      }]
     },
     options: {
       legend: false
@@ -392,21 +402,21 @@ function init_indexData() {
   getIndexData.addEventListener("load", function() {
     var parsedResult = JSON.parse(getIndexData.responseText);
     var tmppass = parsedResult.data.reduce(function(acc, value, i, array) {
-      return acc + value.passrate*1;
+      return acc + value.passrate * 1;
     }, 0.0);
 
     document.getElementById("allCnt").innerText = parsedResult.allCnt;
     document.getElementById("todayCnt").innerText = parsedResult.todayCnt;
-    document.getElementById("passCnt").innerText = Math.round(tmppass/parsedResult.data.length).toFixed(1) + "%";
+    document.getElementById("passCnt").innerText = Math.round(tmppass / parsedResult.data.length).toFixed(1) + "%";
     $("#todayProject").html(moment().format("YYYY.MM.DD") + " 기준");
 
-    for(var i=0;i<parsedResult.teamResult[0].length;i++){
-      document.getElementById("teamleft"+i).innerText = parsedResult.teamResult[0][i];
-      document.getElementById("teamright"+i).innerText = parsedResult.teamResult[1][i] + " 개";
-      setAttributes(document.getElementById("teamcenter"+i), {
+    for (var i = 0; i < parsedResult.teamResult[0].length; i++) {
+      document.getElementById("teamleft" + i).innerText = parsedResult.teamResult[0][i];
+      document.getElementById("teamright" + i).innerText = parsedResult.teamResult[1][i] + " 개";
+      setAttributes(document.getElementById("teamcenter" + i), {
         "aria-valuenow": parsedResult.teamResult[1][i],
         "aria-valuemax": parsedResult.allCnt,
-        "style": "width: "+ parsedResult.teamResult[2][i] + "%"
+        "style": "width: " + parsedResult.teamResult[2][i] + "%"
       });
     }
     init_platformChart(parsedResult);
@@ -417,7 +427,9 @@ function init_indexData() {
 
 /* COMPOSE */
 function init_compose() {
-  if (typeof ($.fn.slideToggle) === "undefined") { return; }
+  if (typeof($.fn.slideToggle) === "undefined") {
+    return;
+  }
   console.log("init_compose");
 
   $("#compose, .compose-close").click(function() {
@@ -428,7 +440,9 @@ function init_compose() {
 /* global moment */
 function init_daterangepicker() {
 
-  if( typeof ($.fn.daterangepicker) === "undefined"){ return; }
+  if (typeof($.fn.daterangepicker) === "undefined") {
+    return;
+  }
   console.log("init_daterangepicker");
 
   var cb = function(start, end, label) {
@@ -502,6 +516,6 @@ $(document).ready(function() {
   init_daterangepicker();
 });
 
-$(window).on("load", function(){
+$(window).on("load", function() {
   NProgress.done();
 });

@@ -1,26 +1,33 @@
-module.exports = function(app, pool, teamConfig) {
+module.exports = function(pool) {
   const express = require("express");
   const router = express.Router();
-  const { body, validationResult } = require("express-validator/check");
+  const teamConfig = require("../config/teamConfig.json");
+  const platformConfig = require("../config/platformConfig.json");
+  const {
+    body,
+    validationResult
+  } = require("express-validator/check");
 
-  function convertTeamName(pj_team) {
+  function convertName(parameter, category) {
     let result = "";
 
-    teamConfig.rules.map((value, idx) => {
+    category.rules.map((value, idx) => {
       var tmp = new RegExp(value, "i");
-      if (tmp.test(pj_team)) {
-        result = teamConfig.name[idx];
+      if (tmp.test(parameter)) {
+        result = category.name[idx];
       }
     });
 
     return result;
   }
 
-  router.post("/nametest", [body("pj_team").exists()], (req, res) => {
+  router.post("/nametest", [body("plat").exists()], (req, res) => {
     const err = validationResult(req);
-    const team = convertTeamName(req.body.pj_team);
+    const team = convertName(req.body.plat, platformConfig);
     if ((!err.isEmpty()) || (team === "")) {
-      return res.status(400).json({"error": "Bad Request"});
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     return res.status(200).json({
@@ -32,33 +39,37 @@ module.exports = function(app, pool, teamConfig) {
   router.post("/beforeSuite", [
     body("pj_name").exists(),
     body("pj_team").exists(),
-    body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
+    body("pj_platform").exists(),
     body("pj_author").exists()
   ], (req, res) => {
     const err = validationResult(req);
-    const team = convertTeamName(req.body.pj_team);
+    const team = convertName(req.body.pj_team, teamConfig);
+    const plat = convertName(req.body.pj_platform, platformConfig);
 
-    if ((!err.isEmpty()) || (team === "")) {
-      return res.status(400).json({"error": "Bad Request"});
+    if ((!err.isEmpty()) || (!team) || (!plat)) {
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     const name = req.body.pj_name;
-    const plat = req.body.pj_platform;
     const auth = req.body.pj_author;
     const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
-    "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
+      "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
     const insertQueryText = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', default); ";
 
     pool.query(queryText, (err, rows) => {
       const now = new Date();
 
-      function insertBuildno(pj_id){
+      function insertBuildno(pj_id) {
         const insertQueryTextBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0)+1), " + pj_id + ");";
 
         pool.query(insertQueryTextBuild, (err, rows) => {
           if (err) {
             console.error("---Error : /access/beforeSuite/ -> Buildno Insert :" + err.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryTextBuild);
-            return res.status(500).json({"error": "Internal Server Error"});
+            return res.status(500).json({
+              "error": "Internal Server Error"
+            });
           } else {
             res.status(200).json({
               "pj_id": pj_id,
@@ -70,7 +81,9 @@ module.exports = function(app, pool, teamConfig) {
 
       if (err) {
         console.error("---Error : /access/beforeSuite/ -> Project Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
-        return res.status(500).json({"error": "Internal Server Error"});
+        return res.status(500).json({
+          "error": "Internal Server Error"
+        });
       }
 
       if (rows[0].pj_id !== -1) {
@@ -79,7 +92,9 @@ module.exports = function(app, pool, teamConfig) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeSuite/ -> Project Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
-            return res.status(500).json({"error": "Internal Server Error"});
+            return res.status(500).json({
+              "error": "Internal Server Error"
+            });
           }
           insertBuildno(innerrows.insertId);
         });
@@ -95,8 +110,10 @@ module.exports = function(app, pool, teamConfig) {
     body("package_name").exists()
   ], (req, res) => {
     const err = validationResult(req);
-    if(!err.isEmpty()){
-      return res.status(400).json({"error": "Bad Request"});
+    if (!err.isEmpty()) {
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     const pjId = req.body.pj_id;
@@ -111,21 +128,29 @@ module.exports = function(app, pool, teamConfig) {
 
       if (err) {
         console.error("---Error : /access/beforeClass -> Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
-        return res.status(500).json({"error": "Internal Server Error"});
+        return res.status(500).json({
+          "error": "Internal Server Error"
+        });
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/beforeClass -> Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
-            return res.status(500).json({"error": "Internal Server Error"});
+            return res.status(500).json({
+              "error": "Internal Server Error"
+            });
           } else {
-            res.status(200).json({"class_id": innerrows.insertId});
+            res.status(200).json({
+              "class_id": innerrows.insertId
+            });
           }
         });
       } else {
         console.error("---Error : /access/beforeClass -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "There is no such pj_id, build_id"});
+        res.status(500).json({
+          "error": "There is no such pj_id, build_id"
+        });
       }
     });
   });
@@ -141,8 +166,10 @@ module.exports = function(app, pool, teamConfig) {
     body("result").exists().matches(/^[1-3]$/),
   ], (req, res) => {
     const err = validationResult(req);
-    if(!err.isEmpty()){
-      return res.status(400).json({"error": "Bad Request"});
+    if (!err.isEmpty()) {
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     const pjId = req.body.pj_id;
@@ -160,21 +187,29 @@ module.exports = function(app, pool, teamConfig) {
 
       if (err) {
         console.error("---Error : /access/afterMethod -> Search : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
-        return res.status(500).json({"error": "Internal Server Error"});
+        return res.status(500).json({
+          "error": "Internal Server Error"
+        });
       }
 
       if (rows[0].pj_id !== -1) {
         pool.query(insertQueryText, (innererr, innerrows) => {
           if (innererr) {
             console.error("---Error : /access/afterMethod -> Insert : " + innererr.code + "\n---Error Time : " + now + "\n---Error query : " + insertQueryText);
-            return res.status(500).json({"error": "Internal Server Error"});
+            return res.status(500).json({
+              "error": "Internal Server Error"
+            });
           } else {
-            res.status(200).json({"success": 1});
+            res.status(200).json({
+              "success": 1
+            });
           }
         });
       } else {
         console.error("---Error : /access/afterMethod -> Not Found : " + "\n---Error Time : " + now);
-        res.status(500).json({"error": "There is no such pj_id, build_id, class_id"});
+        res.status(500).json({
+          "error": "There is no such pj_id, build_id, class_id"
+        });
       }
     });
   });
@@ -183,8 +218,10 @@ module.exports = function(app, pool, teamConfig) {
     body("selectId").exists()
   ], (req, res) => {
     const err = validationResult(req);
-    if(!err.isEmpty()){
-      return res.status(400).json({"error": "Bad Request"});
+    if (!err.isEmpty()) {
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     const selectId = req.body.selectId;
@@ -194,10 +231,12 @@ module.exports = function(app, pool, teamConfig) {
     let queryText = "";
 
     if (len > 0 && len < 5) {
-      queryText = "delete from " + tableName[len-1] + " where ";
-      queryText += tableId[len-1] + " = " + selectId[len-1] + ";";
+      queryText = "delete from " + tableName[len - 1] + " where ";
+      queryText += tableId[len - 1] + " = " + selectId[len - 1] + ";";
     } else {
-      return res.status(400).json({"error": "Bad Request"});
+      return res.status(400).json({
+        "error": "Bad Request"
+      });
     }
 
     pool.query(queryText, (err, rows) => {
@@ -205,9 +244,11 @@ module.exports = function(app, pool, teamConfig) {
 
       if (err) {
         console.error("---Error : /access/deleteData : " + err.code + "\n---Error Time : " + now + "\n---Error query : " + queryText);
-        return res.status(500).json({"error": "Internal Server Error"});
+        return res.status(500).json({
+          "error": "Internal Server Error"
+        });
       } else {
-        console.log("Delete At " + tableName[len-1] + "(Id : " + selectId[len-1] + ") ---Time : "+ now);
+        console.log("Delete At " + tableName[len - 1] + "(Id : " + selectId[len - 1] + ") ---Time : " + now);
         res.status(200).send("올바르게 삭제되었습니다.");
       }
     });

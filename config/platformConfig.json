@@ -5,8 +5,8 @@
     "mobileApp"
   ],
   "rules": [
-    "pcWeb",
-    "mobileWeb",
-    "mobileApp"
+    "pc[\\s]?Web",
+    "mobile[\\s]?Web",
+    "mobile[\\s]?App"
   ]
 }

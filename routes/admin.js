@@ -1,4 +1,4 @@
-module.exports = function(app, passport, maxLabel) {
+module.exports = function(passport, maxLabel) {
   const express = require("express");
   const router = express.Router();
 
@@ -47,7 +47,9 @@ module.exports = function(app, passport, maxLabel) {
   });
 
   router.get("/403", (req, res) => {
-    res.status(403).render("page_403", {title: "Forbidden"});
+    res.status(403).render("page_403", {
+      title: "Forbidden"
+    });
   });
 
   router.get("/logout", (req, res) => {

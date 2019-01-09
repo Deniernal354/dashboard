@@ -3,10 +3,14 @@ get/post 터널링 조심(get은 get만, post는 post만) http://myweb/users?met
 res.download()	다운로드될 파일을 전송한다.
 res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.(content-type의 application 형식 미지정Case)
 */
-module.exports = function(app, pool, teamConfig) {
+module.exports = function(pool) {
   const express = require("express");
   const router = express.Router();
-  const { param, validationResult } = require("express-validator/check");
+  const teamConfig = require("../config/teamConfig.json");
+  const {
+    param,
+    validationResult
+  } = require("express-validator/check");
 
   router.get("/", (req, res) => {
     res.redirect("/index");
@@ -16,7 +20,7 @@ module.exports = function(app, pool, teamConfig) {
   });
   router.get("/index", (req, res) => {
     res.status(200).render("index.ejs", {
-      cnt: teamConfig.name.length-1
+      cnt: teamConfig.name.length - 1
     });
   });
 
@@ -40,7 +44,7 @@ module.exports = function(app, pool, teamConfig) {
   ], (req, res) => {
     const err = validationResult(req);
 
-    if(!err.isEmpty()){
+    if (!err.isEmpty()) {
       return res.redirect("/404");
     }
 
@@ -54,7 +58,7 @@ module.exports = function(app, pool, teamConfig) {
         res.redirect("/500");
       } else {
         res.status(200).render("team", {
-          title : teamName,
+          title: teamName,
           cnt: rows.length
         });
       }
@@ -66,7 +70,7 @@ module.exports = function(app, pool, teamConfig) {
   ], (req, res) => {
     const err = validationResult(req);
 
-    if(!err.isEmpty()){
+    if (!err.isEmpty()) {
       return res.redirect("/404");
     }
 
@@ -86,7 +90,7 @@ module.exports = function(app, pool, teamConfig) {
         res.redirect("/500");
       } else {
         res.status(200).render("platform", {
-          title : title_left,
+          title: title_left,
           cnt: rows.length
         });
       }
