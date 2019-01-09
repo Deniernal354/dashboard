@@ -1,27 +1,29 @@
-module.exports = function(app, pool, teamConfig) {
+module.exports = function(pool) {
   const express = require("express");
   const router = express.Router();
+  const teamConfig = require("../config/teamConfig.json");
+  const platformConfig = require("../config/platformConfig.json");
   const {
     body,
     validationResult
   } = require("express-validator/check");
 
-  function convertTeamName(pj_team) {
+  function convertName(parameter, category) {
     let result = "";
 
-    teamConfig.rules.map((value, idx) => {
+    category.rules.map((value, idx) => {
       var tmp = new RegExp(value, "i");
-      if (tmp.test(pj_team)) {
-        result = teamConfig.name[idx];
+      if (tmp.test(parameter)) {
+        result = category.name[idx];
       }
     });
 
     return result;
   }
 
-  router.post("/nametest", [body("pj_team").exists()], (req, res) => {
+  router.post("/nametest", [body("plat").exists()], (req, res) => {
     const err = validationResult(req);
-    const team = convertTeamName(req.body.pj_team);
+    const team = convertName(req.body.plat, platformConfig);
     if ((!err.isEmpty()) || (team === "")) {
       return res.status(400).json({
         "error": "Bad Request"
@@ -37,20 +39,20 @@ module.exports = function(app, pool, teamConfig) {
   router.post("/beforeSuite", [
     body("pj_name").exists(),
     body("pj_team").exists(),
-    body("pj_platform").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/),
+    body("pj_platform").exists(),
     body("pj_author").exists()
   ], (req, res) => {
     const err = validationResult(req);
-    const team = convertTeamName(req.body.pj_team);
+    const team = convertName(req.body.pj_team, teamConfig);
+    const plat = convertName(req.body.pj_platform, platformConfig);
 
-    if ((!err.isEmpty()) || (team === "")) {
+    if ((!err.isEmpty()) || (!team) || (!plat)) {
       return res.status(400).json({
         "error": "Bad Request"
       });
     }
 
     const name = req.body.pj_name;
-    const plat = req.body.pj_platform;
     const auth = req.body.pj_author;
     const queryText = "select ifnull((select max(pj_id) from project where pj_name= '" + name +
       "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";

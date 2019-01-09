@@ -1,6 +1,8 @@
-module.exports = function(app, pool, maxLabel, teamConfig, platformConfig) {
+module.exports = function(pool, maxLabel) {
   const express = require("express");
   const router = express.Router();
+  const teamConfig = require("../config/teamConfig.json");
+  const platformConfig = require("../config/platformConfig.json");
   let moment = require("moment");
 
   function processFailChartData(rows, diff, endTime) {

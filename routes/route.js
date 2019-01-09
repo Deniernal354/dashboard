@@ -3,9 +3,10 @@ get/post 터널링 조심(get은 get만, post는 post만) http://myweb/users?met
 res.download()	다운로드될 파일을 전송한다.
 res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.(content-type의 application 형식 미지정Case)
 */
-module.exports = function(app, pool, teamConfig) {
+module.exports = function(pool) {
   const express = require("express");
   const router = express.Router();
+  const teamConfig = require("../config/teamConfig.json");
   const {
     param,
     validationResult

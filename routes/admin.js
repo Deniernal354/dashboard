@@ -1,4 +1,4 @@
-module.exports = function(app, passport, maxLabel) {
+module.exports = function(passport, maxLabel) {
   const express = require("express");
   const router = express.Router();
 
