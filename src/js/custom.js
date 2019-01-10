@@ -288,7 +288,18 @@ function processdata(responseText) {
   pjLabel = responseText.pj_label.slice();
 
   if (totalChartCount) {
-    initialModalData.push(responseText.pj_label[0].pj_platform);
+    var platformtmp = responseText.pj_label[0].pj_platform;
+
+    if (platformtmp === "pcWeb") {
+      platformtmp = "PC Web";
+    } else if (platformtmp === "mobileWeb") {
+      platformtmp = "Mobile Web";
+    } else if (platformtmp === "mobileApp") {
+      platformtmp = "Mobile App";
+    } else {
+      platformtmp = "Error";
+    }
+    initialModalData.push(platformtmp);
     initialModalData.push(responseText.pj_label[0].pj_team);
     initialModalData.push(responseText.pj_label[0].pj_author);
   }
@@ -766,6 +777,27 @@ function init_select2() {
   document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener());
 }
 
+function clear_modalDetail() {
+  var noChart = document.getElementById("noChart");
+  var noInfo = document.getElementById("noInfo");
+  var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
+  var pieChart_passInfo = document.getElementById("pieChart_passInfo");
+
+  document.getElementById("panel_report").removeChild(document.getElementById("pieChart_mo"));
+  var newChart_mo = document.createElement("canvas");
+  newChart_mo.setAttribute("id", "pieChart_mo");
+  document.getElementById("panel_report").appendChild(newChart_mo);
+  document.getElementById("panel_detailReport").removeChild(document.getElementById("classinfo"));
+  var newinfo = document.createElement("div");
+  newinfo.setAttribute("id", "classinfo");
+  document.getElementById("panel_detailReport").appendChild(newinfo);
+
+  noChart.innerText = "";
+  noInfo.innerText = "";
+  pieChart_timeInfo.innerText = "";
+  pieChart_passInfo.innerText = "";
+}
+
 function init_modal_detail(pj_id, build_id) {
   var getModalDataDetail = new XMLHttpRequest();
 
@@ -789,18 +821,7 @@ function init_modal_detail(pj_id, build_id) {
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
     var pieChart_passInfo = document.getElementById("pieChart_passInfo");
 
-    document.getElementById("panel_report").removeChild(document.getElementById("pieChart_mo"));
-    document.getElementById("panel_detailReport").removeChild(document.getElementById("classinfo"));
-    var newChart_mo = document.createElement("canvas");
-    newChart_mo.setAttribute("id", "pieChart_mo");
-    document.getElementById("panel_report").appendChild(newChart_mo);
-    var newinfo = document.createElement("div");
-    newinfo.setAttribute("id", "classinfo");
-    document.getElementById("panel_detailReport").appendChild(newinfo);
-    noChart.innerText = "";
-    noInfo.innerText = "";
-    pieChart_timeInfo.innerText = "";
-    pieChart_passInfo.innerText = "";
+    clear_modalDetail();
 
     if (parsedResult.getClassCount() === 0) {
       noChart.innerText = "실패한 Build입니다";
@@ -932,6 +953,7 @@ function init_modal(pj_id, build_id) {
         data: parsedResult.getInnerData()[0],
         options: chartOption
       });
+      var prevBuild = -1;
 
       document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.getPjLabel()[0].pj_name;
       document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.getInitialModalData()[0];
@@ -944,7 +966,12 @@ function init_modal(pj_id, build_id) {
         });
 
         if (pointData.length != 0) {
-          init_modal_detail(parsedResult.getPjLabel()[0].pj_id, parsedResult.getPjLabel()[0].build_id[pointData[0]._index]);
+          var buildtmp = parsedResult.getPjLabel()[0].build_id[pointData[0]._index];
+
+          if (prevBuild != buildtmp) {
+            prevBuild = buildtmp;
+            init_modal_detail(parsedResult.getPjLabel()[0].pj_id, buildtmp);
+          }
         }
       });
     });
@@ -986,8 +1013,7 @@ function init_charts() {
       doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
       doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.getDuration()[i];
       doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
-      // link.setAttribute("href", "http://10.12.45.150:8080/jenkins/view/" + result.pj_label[i].pj_name);
-    } // Add DOM Fragment for Loop End
+    }
 
     function lineEventListener(lineChart, idx) {
       document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
@@ -1001,11 +1027,15 @@ function init_charts() {
           init_modal(parsedResult.getPjLabel()[idx].pj_id, parsedResult.getPjLabel()[idx].build_id[pointData[0]._index])();
 
           $("#detailPage").on("hidden.bs.modal", function() {
-            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
             var newChart = document.createElement("canvas");
-            newChart.setAttribute("id", "lineChart_mo");
-            newChart.setAttribute("height", "50%");
+
+            setAttributes(newChart, {
+              "id": "lineChart_mo",
+              "height": "50%"
+            });
+            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
             document.getElementById("panel_mo").appendChild(newChart);
+            clear_modalDetail();
           });
         }
       });
