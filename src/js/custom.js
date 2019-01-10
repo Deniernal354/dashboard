@@ -5,14 +5,15 @@
  */
 
 (function($, sr) {
-// debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
+  // debouncing function from John Hann
+  // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
   var debounce = function(func, threshold, execAsap) {
     var timeout;
 
     return function debounced() {
       var obj = this;
       var args = arguments;
+
       function delayed() {
         if (!execAsap) {
           func.apply(obj, args);
@@ -36,19 +37,19 @@
 })(jQuery, "smartresize");
 
 /**
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates and open the template in the editor.
-*/
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates and open the template in the editor.
+ */
 
 // First written by Ariel
 // https://stackoverflow.com/questions/12274748/
 function setAttributes(el, attrs) {
-  for(var key in attrs) {
+  for (var key in attrs) {
     el.setAttribute(key, attrs[key]);
   }
 }
 
-(function(){
+(function() {
   // NProgress
   if (typeof NProgress !== "undefined") {
     NProgress.start();
@@ -152,7 +153,9 @@ function init_sidebar() {
     $(".menu_fixed").mCustomScrollbar({
       autoHideScrollbar: true,
       theme: "minimal",
-      mouseWheel: {preventDefault: true}
+      mouseWheel: {
+        preventDefault: true
+      }
     });
   }
 }
@@ -250,7 +253,7 @@ function urlByBrowser() {
 function selectDataApi(category, params) {
   var apiResult = "/getData";
   var url = urlByBrowser();
-  url = url.substring(url.indexOf(":")+3);
+  url = url.substring(url.indexOf(":") + 3);
 
   if (category === "chart") {
     apiResult += "/getChartData" + url.substring(url.indexOf("/"));
@@ -267,12 +270,16 @@ function selectDataApi(category, params) {
 }
 
 function processdata(responseText) {
-  var labels = []; var chartData = []; var innerData = [];
+  var labels = [];
+  var chartData = [];
+  var innerData = [];
   var pjIndex = [];
 
   // UI info - pj_name / pj_id / pj_link / build_id
   var pjLabel = [];
-  var pjlink = [];  var buildTime = []; var duration = [];
+  var pjlink = [];
+  var buildTime = [];
+  var duration = [];
 
   // initialModalData - pj_platform / pj_team / pj_author
   var initialModalData = [];
@@ -281,7 +288,18 @@ function processdata(responseText) {
   pjLabel = responseText.pj_label.slice();
 
   if (totalChartCount) {
-    initialModalData.push(responseText.pj_label[0].pj_platform);
+    var platformtmp = responseText.pj_label[0].pj_platform;
+
+    if (platformtmp === "pcWeb") {
+      platformtmp = "PC Web";
+    } else if (platformtmp === "mobileWeb") {
+      platformtmp = "Mobile Web";
+    } else if (platformtmp === "mobileApp") {
+      platformtmp = "Mobile App";
+    } else {
+      platformtmp = "Error";
+    }
+    initialModalData.push(platformtmp);
     initialModalData.push(responseText.pj_label[0].pj_team);
     initialModalData.push(responseText.pj_label[0].pj_author);
   }
@@ -306,10 +324,12 @@ function processdata(responseText) {
 
     pjLabel[idx].build_id.push(value.build_id);
 
-    if (!value.start_t) { value.start_t = "0"; }
+    if (!value.start_t) {
+      value.start_t = "0";
+    }
 
     if (labels[idx].length < responseText.maxLabel) {
-      if (value.start_t === "0"){
+      if (value.start_t === "0") {
         labels[idx].push("Failed");
       } else {
         labels[idx].push(value.start_t.slice(5, 10));
@@ -332,40 +352,40 @@ function processdata(responseText) {
     }
   });
 
-  var pass = "rgba(102, 194, 255,";  var fail = "rgba(255, 115, 115,";  var skip = "rgba(130, 130, 130,";
+  var pass = "rgba(102, 194, 255,";
+  var fail = "rgba(255, 115, 115,";
+  var skip = "rgba(130, 130, 130,";
   for (var h = 0; h < totalChartCount; h++) {
     innerData[h] = {
       labels: labels[h],
-      datasets: [
-        {
-          label: "Fail",
-          backgroundColor: fail+" 0.7)",
-          borderColor: fail+" 0.7)",
-          pointBorderColor: fail+" 0.7)",
-          pointBackgroundColor: fail+" 0.7)",
-          pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: fail+" 1)",
-          data: chartData[h][1]
-        }, {
-          label: "Skip",
-          backgroundColor: skip+" 0.7)",
-          borderColor: skip+" 0.7)",
-          pointBorderColor: skip+" 0.7)",
-          pointBackgroundColor: skip+" 0.7)",
-          pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: skip+" 1)",
-          data: chartData[h][2]
-        }, {
-          label: "Pass",
-          backgroundColor: pass+" 0.7)",
-          borderColor: pass+" 0.7)",
-          pointBorderColor: pass+" 0.7)",
-          pointBackgroundColor: pass+" 0.7)",
-          pointHoverBackgroundColor: "#fff",
-          pointHoverBorderColor: pass+" 1)",
-          data: chartData[h][0]
-        }
-      ]
+      datasets: [{
+        label: "Fail",
+        backgroundColor: fail + " 0.7)",
+        borderColor: fail + " 0.7)",
+        pointBorderColor: fail + " 0.7)",
+        pointBackgroundColor: fail + " 0.7)",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: fail + " 1)",
+        data: chartData[h][1]
+      }, {
+        label: "Skip",
+        backgroundColor: skip + " 0.7)",
+        borderColor: skip + " 0.7)",
+        pointBorderColor: skip + " 0.7)",
+        pointBackgroundColor: skip + " 0.7)",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: skip + " 1)",
+        data: chartData[h][2]
+      }, {
+        label: "Pass",
+        backgroundColor: pass + " 0.7)",
+        borderColor: pass + " 0.7)",
+        pointBorderColor: pass + " 0.7)",
+        pointBackgroundColor: pass + " 0.7)",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: pass + " 1)",
+        data: chartData[h][0]
+      }]
     };
   }
 
@@ -392,13 +412,21 @@ function processdata(responseText) {
       return initialModalData;
     }
   };
-}// processdata end
+} // processdata end
 
 function processModalData(responseText) {
   var pieChartData = [];
-  var class_pass = [];  var class_fail = [];  var class_skip = []; var class_sum = [];
-  var class_passr = [];  var class_failr = [];  var class_skipr = [];
-  var build_pass = 0;  var build_fail = 0;  var build_skip = 0;  var build_sum = 0;
+  var class_pass = [];
+  var class_fail = [];
+  var class_skip = [];
+  var class_sum = [];
+  var class_passr = [];
+  var class_failr = [];
+  var class_skipr = [];
+  var build_pass = 0;
+  var build_fail = 0;
+  var build_skip = 0;
+  var build_sum = 0;
   var nameData = [];
   var classcount = responseText.classcount;
 
@@ -408,9 +436,9 @@ function processModalData(responseText) {
     class_pass.push(value.pass);
     class_fail.push(value.fail);
     class_skip.push(value.skip);
-    class_passr.push(Math.round(value.pass/tmpsum*100).toFixed(1));
-    class_failr.push(Math.round(value.fail/tmpsum*100).toFixed(1));
-    class_skipr.push(Math.round(value.skip/tmpsum*100).toFixed(1));
+    class_passr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
+    class_failr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
+    class_skipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
     class_sum.push(tmpsum);
 
     build_pass += value.pass;
@@ -424,28 +452,26 @@ function processModalData(responseText) {
 
   pieChartData = {
     labels: ["Fail", "Skip", "Pass"],
-    datasets: [
-      {
-        data: [
-          Math.round(build_fail/build_sum*100).toFixed(1),
-          Math.round(build_skip/build_sum*100).toFixed(1),
-          Math.round(build_pass/build_sum*100).toFixed(1)
-        ],
-        backgroundColor: [
-          "rgba(255, 115, 115, 0.7)",
-          "rgba(130, 130, 130, 0.7)",
-          "rgba(102, 194, 255, 0.7)"
-        ],
-        hoverBackgroundColor: [
-          "rgba(255, 115, 115, 1.0)",
-          "rgba(130, 130, 130, 1.0)",
-          "rgba(102, 194, 255, 1.0)"
-        ],
-        label: [
-          "Fail", "Skip", "Pass"
-        ]
-      }
-    ]
+    datasets: [{
+      data: [
+        Math.round(build_fail / build_sum * 100).toFixed(1),
+        Math.round(build_skip / build_sum * 100).toFixed(1),
+        Math.round(build_pass / build_sum * 100).toFixed(1)
+      ],
+      backgroundColor: [
+        "rgba(255, 115, 115, 0.7)",
+        "rgba(130, 130, 130, 0.7)",
+        "rgba(102, 194, 255, 0.7)"
+      ],
+      hoverBackgroundColor: [
+        "rgba(255, 115, 115, 1.0)",
+        "rgba(130, 130, 130, 1.0)",
+        "rgba(102, 194, 255, 1.0)"
+      ],
+      label: [
+        "Fail", "Skip", "Pass"
+      ]
+    }]
   };
 
   return {
@@ -478,8 +504,12 @@ function processModalData(responseText) {
 
 /* KNOB */
 function init_knob() {
-  if (typeof ($.fn.knob) === "undefined") { return; }
-  if (!document.getElementById("knobInput")) { return; }
+  if (typeof($.fn.knob) === "undefined") {
+    return;
+  }
+  if (!document.getElementById("knobInput")) {
+    return;
+  }
   console.log("init_knob");
 
   var knobData = new XMLHttpRequest();
@@ -552,7 +582,9 @@ function init_knob() {
 
 /* SMART WIZARD */
 function init_SmartWizard() {
-  if (typeof ($.fn.smartWizard) === "undefined") { return; }
+  if (typeof($.fn.smartWizard) === "undefined") {
+    return;
+  }
   console.log("init_SmartWizard");
 
   $("#wizard").smartWizard();
@@ -568,10 +600,17 @@ function init_SmartWizard() {
 
 /* SELECT2 */
 function init_select2() {
-  if (!document.getElementById("select2Div0")) { return; }
+  if (!document.getElementById("select2Div0")) {
+    return;
+  }
   console.log("init_select2");
 
-  var result = [[], [], [], []];
+  var result = [
+    [],
+    [],
+    [],
+    []
+  ];
   var selectId = [];
   var doc = document;
   var divFrag = document.createDocumentFragment();
@@ -591,7 +630,7 @@ function init_select2() {
       } else {
         var preValId;
         if (idx === 0) {
-          preValId = result[0][selectedIndex-1].pj_id;
+          preValId = result[0][selectedIndex - 1].pj_id;
         } else if (idx === 1) {
           preValId = result[1][selectedIndex].build_id;
         } else if (idx === 2) {
@@ -604,7 +643,7 @@ function init_select2() {
 
         var unitPool = ["buildno", "class", "testcase"];
 
-        if (idx >=0 && idx <=2) {
+        if (idx >= 0 && idx <= 2) {
           var selectCustomData = new XMLHttpRequest();
           selectCustomData.open("GET", selectDataApi("custom", {
             "unit": unitPool[idx],
@@ -641,7 +680,9 @@ function init_select2() {
 
   function customSubmitBtnListener() {
     return function() {
-      if ($("#select2_multiple0").val() === "Project 명") { return; }
+      if ($("#select2_multiple0").val() === "Project 명") {
+        return;
+      }
       var divFrag = document.createDocumentFragment();
       var deleteData = new XMLHttpRequest();
 
@@ -655,7 +696,9 @@ function init_select2() {
         }
       };
 
-      deleteData.send(JSON.stringify({ "selectId" : selectId }));
+      deleteData.send(JSON.stringify({
+        "selectId": selectId
+      }));
       deleteData.addEventListener("load", function() {
         var panel = doc.createElement("div");
         var title = doc.createElement("div");
@@ -734,149 +777,162 @@ function init_select2() {
   document.getElementById("customSubmitBtn").addEventListener("click", customSubmitBtnListener());
 }
 
+function clear_modalDetail() {
+  var noChart = document.getElementById("noChart");
+  var noInfo = document.getElementById("noInfo");
+  var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
+  var pieChart_passInfo = document.getElementById("pieChart_passInfo");
+
+  document.getElementById("panel_report").removeChild(document.getElementById("pieChart_mo"));
+  var newChart_mo = document.createElement("canvas");
+  newChart_mo.setAttribute("id", "pieChart_mo");
+  document.getElementById("panel_report").appendChild(newChart_mo);
+  document.getElementById("panel_detailReport").removeChild(document.getElementById("classinfo"));
+  var newinfo = document.createElement("div");
+  newinfo.setAttribute("id", "classinfo");
+  document.getElementById("panel_detailReport").appendChild(newinfo);
+
+  noChart.innerText = "";
+  noInfo.innerText = "";
+  pieChart_timeInfo.innerText = "";
+  pieChart_passInfo.innerText = "";
+}
+
 function init_modal_detail(pj_id, build_id) {
-  return function() {
+  var getModalDataDetail = new XMLHttpRequest();
+
+  getModalDataDetail.onreadystatechange = function() {
+    if (getModalDataDetail.status === 404) {
+      window.location = "/404";
+    } else if (getModalDataDetail.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  getModalDataDetail.open("GET", selectDataApi("modalDetail", {
+    "pj_id": pj_id,
+    "build_id": build_id,
+  }), true);
+  getModalDataDetail.send();
+  getModalDataDetail.addEventListener("load", function() {
+    var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
     var noChart = document.getElementById("noChart");
     var noInfo = document.getElementById("noInfo");
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
     var pieChart_passInfo = document.getElementById("pieChart_passInfo");
 
-    document.getElementById("panel_report").removeChild(document.getElementById("pieChart_mo"));
-    document.getElementById("panel_detailReport").removeChild(document.getElementById("classinfo"));
-    var newChart_mo = document.createElement("canvas");
-    newChart_mo.setAttribute("id", "pieChart_mo");
-    document.getElementById("panel_report").appendChild(newChart_mo);
-    var newinfo = document.createElement("div");
-    newinfo.setAttribute("id", "classinfo");
-    document.getElementById("panel_detailReport").appendChild(newinfo);
-    noChart.innerText = "";      noInfo.innerText = "";
-    pieChart_timeInfo.innerText = "";      pieChart_passInfo.innerText = "";
+    clear_modalDetail();
 
-    var getModalDataDetail = new XMLHttpRequest();
+    if (parsedResult.getClassCount() === 0) {
+      noChart.innerText = "실패한 Build입니다";
+      noInfo.innerText = "실패한 Build입니다";
+    } else {
+      var divFrag = document.createDocumentFragment();
+      var prevPackName = "";
+      var packCnt = -1;
+      var tmptbody;
 
-    getModalDataDetail.onreadystatechange = function() {
-      if (getModalDataDetail.status === 404) {
-        window.location = "/404";
-      } else if (getModalDataDetail.status === 500) {
-        window.location = "/500";
-      }
-    };
+      for (var i = 0; i < parsedResult.getClassCount(); i++) {
+        if (parsedResult.getNameData()[i][0] !== prevPackName) {
+          prevPackName = parsedResult.getNameData()[i][0];
+          packCnt++;
 
-    getModalDataDetail.open("GET", selectDataApi("modalDetail", {
-      "pj_id": pj_id,
-      "build_id": build_id,
-    }), true);
-    getModalDataDetail.send();
-    getModalDataDetail.addEventListener("load", function() {
-      var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
+          tmptbody = document.createElement("tbody");
+          tmptbody.setAttribute("id", "tbody" + packCnt);
 
-      if (parsedResult.getClassCount() === 0) {
-        noChart.innerText = "실패한 Build입니다";
-        noInfo.innerText = "실패한 Build입니다";
-      } else {
-        var divFrag = document.createDocumentFragment();
-        var prevPackName = ""; var packCnt = -1; var tmptbody;
-
-        for(var i=0; i<parsedResult.getClassCount(); i++) {
-          if (parsedResult.getNameData()[i][0] !== prevPackName) {
-            prevPackName = parsedResult.getNameData()[i][0];
-            packCnt++;
-
-            tmptbody = document.createElement("tbody");
-            tmptbody.setAttribute("id", "tbody"+packCnt);
-
-            var tmptable = document.createElement("table");
-            setAttributes(tmptable, {
-              "id": "detailTable" + packCnt,
-              "class": "table table-hover",
-              "style": "text-align:center;"
-            });
-
-            var tmpthead = document.createElement("thead");
-            var tmptr = document.createElement("tr");
-            var tmpth = document.createElement("th");
-
-            tmpth.innerText = parsedResult.getNameData()[i][0];
-            tmptr.appendChild(tmpth);
-            tmpthead.appendChild(tmptr);
-
-            tmptable.appendChild(tmpthead);
-            tmptable.appendChild(tmptbody);
-            divFrag.appendChild(tmptable);
-          }
-
-          var tmptr2 = document.createElement("tr");
-          var tmpth2 = document.createElement("th");
-          var tmpth3 = document.createElement("th");
-          tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
-          tmpth2.innerText = parsedResult.getNameData()[i][1];
-          tmptr2.appendChild(tmpth2);
-          tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
-
-          var progresstmp = document.createElement("div");
-          progresstmp.setAttribute("class", "progress");
-          var propass = document.createElement("div");
-          var profail = document.createElement("div");
-          var proskip = document.createElement("div");
-
-          setAttributes(propass, {
-            "id": "propass"+i,
-            "class": "progress-bar progress-bar-striped progress-pass",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().pass[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: "+ parsedResult.getProgressData().passrate[i] + "%"
+          var tmptable = document.createElement("table");
+          setAttributes(tmptable, {
+            "id": "detailTable" + packCnt,
+            "class": "table table-hover",
+            "style": "text-align:center;"
           });
-          propass.innerText = parsedResult.getProgressData().pass[i];
-          setAttributes(profail, {
-            "id": "profail"+i,
-            "class": "progress-bar progress-bar-striped progress-fail",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().fail[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: "+ parsedResult.getProgressData().failrate[i] + "%"
-          });
-          profail.innerText = parsedResult.getProgressData().fail[i];
-          setAttributes(proskip, {
-            "id": "proskip"+i,
-            "class": "progress-bar progress-bar-striped progress-skip",
-            "role": "progressbar",
-            "aria-valuenow": parsedResult.getProgressData().skip[i],
-            "aria-valuemin": 0,
-            "aria-valuemax": parsedResult.getProgressData().sum[i],
-            "style": "width: "+ parsedResult.getProgressData().skiprate[i] + "%"
-          });
-          proskip.innerText = parsedResult.getProgressData().skip[i];
 
-          progresstmp.appendChild(propass);
-          progresstmp.appendChild(profail);
-          progresstmp.appendChild(proskip);
-          tmpth3.appendChild(progresstmp);
-          tmptr2.appendChild(tmpth3);
-          tmptbody.appendChild(tmptr2);
+          var tmpthead = document.createElement("thead");
+          var tmptr = document.createElement("tr");
+          var tmpth = document.createElement("th");
+
+          tmpth.innerText = parsedResult.getNameData()[i][0];
+          tmptr.appendChild(tmpth);
+          tmpthead.appendChild(tmptr);
+
+          tmptable.appendChild(tmpthead);
+          tmptable.appendChild(tmptbody);
+          divFrag.appendChild(tmptable);
         }
-        document.getElementById("classinfo").appendChild(divFrag);
 
-        pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
-        pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+        var tmptr2 = document.createElement("tr");
+        var tmpth2 = document.createElement("th");
+        var tmpth3 = document.createElement("th");
+        tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
+        tmpth2.innerText = parsedResult.getNameData()[i][1];
+        tmptr2.appendChild(tmpth2);
+        tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
 
-        var pieChart = new Chart(document.getElementById("pieChart_mo"), {
-          type: "pie",
-          data: parsedResult.getpieChartData(),
-          options: {
-            legend: false
-          }
+        var progresstmp = document.createElement("div");
+        progresstmp.setAttribute("class", "progress");
+        var propass = document.createElement("div");
+        var profail = document.createElement("div");
+        var proskip = document.createElement("div");
+
+        setAttributes(propass, {
+          "id": "propass" + i,
+          "class": "progress-bar progress-bar-striped progress-pass",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().pass[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().passrate[i] + "%"
         });
+        propass.innerText = parsedResult.getProgressData().pass[i];
+        setAttributes(profail, {
+          "id": "profail" + i,
+          "class": "progress-bar progress-bar-striped progress-fail",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().fail[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().failrate[i] + "%"
+        });
+        profail.innerText = parsedResult.getProgressData().fail[i];
+        setAttributes(proskip, {
+          "id": "proskip" + i,
+          "class": "progress-bar progress-bar-striped progress-skip",
+          "role": "progressbar",
+          "aria-valuenow": parsedResult.getProgressData().skip[i],
+          "aria-valuemin": 0,
+          "aria-valuemax": parsedResult.getProgressData().sum[i],
+          "style": "width: " + parsedResult.getProgressData().skiprate[i] + "%"
+        });
+        proskip.innerText = parsedResult.getProgressData().skip[i];
+
+        progresstmp.appendChild(propass);
+        progresstmp.appendChild(profail);
+        progresstmp.appendChild(proskip);
+        tmpth3.appendChild(progresstmp);
+        tmptr2.appendChild(tmpth3);
+        tmptbody.appendChild(tmptr2);
       }
-    });
-  };
+      document.getElementById("classinfo").appendChild(divFrag);
+
+      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
+      pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+
+      var pieChart = new Chart(document.getElementById("pieChart_mo"), {
+        type: "pie",
+        data: parsedResult.getpieChartData(),
+        options: {
+          legend: false
+        }
+      });
+    }
+  });
 }
 
 function init_modal(pj_id, build_id) {
   return function() {
-    if (!document.getElementById("detailPage")) { return; }
+    if (!document.getElementById("detailPage")) {
+      return;
+    }
 
     var getInitialModalData = new XMLHttpRequest();
     getInitialModalData.onreadystatechange = function() {
@@ -897,6 +953,7 @@ function init_modal(pj_id, build_id) {
         data: parsedResult.getInnerData()[0],
         options: chartOption
       });
+      var prevBuild = -1;
 
       document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.getPjLabel()[0].pj_name;
       document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.getInitialModalData()[0];
@@ -908,18 +965,27 @@ function init_modal(pj_id, build_id) {
           intersect: false
         });
 
-        if (pointData.length != 0){
-          init_modal_detail(parsedResult.getPjLabel()[0].pj_id, parsedResult.getPjLabel()[0].build_id[pointData[0]._index])();
+        if (pointData.length != 0) {
+          var buildtmp = parsedResult.getPjLabel()[0].build_id[pointData[0]._index];
+
+          if (prevBuild != buildtmp) {
+            prevBuild = buildtmp;
+            init_modal_detail(parsedResult.getPjLabel()[0].pj_id, buildtmp);
+          }
         }
       });
     });
-    init_modal_detail(pj_id, build_id)();
+    init_modal_detail(pj_id, build_id);
   };
 }
 
 function init_charts() {
-  if (!document.getElementById("chartDiv")) { return; }
-  if (typeof (Chart) === "undefined") { return; }
+  if (!document.getElementById("chartDiv")) {
+    return;
+  }
+  if (typeof(Chart) === "undefined") {
+    return;
+  }
 
   console.log("init_charts");
 
@@ -943,37 +1009,40 @@ function init_charts() {
     var doc = document;
 
     for (var i = 0; i < chartloop; i++) {
-      doc.getElementById("title"+i).innerText = parsedResult.getPjLabel()[i].pj_name;
-      doc.getElementById("build"+i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
-      doc.getElementById("duration"+i).innerText = "Duration : " + parsedResult.getDuration()[i];
-      doc.getElementById("link"+i).setAttribute("href", parsedResult.getPjLink()[i]);
-      // link.setAttribute("href", "http://10.12.45.150:8080/jenkins/view/" + result.pj_label[i].pj_name);
-    }// Add DOM Fragment for Loop End
+      doc.getElementById("title" + i).innerText = parsedResult.getPjLabel()[i].pj_name;
+      doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
+      doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.getDuration()[i];
+      doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
+    }
 
     function lineEventListener(lineChart, idx) {
-      document.getElementById("lineChart"+idx).addEventListener("click", function(evt) {
+      document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
         var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
           intersect: false
         });
 
-        if (pointData.length != 0){
+        if (pointData.length != 0) {
           $("#detailPage").modal("show");
 
           init_modal(parsedResult.getPjLabel()[idx].pj_id, parsedResult.getPjLabel()[idx].build_id[pointData[0]._index])();
 
-          $("#detailPage").on("hidden.bs.modal", function () {
-            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
+          $("#detailPage").on("hidden.bs.modal", function() {
             var newChart = document.createElement("canvas");
-            newChart.setAttribute("id", "lineChart_mo");
-            newChart.setAttribute("height", "50%");
+
+            setAttributes(newChart, {
+              "id": "lineChart_mo",
+              "height": "50%"
+            });
+            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
             document.getElementById("panel_mo").appendChild(newChart);
+            clear_modalDetail();
           });
         }
       });
     }
 
     for (i = 0; i < chartloop; i++) {
-      var lineChartTarget = document.getElementById("lineChart"+i);
+      var lineChartTarget = document.getElementById("lineChart" + i);
       var lineChart = new Chart(lineChartTarget, {
         type: "line",
         data: parsedResult.getInnerData()[i],
@@ -987,7 +1056,9 @@ function init_charts() {
 
 /* COMPOSE */
 function init_compose() {
-  if (typeof ($.fn.slideToggle) === "undefined") { return; }
+  if (typeof($.fn.slideToggle) === "undefined") {
+    return;
+  }
   console.log("init_compose");
 
   $("#compose, .compose-close").click(function() {
@@ -1003,6 +1074,6 @@ $(document).ready(function() {
   init_compose();
 });
 
-$(window).on("load", function(){
+$(window).on("load", function() {
   NProgress.done();
 });
