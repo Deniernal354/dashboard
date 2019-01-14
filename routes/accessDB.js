@@ -56,8 +56,9 @@ module.exports = function(pool) {
 
     const name = req.body.pj_name;
     const auth = req.body.pj_author;
+    const link = (req.body.pj_link) ? req.body.pj_link : "-";
     const findProject = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
-    const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', default); ";
+    const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
 
     pool.query(findProject, (err, rows) => {
       if (err) {
@@ -68,7 +69,21 @@ module.exports = function(pool) {
       }
 
       if (rows[0].pj_id !== -1) {
-        insertBuildno(rows[0].pj_id);
+        if (link === "-" || link === ""){
+          insertBuildno(rows[0].pj_id);
+        } else {
+          const checkLink = "update project set pj_link= '" + link + "' where pj_id = " + rows[0].pj_id + " and pj_link != '" + link + "';";
+
+          pool.query(checkLink, (inerr, inrows) => {
+            if (inerr) {
+              console.error("Error in /beforeSuite/checkLink\n" + now + ", " + inerr.code + "\n" + checkLink + "\n---");
+              return res.status(500).json({
+                "error": "Internal Server Error"
+              });
+            }
+            insertBuildno(rows[0].pj_id);
+          });
+        }
       } else {
         pool.query(insertProject, (inerr, inrows) => {
           if (inerr) {
