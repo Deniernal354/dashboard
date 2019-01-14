@@ -110,7 +110,7 @@ module.exports = function(pool) {
     res.status(500).render("page_500");
   });
 
-  router.use("/404", (req, res) => {
+  router.get("/404", (req, res) => {
     res.status(404).render("page_404");
   });
   return router;

@@ -85,13 +85,22 @@ app.use("/", require("./routes/route.js")(pool));
 app.use("/getData", require("./routes/getData.js")(pool, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(pool));
 app.use("/admin", require("./routes/admin.js")(passport, maxLabel));
+app.get("*", (req, res, next) => {
+  let err = new Error();
+
+  err.status = 404;
+  next(err);
+});
+
 app.use((err, req, res, next) => {
-  if (err.status === 400) {
+  if (err.status === 500) {
+    res.status(500).render("page_500");
+  } else if (err.status === 404) {
+    res.status(404).render("page_404");
+  } else {
     res.status(400).json({
       "error": "Bad Request"
     });
-  } else {
-    res.status(404).render("page_404");
   }
 });
 
