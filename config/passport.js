@@ -1,4 +1,6 @@
 module.exports = function(passport, LocalStrategy) {
+  let moment = require("moment");
+
   passport.use(new LocalStrategy({
     usernameField: "userid",
     passwordField: "password",
@@ -17,9 +19,9 @@ module.exports = function(passport, LocalStrategy) {
   }));
 
   passport.serializeUser((user, done) => {
-    const now = new Date();
+    const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-    console.log("Time : " + now + " / Serialize-User -- " + user.user_id);
+    console.log("Serialize-User : " + user.user_id + " / " + now);
     done(null, user);
   });
   passport.deserializeUser((user, done) => {

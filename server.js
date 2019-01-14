@@ -8,26 +8,26 @@ const LocalStrategy = require("passport-local").Strategy;
 const compression = require("compression");
 const app = express();
 const serverPortNo = 80;
+let moment = require("moment");
 
 // DB
 const dbConfig = require("./config/dbConfig.json");
 let pool;
 
 function handleDisconnect() {
-  let now = new Date();
   pool = db.createPool(dbConfig);
 
   pool.on("connection", (err) => {
-    now = new Date();
+    const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
     if (err) {
-      console.log("Error in Making a connection : " + now);
+      console.log("Connecting... : " + now);
       setTimeout(handleDisconnect, 3000);
     }
   });
 
   pool.on("error", (err) => {
-    now = new Date();
+    const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
       console.log("Connection Lost : " + now);
@@ -96,7 +96,7 @@ app.use((err, req, res, next) => {
 });
 
 const server = app.listen(serverPortNo, () => {
-  const now = new Date();
+  const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-  console.log("Server Start Time : " + now);
+  console.log("Server Start : " + now);
 });

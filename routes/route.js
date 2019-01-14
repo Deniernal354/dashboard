@@ -11,6 +11,7 @@ module.exports = function(pool) {
     param,
     validationResult
   } = require("express-validator/check");
+  let moment = require("moment");
 
   router.get("/", (req, res) => {
     res.redirect("/index");
@@ -26,10 +27,10 @@ module.exports = function(pool) {
 
   router.get("/all", (req, res) => {
     pool.query("select pj_id from project", (err, rows) => {
-      const now = new Date();
+      const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("---Error : /all " + err.code + "\n---Error Time : " + now);
+        console.error("Error in /all\n" + now + ", " + err.code + "\n---");
         res.redirect("/500");
       } else {
         res.status(200).render("all.ejs", {
@@ -51,10 +52,10 @@ module.exports = function(pool) {
     let teamName = teamConfig.name[req.params.teamNo];
 
     pool.query("select pj_id from project where pj_team = '" + teamName + "';", (err, rows) => {
-      const now = new Date();
+      const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("---Error : /teamCnt " + err.code + "\n---Error Time : " + now);
+        console.error("Error in /team\n" + now + ", " + err.code + "\n---");
         res.redirect("/500");
       } else {
         res.status(200).render("team", {
@@ -83,10 +84,10 @@ module.exports = function(pool) {
     }
 
     pool.query("select pj_id from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
-      const now = new Date();
+      const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("---Error : /platfromCnt " + err.code + "\n---Error Time : " + now);
+        console.error("Error in /platform\n" + now + ", " + err.code + "\n---");
         res.redirect("/500");
       } else {
         res.status(200).render("platform", {
