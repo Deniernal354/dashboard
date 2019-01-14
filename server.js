@@ -8,26 +8,26 @@ const LocalStrategy = require("passport-local").Strategy;
 const compression = require("compression");
 const app = express();
 const serverPortNo = 80;
+let moment = require("moment");
 
 // DB
 const dbConfig = require("./config/dbConfig.json");
 let pool;
 
 function handleDisconnect() {
-  let now = new Date();
   pool = db.createPool(dbConfig);
 
   pool.on("connection", (err) => {
-    now = new Date();
+    const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
     if (err) {
-      console.log("Error in Making a connection : " + now);
+      console.log("Connecting... : " + now);
       setTimeout(handleDisconnect, 3000);
     }
   });
 
   pool.on("error", (err) => {
-    now = new Date();
+    const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
       console.log("Connection Lost : " + now);
@@ -85,18 +85,27 @@ app.use("/", require("./routes/route.js")(pool));
 app.use("/getData", require("./routes/getData.js")(pool, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(pool));
 app.use("/admin", require("./routes/admin.js")(passport, maxLabel));
+app.get("*", (req, res, next) => {
+  let err = new Error();
+
+  err.status = 404;
+  next(err);
+});
+
 app.use((err, req, res, next) => {
-  if (err.status === 400) {
+  if (err.status === 500) {
+    res.status(500).render("page_500");
+  } else if (err.status === 404) {
+    res.status(404).render("page_404");
+  } else {
     res.status(400).json({
       "error": "Bad Request"
     });
-  } else {
-    res.status(404).render("page_404");
   }
 });
 
 const server = app.listen(serverPortNo, () => {
-  const now = new Date();
+  const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-  console.log("Server Start Time : " + now);
+  console.log("Server Start : " + now);
 });

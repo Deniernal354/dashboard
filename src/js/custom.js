@@ -306,7 +306,8 @@ function processdata(responseText) {
     chartData[k][1] = [];
     chartData[k][2] = [];
     pjIndex[k] = responseText.pj_label[k].pj_id;
-    pjlink[k] = responseText.pj_label[k].pj_link;
+    var linktmp = responseText.pj_label[k].pj_link;
+    pjlink[k] = (linktmp.slice(0, 4) === "http") ? linktmp : "http://" + linktmp;
     buildTime[k] = [];
     buildTime[k][0] = []; // buildno
     buildTime[k][1] = []; // start_t
@@ -1007,7 +1008,11 @@ function init_charts() {
       doc.getElementById("title" + i).innerText = parsedResult.getPjLabel()[i].pj_name;
       doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
       doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.getDuration()[i];
-      doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
+
+      if (parsedResult.getPjLink()[i] !== "http://-") {
+        doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
+        doc.getElementById("link" + i).innerText = "Report Link";
+      }
     }
 
     function lineEventListener(lineChart, idx) {
