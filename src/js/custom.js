@@ -987,6 +987,24 @@ function init_charts() {
 
   Chart.defaults.global.legend = false;
 
+  var doc = document;
+
+  $("#detailPage").on("hidden.bs.modal", function() {
+    var newChart = doc.createElement("canvas");
+
+    setAttributes(newChart, {
+      "id": "lineChart_mo",
+      "height": "50%"
+    });
+    doc.getElementById("panel_mo").removeChild(doc.getElementById("lineChart_mo"));
+    doc.getElementById("panel_mo").appendChild(newChart);
+    doc.getElementById("detailPageLabel").innerText = "More Info - ";
+    doc.getElementById("platform_mo").innerText = "환경 : ";
+    doc.getElementById("team_mo").innerText = "팀 : ";
+    doc.getElementById("author_mo").innerText = "사용자 : ";
+    clear_modalDetail();
+  });
+
   var getChartData = new XMLHttpRequest();
 
   getChartData.onreadystatechange = function() {
@@ -1002,7 +1020,20 @@ function init_charts() {
   getChartData.addEventListener("load", function() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
     var chartloop = parsedResult.getTotalChartCount();
-    var doc = document;
+
+    function lineEventListener(lineChart, idx) {
+      document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
+        var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
+          intersect: false
+        });
+        var idtmp = parsedResult.getPjLabel()[idx];
+
+        if (pointData.length != 0) {
+          $("#detailPage").modal("show");
+          init_modal(idtmp.pj_id, idtmp.build_id[pointData[0]._index])();
+        }
+      });
+    }
 
     for (var i = 0; i < chartloop; i++) {
       doc.getElementById("title" + i).innerText = parsedResult.getPjLabel()[i].pj_name;
@@ -1013,35 +1044,7 @@ function init_charts() {
         doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
         doc.getElementById("link" + i).innerText = "Report Link";
       }
-    }
 
-    function lineEventListener(lineChart, idx) {
-      document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
-        var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
-          intersect: false
-        });
-
-        if (pointData.length != 0) {
-          $("#detailPage").modal("show");
-
-          init_modal(parsedResult.getPjLabel()[idx].pj_id, parsedResult.getPjLabel()[idx].build_id[pointData[0]._index])();
-
-          $("#detailPage").on("hidden.bs.modal", function() {
-            var newChart = document.createElement("canvas");
-
-            setAttributes(newChart, {
-              "id": "lineChart_mo",
-              "height": "50%"
-            });
-            document.getElementById("panel_mo").removeChild(document.getElementById("lineChart_mo"));
-            document.getElementById("panel_mo").appendChild(newChart);
-            clear_modalDetail();
-          });
-        }
-      });
-    }
-
-    for (i = 0; i < chartloop; i++) {
       var lineChartTarget = document.getElementById("lineChart" + i);
       var lineChart = new Chart(lineChartTarget, {
         type: "line",
@@ -1050,7 +1053,7 @@ function init_charts() {
       });
 
       lineEventListener(lineChart, i);
-    } // add chart forloop end
+    }
   }); // EventListener end
 }
 
