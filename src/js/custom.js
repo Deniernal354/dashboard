@@ -580,7 +580,7 @@ function init_select2() {
   var selectId = [];
   var doc = document;
   var divFrag = document.createDocumentFragment();
-  
+
   // draw select2
   for (var i = 0; i < 4; i++) {
     $("#select2_multiple" + i).select2({
