@@ -234,36 +234,6 @@ var chartOption = {
   responsiveAnimationDuration: 0*/
 };
 
-function urlByBrowser() {
-  var agent = navigator.userAgent.toLowerCase();
-
-  // IE Case
-  if (agent.indexOf("msie") > -1 || agent.indexOf("trident" > -1)) {
-    return document.URL;
-  } else {
-    return document.documentURI;
-  }
-}
-
-function selectDataApi(category, params) {
-  var apiResult = "/getData";
-  var url = urlByBrowser();
-  url = url.substring(url.indexOf(":") + 3);
-
-  if (category === "chart") {
-    apiResult += "/getChartData" + url.substring(url.indexOf("/"));
-  } else if (category === "knob") {
-    apiResult = "/admin/getKnobData/";
-  } else if (category === "custom") {
-    apiResult += "/getCustomData/" + params.unit + "/" + params.preValId;
-  } else if (category === "initialModal") {
-    apiResult += "/getInitialModalData/" + params.pj_id;
-  } else if (category === "modalDetail") {
-    apiResult += "/getModalDataDetail/" + params.pj_id + "/" + params.build_id;
-  }
-  return apiResult;
-}
-
 function processdata(responseText) {
   var labels = [];
   var chartData = [];
@@ -515,7 +485,7 @@ function init_knob() {
     doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
   });
 
-  knobData.open("GET", selectDataApi("knob", null), true);
+  knobData.open("GET", "/admin/getKnobData/", true);
   knobData.send();
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
@@ -610,13 +580,53 @@ function init_select2() {
   var selectId = [];
   var doc = document;
   var divFrag = document.createDocumentFragment();
+  
+  // draw select2
+  for (var i = 0; i < 4; i++) {
+    $("#select2_multiple" + i).select2({
+      maximumSelectionLength: 2,
+      placeholder: "이전 항목을 선택해주세요",
+      containerCssClass: ":all:",
+      allowClear: true,
+      dropdownParent: $("#select2Div" + i)
+    });
+  }
+
+  var tmp = doc.createElement("option");
+  tmp.innerText = "Project 명";
+  tmp.setAttribute("display", "none");
+  divFrag.appendChild(tmp);
+
+  var customInit = new XMLHttpRequest();
+
+  customInit.onreadystatechange = function() {
+    if (customInit.status === 404) {
+      window.location = "/404";
+    } else if (customInit.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  customInit.open("GET", "/getData/getCustomData?un=pj&vi=-1", true);
+  customInit.send();
+  customInit.addEventListener("load", function() {
+    result[0] = JSON.parse(customInit.responseText);
+    result[0].forEach(function(value) {
+      var optionTmp = doc.createElement("option");
+
+      optionTmp.innerText = value.pj_name;
+      divFrag.appendChild(optionTmp);
+    });
+    document.getElementById("select2_multiple0").appendChild(divFrag);
+  });
+  // Custom Page initialization complete
 
   // Select2 Custom Functions
   function eachSelect2GetData(idx) {
     return function() {
-      //console.log(result);
       var previousValue = $("#select2_multiple" + idx).val();
       var selectedIndex = $("#select2_multiple" + idx)[0].selectedIndex;
+      var unitPool = ["bu", "cl", "te"]; // ["buildno", "class", "testcase"]
 
       if ($.isEmptyObject(previousValue) || previousValue === "Project 명") {
         for (var q = 3; q > idx; q--) {
@@ -636,15 +646,10 @@ function init_select2() {
         }
         selectId[idx] = preValId;
 
-
-        var unitPool = ["buildno", "class", "testcase"];
-
         if (idx >= 0 && idx <= 2) {
           var selectCustomData = new XMLHttpRequest();
-          selectCustomData.open("GET", selectDataApi("custom", {
-            "unit": unitPool[idx],
-            "preValId": preValId
-          }), true);
+
+          selectCustomData.open("GET", "/getData/getCustomData?un=" + unitPool[idx] + "&vi=" + preValId, true);
           selectCustomData.send();
           selectCustomData.addEventListener("load", function() {
             var divFragMini = document.createDocumentFragment();
@@ -679,9 +684,7 @@ function init_select2() {
       if ($("#select2_multiple0").val() === "Project 명") {
         return;
       }
-      var divFrag = document.createDocumentFragment();
       var deleteData = new XMLHttpRequest();
-
       deleteData.open("POST", "/access/deleteData", true);
       deleteData.setRequestHeader("Content-type", "application/json");
       deleteData.onreadystatechange = function() {
@@ -696,75 +699,11 @@ function init_select2() {
         "selectId": selectId
       }));
       deleteData.addEventListener("load", function() {
-        var panel = doc.createElement("div");
-        var title = doc.createElement("div");
-        var h2 = doc.createElement("h2");
-        var clearfix = doc.createElement("div");
-        var content = doc.createElement("div");
-        var resultDiv = doc.createElement("div");
-
-        panel.setAttribute("class", "x_panel");
-        title.setAttribute("class", "x_title");
-        h2.innerText = "결과";
-        h2.setAttribute("text-align", "center");
-        clearfix.setAttribute("class", "clearfix");
-        content.setAttribute("class", "x_content");
-        resultDiv.setAttribute("id", "resultDiv");
-
-        panel.appendChild(title);
-        title.appendChild(h2);
-        title.appendChild(clearfix);
-        panel.appendChild(content);
-        content.appendChild(resultDiv);
-        resultDiv.innerHTML = deleteData.responseText;
-        divFrag.appendChild(panel);
-        document.getElementById("customSortDiv").appendChild(divFrag);
+        alert("결과 : " + deleteData.responseText);
       });
     };
   }
   // Select2 Custom Functions End
-
-  // draw select2
-  for (var i = 0; i < 4; i++) {
-    $("#select2_multiple" + i).select2({
-      maximumSelectionLength: 2,
-      placeholder: "이전 항목을 선택해주세요",
-      containerCssClass: ":all:",
-      allowClear: true,
-      dropdownParent: $("#select2Div" + i)
-    });
-  }
-
-  var tmp = doc.createElement("option");
-  tmp.innerText = "Project 명";
-  tmp.setAttribute("display", "none");
-  divFrag.appendChild(tmp);
-
-  var customInit = new XMLHttpRequest();
-
-  customInit.onreadystatechange = function() {
-    if (customInit.status === 404) {
-      window.location = "/404";
-    } else if (customInit.status === 500) {
-      window.location = "/500";
-    }
-  };
-  customInit.open("GET", selectDataApi("custom", {
-    "unit": "project",
-    "preValId": -1
-  }), true);
-  customInit.send();
-  customInit.addEventListener("load", function() {
-    result[0] = JSON.parse(customInit.responseText);
-    result[0].forEach(function(value) {
-      var optionTmp = doc.createElement("option");
-
-      optionTmp.innerText = value.pj_name;
-      divFrag.appendChild(optionTmp);
-    });
-    document.getElementById("select2_multiple0").appendChild(divFrag);
-  });
-  // Custom Page initialization complete
 
   // Add Event Listener to each select2, submitBtn
   for (var j = 0; j < 4; j++) {
@@ -805,10 +744,7 @@ function init_modal_detail(pj_id, build_id) {
     }
   };
 
-  getModalDataDetail.open("GET", selectDataApi("modalDetail", {
-    "pj_id": pj_id,
-    "build_id": build_id,
-  }), true);
+  getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
   getModalDataDetail.send();
   getModalDataDetail.addEventListener("load", function() {
     var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
@@ -938,9 +874,8 @@ function init_modal(pj_id, build_id) {
         window.location = "/500";
       }
     };
-    getInitialModalData.open("GET", selectDataApi("initialModal", {
-      "pj_id": pj_id
-    }), true);
+
+    getInitialModalData.open("GET", "/getData/getInitialModalData?pi=" + pj_id, true);
     getInitialModalData.send();
     getInitialModalData.addEventListener("load", function() {
       var parsedResult = processdata(JSON.parse(getInitialModalData.responseText));
@@ -975,6 +910,17 @@ function init_modal(pj_id, build_id) {
   };
 }
 
+function urlByBrowser() {
+  var agent = navigator.userAgent.toLowerCase();
+
+  // IE Case
+  if (agent.indexOf("msie") > -1 || agent.indexOf("trident" > -1)) {
+    return document.URL;
+  } else {
+    return document.documentURI;
+  }
+}
+
 function init_charts() {
   if (!document.getElementById("chartDiv")) {
     return;
@@ -986,9 +932,6 @@ function init_charts() {
   console.log("init_charts");
 
   Chart.defaults.global.legend = false;
-
-  var doc = document;
-
   $("#detailPage").on("hidden.bs.modal", function() {
     var newChart = doc.createElement("canvas");
 
@@ -1005,6 +948,9 @@ function init_charts() {
     clear_modalDetail();
   });
 
+  var doc = document;
+  var url = urlByBrowser();
+  url = url.substring(url.indexOf(":") + 3);
   var getChartData = new XMLHttpRequest();
 
   getChartData.onreadystatechange = function() {
@@ -1015,7 +961,7 @@ function init_charts() {
     }
   };
 
-  getChartData.open("GET", selectDataApi("chart", null), true);
+  getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/")), true);
   getChartData.send();
   getChartData.addEventListener("load", function() {
     var parsedResult = processdata(JSON.parse(getChartData.responseText));
