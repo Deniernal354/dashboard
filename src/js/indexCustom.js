@@ -407,7 +407,11 @@ function init_indexData() {
 
     document.getElementById("allCnt").innerText = parsedResult.allCnt;
     document.getElementById("todayCnt").innerText = parsedResult.todayCnt;
-    document.getElementById("passCnt").innerText = Math.round(tmppass / parsedResult.data.length).toFixed(1) + "%";
+    if (parsedResult.data.length === 0) {
+      document.getElementById("passCnt").innerText = "0.0%";
+    } else {
+      document.getElementById("passCnt").innerText = Math.round(tmppass / parsedResult.data.length).toFixed(1) + "%";
+    }
     $("#todayProject").html(moment().format("YYYY.MM.DD") + " 기준");
 
     for (var i = 0; i < parsedResult.teamResult[0].length; i++) {
