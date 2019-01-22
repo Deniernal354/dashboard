@@ -57,6 +57,7 @@ module.exports = function(pool) {
     const name = req.body.pj_name;
     const auth = req.body.pj_author;
     const link = (req.body.pj_link) ? req.body.pj_link : "-";
+    const env = (req.body.pj_env) ? req.body.pj_env : "Real";
     const findProject = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
     const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
 
@@ -70,7 +71,7 @@ module.exports = function(pool) {
 
       if (rows[0].pj_id !== -1) {
         if (link === "-" || link === ""){
-          insertBuildno(rows[0].pj_id);
+          insertBuildno(rows[0].pj_id, env);
         } else {
           const checkLink = "update project set pj_link= '" + link + "' where pj_id = " + rows[0].pj_id + " and pj_link != '" + link + "';";
 
@@ -81,7 +82,7 @@ module.exports = function(pool) {
                 "error": "Internal Server Error"
               });
             }
-            insertBuildno(rows[0].pj_id);
+            insertBuildno(rows[0].pj_id, env);
           });
         }
       } else {
@@ -92,12 +93,12 @@ module.exports = function(pool) {
               "error": "Internal Server Error"
             });
           }
-          insertBuildno(inrows.insertId);
+          insertBuildno(inrows.insertId, env);
         });
       }
 
-      function insertBuildno(pj_id) {
-        const insertBuild = "insert into buildno values (default, (select ifnull((select max(buildno) from buildno b where pj_id = " + pj_id + "), 0)+1), " + pj_id + ");";
+      function insertBuildno(pj_id, env) {
+        const insertBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
 
         pool.query(insertBuild, (err, rows) => {
           if (err) {
@@ -136,7 +137,7 @@ module.exports = function(pool) {
     const buildId = req.body.build_id;
     const cname = req.body.class_name;
     const pname = req.body.package_name;
-    const findBuild = "select ifnull((select build_id from buildno where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
+    const findBuild = "select ifnull((select build_id from build where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
     const insertClass = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
 
     pool.query(findBuild, (err, rows) => {
@@ -240,7 +241,7 @@ module.exports = function(pool) {
 
     const selectId = req.body.selectId;
     const len = selectId.length;
-    const tableName = ["project", "buildno", "class", "method"];
+    const tableName = ["project", "build", "class", "method"];
     const tableId = ["pj_id", "build_id", "class_id", "method_id"];
     let deleteData = "";
 
