@@ -94,10 +94,6 @@ module.exports = function(pool) {
     });
   });
 
-  router.get("/customSort", (req, res) => {
-    res.status(200).render("customSort");
-  });
-
   router.get("/guide", (req, res) => {
     res.status(200).render("guide");
   });
