@@ -1,8 +1,4 @@
-/*
-get/post 터널링 조심(get은 get만, post는 post만) http://myweb/users?method=update&id=terry
-res.download()	다운로드될 파일을 전송한다.
-res.sendFile()	파일을 옥텟 스트림의 형태로 전송한다.(content-type의 application 형식 미지정Case)
-*/
+// get/post 터널링 조심!! (get은 get만, post는 post만) http://myweb/users?method=update&id=terry
 module.exports = function(pool) {
   const express = require("express");
   const router = express.Router();
@@ -26,7 +22,7 @@ module.exports = function(pool) {
   });
 
   router.get("/all", (req, res) => {
-    pool.query("select pj_id from project", (err, rows) => {
+    pool.query("select count(*) cnt from project", (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
@@ -34,7 +30,7 @@ module.exports = function(pool) {
         res.redirect("/500");
       } else {
         res.status(200).render("all.ejs", {
-          cnt: rows.length
+          cnt: rows[0].cnt
         });
       }
     });
@@ -51,7 +47,7 @@ module.exports = function(pool) {
 
     let teamName = teamConfig.name[req.params.teamNo];
 
-    pool.query("select pj_id from project where pj_team = '" + teamName + "';", (err, rows) => {
+    pool.query("select count(*) cnt from project where pj_team = '" + teamName + "';", (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
@@ -60,7 +56,7 @@ module.exports = function(pool) {
       } else {
         res.status(200).render("team", {
           title: teamName,
-          cnt: rows.length
+          cnt: rows[0].cnt
         });
       }
     });
@@ -83,7 +79,7 @@ module.exports = function(pool) {
       title_left = "Mobile Web 환경";
     }
 
-    pool.query("select pj_id from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
+    pool.query("select count(*) cnt from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
@@ -92,7 +88,7 @@ module.exports = function(pool) {
       } else {
         res.status(200).render("platform", {
           title: title_left,
-          cnt: rows.length
+          cnt: rows[0].cnt
         });
       }
     });
