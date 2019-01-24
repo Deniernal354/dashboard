@@ -160,10 +160,16 @@ module.exports = function(pool, maxLabel) {
   });
 
   router.get("/getCustomData", (req, res) => {
+    let teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
     let mainData = "";
 
     if (req.query.un === "pj") {
       mainData = "select pj_id, pj_name, pj_team from project";
+      if (teamname === "SQA") {
+        mainData += ";";
+      } else {
+        mainData += " where pj_team = '" + teamname + "';";
+      }
     } else if (req.query.un === "bu") {
       mainData = "select build_id, buildno, buildenv from build where pj_id = " + req.query.vi + ";";
     } else if (req.query.un === "cl") {

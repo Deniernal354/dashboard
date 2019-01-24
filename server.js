@@ -5,9 +5,42 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcrypt-nodejs");
 const compression = require("compression");
 const app = express();
 const serverPortNo = 80;
+const maxLabel = (() => {
+  let realMaxLabel = 5;
+
+  return {
+    getMaxLabel: () => realMaxLabel,
+    getAbsoluteMaxLabel: () => 20,
+    setMaxLabel: value => {
+      realMaxLabel = value;
+    },
+  };
+})();
+const userControl = (() => {
+  let userid = [
+    "rootadmin",
+    "conadmin",
+    "poradmin",
+    "woradmin",
+    "comadmin",
+    "seradmin",
+    "cloadmin"
+  ];
+  let password = [];
+
+  userid.forEach((value) => {
+    password.push(bcrypt.hashSync(value, bcrypt.genSaltSync()));
+  });
+
+  return {
+    getUserid: () => userid,
+    getPassword: () => password
+  };
+})();
 let moment = require("moment");
 
 // DB
@@ -44,8 +77,7 @@ app.set("views", path.join(__dirname, "/views"));
 app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
 app.use(express.static(path.join(__dirname, "/public")));
 
-// ejs template
-// Template HTML -> app.set("view engine", "html");
+// IF Template HTML -> app.set("view engine", "html");
 app.set("view engine", "ejs");
 app.engine("html", require("ejs").renderFile);
 
@@ -64,23 +96,11 @@ app.use(session({
 }));
 
 // passport
-const passportConfig = require("./config/passport")(passport, LocalStrategy);
+const passportConfig = require("./config/passport")(passport, LocalStrategy, userControl);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// router
-const maxLabel = (() => {
-  let realMaxLabel = 5;
-
-  return {
-    getMaxLabel: () => realMaxLabel,
-    getAbsoluteMaxLabel: () => 20,
-    setMaxLabel: value => {
-      realMaxLabel = value;
-    },
-  };
-})();
-
+// routes
 app.use("/", require("./routes/route.js")(pool));
 app.use("/getData", require("./routes/getData.js")(pool, maxLabel));
 app.use("/access", require("./routes/accessDB.js")(pool));
