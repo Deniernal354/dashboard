@@ -11,14 +11,26 @@ module.exports = function(passport, maxLabel) {
   }
 
   router.get("/", (req, res) => {
-    if (req.session.user_id) {
+    if (req.session.userid) {
       res.redirect("/admin/adminPage");
     } else {
       res.status(200).render("admin_login");
     }
   });
 
-  router.get("/getKnobData/", (req, res) => {
+  router.post("/checkAdmin", passport.authenticate("local", {
+    successRedirect: "/admin/adminPage",
+    failureRedirect: "/admin/403"
+  }));
+
+  router.get("/adminPage", isAuthenticated, (req, res) => {
+    if (!req.session.userid) {
+      req.session.userid = req.user.userid;
+    }
+    res.status(200).render("admin");
+  });
+
+  router.get("/getKnobData", (req, res) => {
     res.status(200).json(maxLabel.getMaxLabel());
   });
 
@@ -34,27 +46,9 @@ module.exports = function(passport, maxLabel) {
     res.status(200).redirect("/admin");
   });
 
-  router.post("/checkAdmin", passport.authenticate("local", {
-    successRedirect: "/admin/adminPage",
-    failureRedirect: "/admin/403",
-  }));
-
-  router.get("/adminPage", isAuthenticated, (req, res) => {
-    if (!req.session.user_id) {
-      req.session.user_id = req.user.user_id;
-    }
-    res.status(200).render("admin");
-  });
-
-  router.get("/403", (req, res) => {
-    res.status(403).render("page_403", {
-      title: "Forbidden"
-    });
-  });
-
   router.get("/logout", (req, res) => {
     req.logout();
-    if (req.session.user_id) {
+    if (req.session.userid) {
       req.session.destroy(err => {
         if (err) {
           console.log(err);
@@ -65,6 +59,12 @@ module.exports = function(passport, maxLabel) {
     } else {
       res.redirect("/");
     }
+  });
+
+  router.get("/403", (req, res) => {
+    res.status(403).render("page_403", {
+      title: "Forbidden"
+    });
   });
 
   return router;

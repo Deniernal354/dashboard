@@ -494,7 +494,7 @@ function init_knob() {
     doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
   });
 
-  knobData.open("GET", "/admin/getKnobData/", true);
+  knobData.open("GET", "/admin/getKnobData", true);
   knobData.send();
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
