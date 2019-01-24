@@ -207,6 +207,11 @@ var chartOption = {
     intersect: false,
     itemSort: function(a, b) {
       return b.datasetIndex - a.datasetIndex;
+    },
+    callbacks: {
+      title: function(tooltipItem, data) {
+        return data.tooltip[tooltipItem[0].index];
+      }
     }
   },
   scales: {
@@ -239,6 +244,7 @@ function processdata(responseText) {
   var chartData = [];
   var innerData = [];
   var pjIndex = [];
+  var env = [];
 
   // UI info - pj_name / pj_id / pj_link / build_id
   var pjLabel = [];
@@ -271,6 +277,7 @@ function processdata(responseText) {
 
   for (var k = 0; k < totalChartCount; k++) {
     labels[k] = [];
+    env[k] = [];
     chartData[k] = [];
     chartData[k][0] = [];
     chartData[k][1] = [];
@@ -300,6 +307,7 @@ function processdata(responseText) {
       } else {
         labels[idx].push(value.start_t.slice(5, 10));
       }
+      env[idx].push(value.buildenv);
     }
 
     chartData[idx][0].push(value.pass);
@@ -351,7 +359,8 @@ function processdata(responseText) {
         pointHoverBackgroundColor: "#fff",
         pointHoverBorderColor: pass + " 1)",
         data: chartData[h][0]
-      }]
+      }],
+      tooltip: env[h]
     };
   }
 
@@ -485,7 +494,7 @@ function init_knob() {
     doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
   });
 
-  knobData.open("GET", "/admin/getKnobData/", true);
+  knobData.open("GET", "/admin/getKnobData", true);
   knobData.send();
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
@@ -626,7 +635,7 @@ function init_select2() {
     return function() {
       var previousValue = $("#select2_multiple" + idx).val();
       var selectedIndex = $("#select2_multiple" + idx)[0].selectedIndex;
-      var unitPool = ["bu", "cl", "te"]; // ["buildno", "class", "testcase"]
+      var unitPool = ["bu", "cl", "te"]; // ["build", "class", "testcase"]
 
       if ($.isEmptyObject(previousValue) || previousValue === "Project 명") {
         for (var q = 3; q > idx; q--) {
