@@ -14,7 +14,7 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
-    "bootstrap": "^3.4.0",
+    "bootstrap": ">=3.4.1",
     "compression": "^1.7.3",
     "daterangepicker": "^3.0.3",
     "ejs": "^2.6.1",
