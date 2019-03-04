@@ -233,6 +233,13 @@ module.exports = function(pool) {
   ], (req, res) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
     const err = validationResult(req);
+
+    if (!req.session.userid) {
+      return res.status(403).json({
+        "error": "Forbidden"
+      });
+    }
+
     if (!err.isEmpty()) {
       return res.status(400).json({
         "error": "Bad Request"
@@ -261,7 +268,7 @@ module.exports = function(pool) {
           "error": "Internal Server Error"
         });
       } else {
-        console.log("Delete At " + tableName[len - 1] + "(Id : " + selectId[len - 1] + ") ---Time : " + now);
+        console.log("By " + req.session.userid + ", data is deleted : " + now + ", " + tableName[len - 1] + "(Id : " + selectId[len - 1] + ")");
         res.status(200).send("올바르게 삭제되었습니다.");
       }
     });

@@ -6,28 +6,25 @@ module.exports = function(passport, maxLabel) {
     if (req.isAuthenticated()) {
       return next();
     } else {
-      res.redirect("/admin");
+      res.redirect("/admin/login");
     }
   }
 
-  router.get("/", (req, res) => {
-    if (req.session.userid) {
-      res.redirect("/admin/adminPage");
-    } else {
-      res.status(200).render("admin_login");
-    }
-  });
-
   router.post("/checkAdmin", passport.authenticate("local", {
-    successRedirect: "/admin/adminPage",
+    successRedirect: "/admin",
     failureRedirect: "/admin/403"
   }));
 
-  router.get("/adminPage", isAuthenticated, (req, res) => {
+  router.get("/", isAuthenticated, (req, res) => {
     if (!req.session.userid) {
       req.session.userid = req.user.userid;
     }
+    res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
     res.status(200).render("admin");
+  });
+
+  router.get("/login", (req, res) => {
+    res.status(200).render("admin_login");
   });
 
   router.get("/getKnobData", (req, res) => {
@@ -35,11 +32,11 @@ module.exports = function(passport, maxLabel) {
   });
 
   router.post("/changeMaxLabel", (req, res) => {
-    if (req.body.newMaxLabel) {
+    if (req.body.newMaxLabel && req.session.userid) {
       const newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개")) * 1;
 
       if ((newLabel >= 1 && newLabel <= maxLabel.getAbsoluteMaxLabel()) && (maxLabel.getMaxLabel() !== newLabel)) {
-        console.log("maxLabel is changed : " + maxLabel.getMaxLabel() + " -> " + newLabel);
+        console.log("By " + req.session.userid + ", maxLabel is changed : " + maxLabel.getMaxLabel() + " -> " + newLabel);
         maxLabel.setMaxLabel(newLabel);
       }
     }
@@ -47,18 +44,15 @@ module.exports = function(passport, maxLabel) {
   });
 
   router.get("/logout", (req, res) => {
-    req.logout();
     if (req.session.userid) {
       req.session.destroy(err => {
         if (err) {
-          console.log(err);
-        } else {
-          res.redirect("/");
+          console.error("logout session destroy failed" + err);
         }
       });
-    } else {
-      res.redirect("/");
     }
+    req.logout();
+    res.redirect("/");
   });
 
   router.get("/403", (req, res) => {
