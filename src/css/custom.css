@@ -15,7 +15,6 @@ html , body{
 .skip {
   color: rgba(130, 130, 130, 1.0);
 }
-
 .customborder:before {
   content: "";
   position: absolute;
@@ -26,7 +25,17 @@ html , body{
   margin-top: 10px;
   margin-bottom: 10px
 }
-
+ul.top_profiles {
+  height: 500px;
+  width: 100%
+}
+ul.top_profiles li {
+  margin: 0;
+  padding: 3px 5px
+}
+ul.top_profiles li:nth-child(odd) {
+  background-color: #eee
+}
 .media .profile_thumb {
   border: 1px solid;
   width: 50px;
@@ -42,7 +51,6 @@ html , body{
 .full-width {
   width:100%;
 }
-
 .full-height{
   height:100%;
 }
@@ -1446,12 +1454,20 @@ span.right {
 }
 .event .media-body {
   text-align: center;
+  width: auto;
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .event .media-body a.title {
   font-weight: bold
 }
 .event .media-body p {
-  margin-bottom: 0
+  margin-bottom: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 h4.graph_title {
   margin: 7px;
