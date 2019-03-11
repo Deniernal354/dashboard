@@ -211,7 +211,16 @@ var chartOption = {
     callbacks: {
       title: function(tooltipItem, data) {
         return data.tooltip[tooltipItem[0].index];
-      }
+      },
+      labelColor: function(tooltipItem, chart) {
+        var colortmp = tooltipItem.datasetIndex + 1;
+
+        colortmp = (colortmp > 2) ? 0 : colortmp;
+        return {
+          borderColor: pfsColor[colortmp] + " 1)",
+          backgroundColor: pfsColor[colortmp] + " 1)"
+        };
+      },
     }
   },
   scales: {
@@ -238,6 +247,8 @@ var chartOption = {
   },
   responsiveAnimationDuration: 0*/
 };
+
+var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
 function processdata(responseText) {
   var labels = [];
@@ -326,38 +337,29 @@ function processdata(responseText) {
     }
   });
 
-  var pass = "rgba(102, 194, 255,";
-  var fail = "rgba(255, 115, 115,";
-  var skip = "rgba(130, 130, 130,";
   for (var h = 0; h < totalChartCount; h++) {
     innerData[h] = {
       labels: labels[h],
       datasets: [{
         label: "Fail",
-        backgroundColor: fail + " 0.7)",
-        borderColor: fail + " 0.7)",
-        pointBorderColor: fail + " 0.7)",
-        pointBackgroundColor: fail + " 0.7)",
+        backgroundColor: pfsColor[1] + " 0.7)",
+        borderColor: pfsColor[1] + " 0.7)",
         pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: fail + " 1)",
+        pointHoverBorderColor: pfsColor[1] + " 1)",
         data: chartData[h][1]
       }, {
         label: "Skip",
-        backgroundColor: skip + " 0.7)",
-        borderColor: skip + " 0.7)",
-        pointBorderColor: skip + " 0.7)",
-        pointBackgroundColor: skip + " 0.7)",
+        backgroundColor: pfsColor[2] + " 0.7)",
+        borderColor: pfsColor[2] + " 0.7)",
         pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: skip + " 1)",
+        pointHoverBorderColor: pfsColor[2] + " 1)",
         data: chartData[h][2]
       }, {
         label: "Pass",
-        backgroundColor: pass + " 0.7)",
-        borderColor: pass + " 0.7)",
-        pointBorderColor: pass + " 0.7)",
-        pointBackgroundColor: pass + " 0.7)",
+        backgroundColor: pfsColor[0] + " 0.7)",
+        borderColor: pfsColor[0] + " 0.7)",
         pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pass + " 1)",
+        pointHoverBorderColor: pfsColor[0] + " 1)",
         data: chartData[h][0]
       }],
       tooltip: env[h]
