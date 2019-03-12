@@ -22,7 +22,7 @@ const maxLabel = (() => {
 })();
 const userControl = (() => {
   let userid = [
-    "rootadmin",
+    "ihavepower",
     "conadmin",
     "poradmin",
     "woradmin",
@@ -111,7 +111,6 @@ app.get("*", (req, res, next) => {
   err.status = 404;
   next(err);
 });
-
 app.use((err, req, res, next) => {
   if (err.status === 500) {
     res.status(500).render("page_500");

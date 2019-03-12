@@ -380,7 +380,9 @@ function init_platformChart(parsedResult) {
       }]
     },
     options: {
-      legend: false
+      legend: false,
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
 }
