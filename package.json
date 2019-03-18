@@ -16,6 +16,7 @@
     "body-parser": "^1.18.3",
     "bootstrap": "^3.4.1",
     "compression": "^1.7.3",
+    "connect-redis": "^3.4.1",
     "daterangepicker": "^3.0.3",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
