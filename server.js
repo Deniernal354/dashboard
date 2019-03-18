@@ -7,8 +7,9 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt-nodejs");
 const compression = require("compression");
+const redis = require("redis");
 const app = express();
-const serverPortNo = 80;
+const serverPortNo = 8000;
 const maxLabel = (() => {
   let realMaxLabel = 5;
 
@@ -81,6 +82,13 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.set("view engine", "ejs");
 app.engine("html", require("ejs").renderFile);
 
+// Redis
+const redisClient = redis.createClient();
+const RedisStore = require("connect-redis")(session);
+
+redisClient.on("error", (err) => {
+  console.error("Redis error : " + err);
+});
 // middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -90,6 +98,10 @@ app.use(session({
   secret: "!@#nts#@!",
   resave: false,
   saveUninitialized: true,
+  store: new RedisStore({
+    client: redisClient,
+    logErrors: true
+  }),
   cookie: {
     maxAge: 60 * 60 * 1000 // 1 hour
   }
