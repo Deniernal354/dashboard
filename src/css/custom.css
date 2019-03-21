@@ -15,6 +15,15 @@ html , body{
 .skip {
   color: rgba(130, 130, 130, 1.0);
 }
+.purple {
+  color: rgba(155, 89, 182, 1.0);
+}
+.mAppColor {
+  color: rgba(255, 236, 80, 1.0);
+}
+.apiColor {
+  color: rgba(180, 238, 180, 1.0);
+}
 .customborder:before {
   content: "";
   position: absolute;

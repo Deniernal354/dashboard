@@ -711,6 +711,7 @@ function init_select2() {
       }));
       deleteData.addEventListener("load", function() {
         alert("결과 : " + deleteData.responseText);
+        location.reload();
       });
     };
   }

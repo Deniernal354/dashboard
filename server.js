@@ -23,7 +23,7 @@ const maxLabel = (() => {
 })();
 const userControl = (() => {
   let userid = [
-    "ihavepower",
+    "thepower",
     "conadmin",
     "poradmin",
     "woradmin",

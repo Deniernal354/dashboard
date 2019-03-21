@@ -1,12 +1,16 @@
 {
   "name": [
     "pcWeb",
+    "pcApp",
     "mobileWeb",
-    "mobileApp"
+    "mobileApp",
+    "API"
   ],
   "rules": [
     "pc[\\s]?Web",
+    "pc[\\s]?App",
     "mobile[\\s]?Web",
-    "mobile[\\s]?App"
+    "mobile[\\s]?App",
+    "API"
   ]
 }

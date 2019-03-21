@@ -63,7 +63,7 @@ module.exports = function(pool) {
   });
 
   router.get("/platform/:category", [
-    param("category").exists().matches(/^(pcWeb|mobileWeb|mobileApp)$/)
+    param("category").exists().matches(/^(pcWeb|pcApp|mobileWeb|mobileApp|API)$/)
   ], (req, res) => {
     const err = validationResult(req);
 
@@ -73,10 +73,14 @@ module.exports = function(pool) {
 
     let title_left = "PC Web 환경";
 
-    if (req.params.category === "mobileApp") {
+    if (req.params.category === "pcApp") {
+      title_left = "PC App 환경";
+    } else if (req.params.category === "mobileApp") {
       title_left = "Mobile App 환경";
     } else if (req.params.category === "mobileWeb") {
       title_left = "Mobile Web 환경";
+    } else if (req.params.category === "API") {
+      title_left = "API Test";
     }
 
     pool.query("select count(*) cnt from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
