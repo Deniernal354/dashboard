@@ -214,6 +214,7 @@ var chartOption = {
       },
       labelColor: function(tooltipItem, chart) {
         var colortmp = tooltipItem.datasetIndex + 1;
+        var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
         colortmp = (colortmp > 2) ? 0 : colortmp;
         return {
@@ -247,149 +248,6 @@ var chartOption = {
   },
   responsiveAnimationDuration: 0*/
 };
-
-var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
-
-function processdata(responseText) {
-  var labels = [];
-  var chartData = [];
-  var innerData = [];
-  var pjIndex = [];
-  var env = [];
-
-  // UI info - pj_name / pj_id / pj_link / build_id
-  var pjLabel = [];
-  var pjlink = [];
-  var buildTime = [];
-  var duration = [];
-
-  // initialModalData - pj_platform / pj_team / pj_author
-  var initialModalData = [];
-
-  var totalChartCount = responseText.totalChartCount;
-  pjLabel = responseText.pj_label.slice();
-
-  if (totalChartCount) {
-    var platformtmp = responseText.pj_label[0].pj_platform;
-
-    if (platformtmp === "pcWeb") {
-      platformtmp = "PC Web";
-    } else if (platformtmp === "mobileWeb") {
-      platformtmp = "Mobile Web";
-    } else if (platformtmp === "mobileApp") {
-      platformtmp = "Mobile App";
-    } else {
-      platformtmp = "Error";
-    }
-    initialModalData.push(platformtmp);
-    initialModalData.push(responseText.pj_label[0].pj_team);
-    initialModalData.push(responseText.pj_label[0].pj_author);
-  }
-
-  for (var k = 0; k < totalChartCount; k++) {
-    labels[k] = [];
-    env[k] = [];
-    chartData[k] = [];
-    chartData[k][0] = [];
-    chartData[k][1] = [];
-    chartData[k][2] = [];
-    pjIndex[k] = responseText.pj_label[k].pj_id;
-    var linktmp = responseText.pj_label[k].pj_link;
-    pjlink[k] = (linktmp.slice(0, 4) === "http") ? linktmp : "http://" + linktmp;
-    buildTime[k] = [];
-    buildTime[k][0] = []; // buildno
-    buildTime[k][1] = []; // start_t
-    duration[k] = []; // duration
-    pjLabel[k].build_id = [];
-  }
-
-  responseText.data.forEach(function(value) {
-    var idx = pjIndex.indexOf(value.pj_id);
-
-    pjLabel[idx].build_id.push(value.build_id);
-
-    if (!value.start_t) {
-      value.start_t = "0";
-    }
-
-    if (labels[idx].length < responseText.maxLabel) {
-      if (value.start_t === "0") {
-        labels[idx].push("Failed");
-      } else {
-        labels[idx].push(value.start_t.slice(5, 10));
-      }
-      env[idx].push(value.buildenv);
-    }
-
-    chartData[idx][0].push(value.pass);
-    chartData[idx][1].push(value.fail);
-    chartData[idx][2].push(value.skip);
-
-    if (buildTime[idx][0]) {
-      if (buildTime[idx][0] < value.buildno * 1) {
-        buildTime[idx][0] = value.buildno;
-        buildTime[idx][1] = (value.start_t === "0") ? "Build Failed" : value.start_t;
-        duration[idx] = value.duration.slice(0, 2) + "h " + value.duration.slice(3, 5) + "m " + value.duration.slice(6, 8) + "s";
-      }
-    } else {
-      buildTime[idx][0] = -1;
-      buildTime[idx][1] = "1453/05/29 09:00:00";
-    }
-  });
-
-  for (var h = 0; h < totalChartCount; h++) {
-    innerData[h] = {
-      labels: labels[h],
-      datasets: [{
-        label: "Fail",
-        backgroundColor: pfsColor[1] + " 0.7)",
-        borderColor: pfsColor[1] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[1] + " 1)",
-        data: chartData[h][1]
-      }, {
-        label: "Skip",
-        backgroundColor: pfsColor[2] + " 0.7)",
-        borderColor: pfsColor[2] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[2] + " 1)",
-        data: chartData[h][2]
-      }, {
-        label: "Pass",
-        backgroundColor: pfsColor[0] + " 0.7)",
-        borderColor: pfsColor[0] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[0] + " 1)",
-        data: chartData[h][0]
-      }],
-      tooltip: env[h]
-    };
-  }
-
-  return {
-    getInnerData: function() {
-      return innerData;
-    },
-    getPjLabel: function() {
-      return pjLabel;
-    },
-    getBuildTime: function() {
-      return buildTime;
-    },
-    getDuration: function() {
-      return duration;
-    },
-    getPjLink: function() {
-      return pjlink;
-    },
-    getTotalChartCount: function() {
-      return totalChartCount;
-    },
-    getInitialModalData: function() {
-      return initialModalData;
-    }
-  };
-} // processdata end
 
 function processModalData(responseText) {
   var pieChartData = [];
@@ -890,18 +748,18 @@ function init_modal(pj_id, build_id) {
     getInitialModalData.open("GET", "/getData/getInitialModalData?pi=" + pj_id, true);
     getInitialModalData.send();
     getInitialModalData.addEventListener("load", function() {
-      var parsedResult = processdata(JSON.parse(getInitialModalData.responseText));
+      var parsedResult = JSON.parse(getInitialModalData.responseText);
       var lineChart = new Chart(document.getElementById("lineChart_mo"), {
         type: "line",
-        data: parsedResult.getInnerData()[0],
+        data: parsedResult.innerData[0],
         options: chartOption
       });
       var prevBuild = -1;
 
-      document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.getPjLabel()[0].pj_name;
-      document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.getInitialModalData()[0];
-      document.getElementById("team_mo").innerText = "팀 : " + parsedResult.getInitialModalData()[1];
-      document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.getInitialModalData()[2];
+      document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.pjLabel[0].pj_name;
+      document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.initialModalData[0];
+      document.getElementById("team_mo").innerText = "팀 : " + parsedResult.initialModalData[1];
+      document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.initialModalData[2];
 
       document.getElementById("lineChart_mo").addEventListener("click", function(evt) {
         var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
@@ -909,11 +767,11 @@ function init_modal(pj_id, build_id) {
         });
 
         if (pointData.length != 0) {
-          var buildtmp = parsedResult.getPjLabel()[0].build_id[pointData[0]._index];
+          var buildtmp = parsedResult.pjLabel[0].build_id[pointData[0]._index];
 
           if (prevBuild != buildtmp) {
             prevBuild = buildtmp;
-            init_modal_detail(parsedResult.getPjLabel()[0].pj_id, buildtmp);
+            init_modal_detail(parsedResult.pjLabel[0].pj_id, buildtmp);
           }
         }
       });
@@ -934,10 +792,7 @@ function urlByBrowser() {
 }
 
 function init_charts() {
-  if (!document.getElementById("chartDiv")) {
-    return;
-  }
-  if (typeof(Chart) === "undefined") {
+  if ((!document.getElementById("chartDiv")) || (typeof(Chart) === "undefined")) {
     return;
   }
 
@@ -976,15 +831,15 @@ function init_charts() {
   getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/")), true);
   getChartData.send();
   getChartData.addEventListener("load", function() {
-    var parsedResult = processdata(JSON.parse(getChartData.responseText));
-    var chartloop = parsedResult.getTotalChartCount();
+    var parsedResult = JSON.parse(getChartData.responseText);
+    var chartloop = parsedResult.totalChartCount;
 
     function lineEventListener(lineChart, idx) {
       document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
         var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
           intersect: false
         });
-        var idtmp = parsedResult.getPjLabel()[idx];
+        var idtmp = parsedResult.pjLabel[idx];
 
         if (pointData.length != 0) {
           $("#detailPage").modal("show");
@@ -994,19 +849,24 @@ function init_charts() {
     }
 
     for (var i = 0; i < chartloop; i++) {
-      doc.getElementById("title" + i).innerText = parsedResult.getPjLabel()[i].pj_name;
-      doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
-      doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.getDuration()[i];
+      var nametmp = parsedResult.pjLabel[i].pj_name;
 
-      if (parsedResult.getPjLink()[i] !== "http://-") {
-        doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
+      if (nametmp.slice(1, 7) === "Mobile") {
+        nametmp = nametmp.replace("Mobile", "M");
+      }
+      doc.getElementById("title" + i).innerText = nametmp;
+      doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i][1];
+      doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.duration[i];
+
+      if (parsedResult.pjLink[i] !== "-") {
+        doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLink[i]);
         doc.getElementById("link" + i).innerText = "Report Link";
       }
 
       var lineChartTarget = document.getElementById("lineChart" + i);
       var lineChart = new Chart(lineChartTarget, {
         type: "line",
-        data: parsedResult.getInnerData()[i],
+        data: parsedResult.innerData[i],
         options: chartOption
       });
 

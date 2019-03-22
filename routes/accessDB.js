@@ -56,10 +56,19 @@ module.exports = function(pool) {
 
     const name = req.body.pj_name;
     const auth = req.body.pj_author;
-    const link = (req.body.pj_link) ? req.body.pj_link : "-";
+    let link = "";
     const env = (req.body.pj_env) ? req.body.pj_env : "Real";
     const findProject = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
     const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
+
+    if (req.body.pj_link) {
+      link = req.body.pj_link;
+      if (link.slice(0, 4) !== "http") {
+        link = "http://" + link;
+      }
+    } else {
+      link = "-";
+    }
 
     pool.query(findProject, (err, rows) => {
       if (err) {

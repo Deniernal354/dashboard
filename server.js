@@ -124,6 +124,8 @@ app.get("*", (req, res, next) => {
   next(err);
 });
 app.use((err, req, res, next) => {
+  console.error(err);
+  
   if (err.status === 500) {
     res.status(500).render("page_500");
   } else if (err.status === 404) {
