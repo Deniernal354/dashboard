@@ -269,12 +269,12 @@ function init_knob() {
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
 
-    doc.getElementById("knobInput").value = result;
-    doc.getElementById("MaxLabel_text").innerText = "현재 : " + result + "개";
+    doc.getElementById("knobInput").value = result.cur;
+    doc.getElementById("MaxLabel_text").innerText = "현재 : " + result.cur + "개";
 
     $(".knob").knob({
       "min": 1,
-      "max": 20,
+      "max": result.absolute,
       "thickness": 0.2,
       "displayPrevious": true,
       "inputColor": "#34495E",

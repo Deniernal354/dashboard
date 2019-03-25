@@ -28,7 +28,10 @@ module.exports = function(passport, maxLabel) {
   });
 
   router.get("/getKnobData", (req, res) => {
-    res.status(200).json(maxLabel.getMaxLabel());
+    res.status(200).json({
+      "cur": maxLabel.getMaxLabel(),
+      "absolute": maxLabel.getAbsoluteMaxLabel()
+    });
   });
 
   router.post("/changeMaxLabel", (req, res) => {
