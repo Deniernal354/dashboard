@@ -5,6 +5,86 @@ module.exports = function(pool, maxLabel) {
   const platformConfig = require("../config/platformConfig.json");
   let moment = require("moment");
 
+  function processModalData(data, classcount) {
+    // return values
+    var nameData = [];
+    var pieChartData = [];
+
+    // temporary arrays for progressData
+    var class_pass = [];
+    var class_fail = [];
+    var class_skip = [];
+    var class_sum = [];
+    var class_passr = [];
+    var class_failr = [];
+    var class_skipr = [];
+    var build_pass = 0;
+    var build_fail = 0;
+    var build_skip = 0;
+    var build_sum = 0;
+
+
+    data.forEach(function(value) {
+      var tmpsum = value.pass + value.fail + value.skip;
+
+      class_pass.push(value.pass);
+      class_fail.push(value.fail);
+      class_skip.push(value.skip);
+      class_passr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
+      class_failr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
+      class_skipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
+      class_sum.push(tmpsum);
+
+      build_pass += value.pass;
+      build_fail += value.fail;
+      build_skip += value.skip;
+
+      nameData.push([value.package_name, value.class_name]);
+    });
+
+    build_sum = build_pass + build_fail + build_skip;
+
+    pieChartData = {
+      labels: ["Fail", "Skip", "Pass"],
+      datasets: [{
+        data: [
+          Math.round(build_fail / build_sum * 100).toFixed(1),
+          Math.round(build_skip / build_sum * 100).toFixed(1),
+          Math.round(build_pass / build_sum * 100).toFixed(1)
+        ],
+        backgroundColor: [
+          "rgba(255, 115, 115, 0.7)",
+          "rgba(130, 130, 130, 0.7)",
+          "rgba(102, 194, 255, 0.7)"
+        ],
+        hoverBackgroundColor: [
+          "rgba(255, 115, 115, 1.0)",
+          "rgba(130, 130, 130, 1.0)",
+          "rgba(102, 194, 255, 1.0)"
+        ],
+        label: [
+          "Fail", "Skip", "Pass"
+        ]
+      }]
+    };
+
+    return {
+      "buildTime": data[0].start_t,
+      "classCount": classcount,
+      "nameData": nameData,
+      "pieChartData": pieChartData,
+      "progressData": {
+        "pass": class_pass,
+        "fail": class_fail,
+        "skip": class_skip,
+        "sum": class_sum,
+        "passrate": class_passr,
+        "failrate": class_failr,
+        "skiprate": class_skipr
+      }
+    };
+  } //processModalData end
+
   function processdata(rows, inrows, totalChartCount, maxLabelCount, isInitial) {
     var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
@@ -350,10 +430,7 @@ module.exports = function(pool, maxLabel) {
         console.error("Error in /getModalDataDetail\n" + now + ", " + err.code + "\n" + mainData + "\n---");
         res.redirect("/500");
       } else {
-        res.status(200).json({
-          "data": rows,
-          "classcount": rows.length
-        });
+        res.status(200).json(processModalData(rows, rows.length));
       }
     });
   });

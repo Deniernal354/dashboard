@@ -248,101 +248,11 @@ var chartOption = {
   },
   responsiveAnimationDuration: 0*/
 };
-
-function processModalData(responseText) {
-  var pieChartData = [];
-  var class_pass = [];
-  var class_fail = [];
-  var class_skip = [];
-  var class_sum = [];
-  var class_passr = [];
-  var class_failr = [];
-  var class_skipr = [];
-  var build_pass = 0;
-  var build_fail = 0;
-  var build_skip = 0;
-  var build_sum = 0;
-  var nameData = [];
-  var classcount = responseText.classcount;
-
-  responseText.data.forEach(function(value) {
-    var tmpsum = value.pass + value.fail + value.skip;
-
-    class_pass.push(value.pass);
-    class_fail.push(value.fail);
-    class_skip.push(value.skip);
-    class_passr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
-    class_failr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
-    class_skipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
-    class_sum.push(tmpsum);
-
-    build_pass += value.pass;
-    build_fail += value.fail;
-    build_skip += value.skip;
-
-    nameData.push([value.package_name, value.class_name]);
-  });
-
-  build_sum = build_pass + build_fail + build_skip;
-
-  pieChartData = {
-    labels: ["Fail", "Skip", "Pass"],
-    datasets: [{
-      data: [
-        Math.round(build_fail / build_sum * 100).toFixed(1),
-        Math.round(build_skip / build_sum * 100).toFixed(1),
-        Math.round(build_pass / build_sum * 100).toFixed(1)
-      ],
-      backgroundColor: [
-        "rgba(255, 115, 115, 0.7)",
-        "rgba(130, 130, 130, 0.7)",
-        "rgba(102, 194, 255, 0.7)"
-      ],
-      hoverBackgroundColor: [
-        "rgba(255, 115, 115, 1.0)",
-        "rgba(130, 130, 130, 1.0)",
-        "rgba(102, 194, 255, 1.0)"
-      ],
-      label: [
-        "Fail", "Skip", "Pass"
-      ]
-    }]
-  };
-
-  return {
-    getpieChartData: function() {
-      return pieChartData;
-    },
-    getClassCount: function() {
-      return classcount;
-    },
-    getProgressData: function() {
-      return {
-        "pass": class_pass,
-        "fail": class_fail,
-        "skip": class_skip,
-        "sum": class_sum,
-        "passrate": class_passr,
-        "failrate": class_failr,
-        "skiprate": class_skipr
-      };
-    },
-    getNameData: function() {
-      return nameData;
-    },
-    getBuildTime: function() {
-      return responseText.data[0].start_t;
-    }
-  };
-} //processModalData end
 // My functions end
 
 /* KNOB */
 function init_knob() {
-  if (typeof($.fn.knob) === "undefined") {
-    return;
-  }
-  if (!document.getElementById("knobInput")) {
+  if ((typeof($.fn.knob) === "undefined") || (!document.getElementById("knobInput"))) {
     return;
   }
   console.log("init_knob");
@@ -617,7 +527,7 @@ function init_modal_detail(pj_id, build_id) {
   getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
   getModalDataDetail.send();
   getModalDataDetail.addEventListener("load", function() {
-    var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
+    var parsedResult = JSON.parse(getModalDataDetail.responseText);
     var noChart = document.getElementById("noChart");
     var noInfo = document.getElementById("noInfo");
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
@@ -625,7 +535,7 @@ function init_modal_detail(pj_id, build_id) {
 
     clear_modalDetail();
 
-    if (parsedResult.getClassCount() === 0) {
+    if (parsedResult.classCount === 0) {
       noChart.innerText = "실패한 Build입니다";
       noInfo.innerText = "실패한 Build입니다";
     } else {
@@ -634,9 +544,9 @@ function init_modal_detail(pj_id, build_id) {
       var packCnt = -1;
       var tmptbody;
 
-      for (var i = 0; i < parsedResult.getClassCount(); i++) {
-        if (parsedResult.getNameData()[i][0] !== prevPackName) {
-          prevPackName = parsedResult.getNameData()[i][0];
+      for (var i = 0; i < parsedResult.classCount; i++) {
+        if (parsedResult.nameData[i][0] !== prevPackName) {
+          prevPackName = parsedResult.nameData[i][0];
           packCnt++;
 
           tmptbody = document.createElement("tbody");
@@ -653,7 +563,7 @@ function init_modal_detail(pj_id, build_id) {
           var tmptr = document.createElement("tr");
           var tmpth = document.createElement("th");
 
-          tmpth.innerText = parsedResult.getNameData()[i][0];
+          tmpth.innerText = parsedResult.nameData[i][0];
           tmptr.appendChild(tmpth);
           tmpthead.appendChild(tmptr);
 
@@ -666,7 +576,7 @@ function init_modal_detail(pj_id, build_id) {
         var tmpth2 = document.createElement("th");
         var tmpth3 = document.createElement("th");
         tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
-        tmpth2.innerText = parsedResult.getNameData()[i][1];
+        tmpth2.innerText = parsedResult.nameData[i][1];
         tmptr2.appendChild(tmpth2);
         tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
 
@@ -680,32 +590,32 @@ function init_modal_detail(pj_id, build_id) {
           "id": "propass" + i,
           "class": "progress-bar progress-bar-striped progress-pass",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().pass[i],
+          "aria-valuenow": parsedResult.progressData.pass[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().passrate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.passrate[i] + "%"
         });
-        propass.innerText = parsedResult.getProgressData().pass[i];
+        propass.innerText = parsedResult.progressData.pass[i];
         setAttributes(profail, {
           "id": "profail" + i,
           "class": "progress-bar progress-bar-striped progress-fail",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().fail[i],
+          "aria-valuenow": parsedResult.progressData.fail[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().failrate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.failrate[i] + "%"
         });
-        profail.innerText = parsedResult.getProgressData().fail[i];
+        profail.innerText = parsedResult.progressData.fail[i];
         setAttributes(proskip, {
           "id": "proskip" + i,
           "class": "progress-bar progress-bar-striped progress-skip",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().skip[i],
+          "aria-valuenow": parsedResult.progressData.skip[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().skiprate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.skiprate[i] + "%"
         });
-        proskip.innerText = parsedResult.getProgressData().skip[i];
+        proskip.innerText = parsedResult.progressData.skip[i];
 
         progresstmp.appendChild(propass);
         progresstmp.appendChild(profail);
@@ -716,12 +626,12 @@ function init_modal_detail(pj_id, build_id) {
       }
       document.getElementById("classinfo").appendChild(divFrag);
 
-      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
-      pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.buildTime;
+      pieChart_passInfo.innerText = "성공률 : " + parsedResult.pieChartData.datasets[0].data[2] + "%";
 
       var pieChart = new Chart(document.getElementById("pieChart_mo"), {
         type: "pie",
-        data: parsedResult.getpieChartData(),
+        data: parsedResult.pieChartData,
         options: {
           legend: false
         }
