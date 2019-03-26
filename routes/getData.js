@@ -1,4 +1,4 @@
-module.exports = function(pool, maxLabel) {
+module.exports = function(pool, redisClient) {
   const express = require("express");
   const router = express.Router();
   const teamConfig = require("../config/teamConfig.json");
@@ -331,36 +331,40 @@ module.exports = function(pool, maxLabel) {
   });
 
   router.get("/getChartData/:page/:detail?", (req, res) => {
-    let labelData = "select pj_name, pj_id, pj_link from project";
-    let mainData = " select b.pj_id, b.build_id, b.buildno, b.buildenv, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id where b.rn <=" + maxLabel.getMaxLabel();
+    redisClient.get("maxLabel", (err, reply) => {
+      const maxLabel = reply * 1;
+      let labelData = "select pj_name, pj_id, pj_link from project";
+      let mainData = " select b.pj_id, b.build_id, b.buildno, b.buildenv, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id where b.rn <=" + maxLabel;
 
-    if (req.params.page === "team") {
-      let teamname = teamConfig.name[req.params.detail];
+      if (req.params.page === "team") {
+        let teamname = teamConfig.name[req.params.detail];
 
-      mainData = mainData + " and pj.pj_team = '" + teamname + "'";
-      labelData += " where pj_team = '" + teamname + "';";
-    } else if (req.params.page === "platform") {
-      mainData = mainData + " and pj.pj_platform = '" + req.params.detail + "'";
-      labelData += " where pj_platform = '" + req.params.detail + "';";
-    }
-    mainData += " group by pj_id, build_id;";
-
-    pool.query(mainData, (err, rows) => {
-      const now = moment().format("YYYY.MM.DD HH:mm:ss");
-
-      if (err) {
-        console.error("Error in /getChartData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-        res.redirect("/500");
-      } else {
-        pool.query(labelData, (inerr, inrows) => {
-          if (inerr) {
-            console.error("Error in /getChartData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
-            res.redirect("/500");
-          } else {
-            res.status(200).json(processdata(rows, inrows, inrows.length, maxLabel.getMaxLabel(), 0));
-          }
-        });
+        mainData = mainData + " and pj.pj_team = '" + teamname + "'";
+        labelData += " where pj_team = '" + teamname + "';";
+      } else if (req.params.page === "platform") {
+        mainData = mainData + " and pj.pj_platform = '" + req.params.detail + "'";
+        labelData += " where pj_platform = '" + req.params.detail + "';";
       }
+      mainData += " group by pj_id, build_id;";
+
+      pool.query(mainData, (err, rows) => {
+        const now = moment().format("YYYY.MM.DD HH:mm:ss");
+
+        if (err) {
+          console.error("Error in /getChartData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
+          res.redirect("/500");
+        } else {
+          pool.query(labelData, (inerr, inrows) => {
+            if (inerr) {
+              console.error("Error in /getChartData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
+              res.redirect("/500");
+            } else {
+              res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+              res.status(200).json(processdata(rows, inrows, inrows.length, maxLabel, 0));
+            }
+          });
+        }
+      });
     });
   });
 
@@ -398,25 +402,29 @@ module.exports = function(pool, maxLabel) {
   });
 
   router.get("/getInitialModalData", (req, res) => {
-    let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
-    let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id where b.rn <= " + maxLabel.getAbsoluteMaxLabel() + " and pj.pj_id = " + req.query.pi + " group by pj_id, build_id;";
+    redisClient.get("abmaxLabel", (err, reply) => {
+      const abmaxLabel = reply * 1;
+      let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
+      let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC, buildno DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id where b.rn <= " + abmaxLabel + " and pj.pj_id = " + req.query.pi + " group by pj_id, build_id;";
 
-    pool.query(mainData, (err, rows) => {
-      const now = moment().format("YYYY.MM.DD HH:mm:ss");
+      pool.query(mainData, (err, rows) => {
+        const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-      if (err) {
-        console.error("Error in /getModalData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-        res.redirect("/500");
-      } else {
-        pool.query(labelData, (inerr, inrows) => {
-          if (inerr) {
-            console.error("Error in /getModalData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
-            res.redirect("/500");
-          } else {
-            res.status(200).json(processdata(rows, inrows, inrows.length, maxLabel.getAbsoluteMaxLabel(), 1));
-          }
-        });
-      }
+        if (err) {
+          console.error("Error in /getModalData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
+          res.redirect("/500");
+        } else {
+          pool.query(labelData, (inerr, inrows) => {
+            if (inerr) {
+              console.error("Error in /getModalData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
+              res.redirect("/500");
+            } else {
+              res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+              res.status(200).json(processdata(rows, inrows, inrows.length, abmaxLabel, 1));
+            }
+          });
+        }
+      });
     });
   });
 

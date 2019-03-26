@@ -274,7 +274,7 @@ function init_knob() {
 
     $(".knob").knob({
       "min": 1,
-      "max": result.absolute,
+      "max": result.absolute * 1,
       "thickness": 0.2,
       "displayPrevious": true,
       "inputColor": "#34495E",
