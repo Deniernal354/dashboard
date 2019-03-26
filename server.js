@@ -74,7 +74,7 @@ if (cluster.isMaster) {
 
   cluster.on("exit", (worker, code, signal) => {
     let newworker = cluster.fork();
-    
+
     console.log("Worker died(PID : " + worker.process.pid + ") -> Worker started(PID : " + newworker.process.pid + ")");
   });
 } else {
@@ -102,7 +102,7 @@ if (cluster.isMaster) {
       logErrors: true
     }),
     cookie: {
-      maxAge: 60 * 60 * 1000 // 1 hour
+      maxAge: 30 * 60 * 1000 // 30 min
     }
   }));
 

@@ -438,7 +438,13 @@ module.exports = function(pool, redisClient) {
         console.error("Error in /getModalDataDetail\n" + now + ", " + err.code + "\n" + mainData + "\n---");
         res.redirect("/500");
       } else {
-        res.status(200).json(processModalData(rows, rows.length));
+        if (rows.length === 0) {
+          res.status(200).json({
+            "classCount": 0
+          });
+        } else {
+          res.status(200).json(processModalData(rows, rows.length));
+        }
       }
     });
   });
