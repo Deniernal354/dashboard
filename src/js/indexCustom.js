@@ -203,6 +203,18 @@ $(document).ready(function() {
 });
 
 // Custom functions
+function commonXMLHttpRequest() {
+  var xhttp = new XMLHttpRequest();
+
+  xhttp.onreadystatechange = function(){
+    if (xhttp.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  return xhttp;
+}
+
 function updateProjectDetail(labels, data, idx) {
   return function() {
     var divFrag = document.createDocumentFragment();
@@ -327,15 +339,7 @@ function change_failChart(start, end) {
     uiParent.removeChild(uiParent.firstChild);
   }
 
-  var getFailChartData = new XMLHttpRequest();
-
-  getFailChartData.onreadystatechange = function() {
-    if (getFailChartData.status === 404) {
-      window.location = "/404";
-    } else if (getFailChartData.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getFailChartData = commonXMLHttpRequest();
 
   getFailChartData.open("GET", "/getData/getFailChartData?start=" + start + "&end=" + end, true);
   getFailChartData.send();
@@ -393,15 +397,7 @@ function init_platformChart(parsedResult) {
 
 function init_indexData() {
   console.log("init_indexData");
-  var getIndexData = new XMLHttpRequest();
-
-  getIndexData.onreadystatechange = function() {
-    if (getIndexData.status === 404) {
-      window.location = "/404";
-    } else if (getIndexData.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getIndexData = commonXMLHttpRequest();
 
   getIndexData.open("GET", "/getData/getIndexData", true);
   getIndexData.send();

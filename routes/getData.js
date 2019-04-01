@@ -290,7 +290,7 @@ module.exports = function(pool, redisClient) {
     return result;
   } // processIndexData end
 
-  router.get("/getFailChartData", (req, res) => {
+  router.get("/getFailChartData", (req, res, next) => {
     let mainData = "select b.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from build b right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where start_t > '" + req.query.start + "' and start_t < '" + req.query.end + "' group by pj_id, build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id group by pj_id, b.build_id;";
     let startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
     let endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
@@ -299,15 +299,14 @@ module.exports = function(pool, redisClient) {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /getFailChartData\n" + now + ", " + err.code + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         res.status(200).json(processFailChartData(rows, endTime.diff(startTime, "days"), endTime));
       }
     });
   });
 
-  router.get("/getIndexData", (req, res) => {
+  router.get("/getIndexData", (req, res, next) => {
     let firstQuery = "select pj_id, pj_team, pj_platform from project;";
     let secondQuery = "select b.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(sum(ifnull(m.duration, 0))) duration from build b right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where start_t > '" + moment().subtract(6, "days").format("YYYY/MM/DD") + "' and start_t < '" + moment().add(1, "days").format("YYYY/MM/DD") + "' group by pj_id, build_id) m on b.build_id = m.build_id inner join project pj on pj.pj_id = b.pj_id group by pj_id, b.build_id;";
 
@@ -315,13 +314,11 @@ module.exports = function(pool, redisClient) {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /getIndexData, 1st\n" + now + ", " + err.code + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         pool.query(secondQuery, (inerr, secondrows) => {
           if (inerr) {
-            console.error("Error in /getIndexData, 2nd\n" + now + ", " + inerr.code + "\n---");
-            res.redirect("/500");
+            return next(inerr);
           } else {
             res.status(200).json(processIndexData(firstrows, secondrows));
           }
@@ -330,7 +327,7 @@ module.exports = function(pool, redisClient) {
     });
   });
 
-  router.get("/getChartData/:page/:detail?", (req, res) => {
+  router.get("/getChartData/:page/:detail?", (req, res, next) => {
     redisClient.get("maxLabel", (err, reply) => {
       const maxLabel = reply * 1;
       let labelData = "select pj_name, pj_id, pj_link from project";
@@ -351,13 +348,11 @@ module.exports = function(pool, redisClient) {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
         if (err) {
-          console.error("Error in /getChartData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-          res.redirect("/500");
+          return next(err);
         } else {
           pool.query(labelData, (inerr, inrows) => {
             if (inerr) {
-              console.error("Error in /getChartData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
-              res.redirect("/500");
+              return next(inerr);
             } else {
               res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
               res.status(200).json(processdata(rows, inrows, inrows.length, maxLabel, 0));
@@ -368,7 +363,7 @@ module.exports = function(pool, redisClient) {
     });
   });
 
-  router.get("/getCustomData", (req, res) => {
+  router.get("/getCustomData", (req, res, next) => {
     let teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
     let mainData = "";
 
@@ -393,15 +388,14 @@ module.exports = function(pool, redisClient) {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /getCustomData\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         res.status(200).json(rows);
       }
     });
   });
 
-  router.get("/getInitialModalData", (req, res) => {
+  router.get("/getInitialModalData", (req, res, next) => {
     redisClient.get("abmaxLabel", (err, reply) => {
       const abmaxLabel = reply * 1;
       let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
@@ -411,13 +405,11 @@ module.exports = function(pool, redisClient) {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
         if (err) {
-          console.error("Error in /getModalData, main\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-          res.redirect("/500");
+          return next(err);
         } else {
           pool.query(labelData, (inerr, inrows) => {
             if (inerr) {
-              console.error("Error in /getModalData, label\n" + now + ", " + inerr.code + "\n" + labelData + "\n---");
-              res.redirect("/500");
+              return next(inerr);
             } else {
               res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
               res.status(200).json(processdata(rows, inrows, inrows.length, abmaxLabel, 1));
@@ -428,15 +420,14 @@ module.exports = function(pool, redisClient) {
     });
   });
 
-  router.get("/getModalDataDetail", (req, res) => {
+  router.get("/getModalDataDetail", (req, res, next) => {
     let mainData = "select c.class_id, c.class_name, c.package_name, m.pass, m.fail, m.skip, m.start_t from class c inner join (select pj_id, build_id, class_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by pj_id, build_id, class_id) m on m.class_id=c.class_id where c.pj_id=" + req.query.pi + " and c.build_id=" + req.query.bi + ";";
 
     pool.query(mainData, (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /getModalDataDetail\n" + now + ", " + err.code + "\n" + mainData + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         if (rows.length === 0) {
           res.status(200).json({

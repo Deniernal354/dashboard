@@ -21,13 +21,12 @@ module.exports = function(pool) {
     });
   });
 
-  router.get("/all", (req, res) => {
+  router.get("/all", (req, res, next) => {
     pool.query("select count(*) cnt from project", (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /all\n" + now + ", " + err.code + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         res.status(200).render("all.ejs", {
           cnt: rows[0].cnt
@@ -38,11 +37,12 @@ module.exports = function(pool) {
 
   router.get("/team/:teamNo", [
     param("teamNo").exists().matches(/^[1-6]{1}$/)
-  ], (req, res) => {
+  ], (req, res, next) => {
     const err = validationResult(req);
 
     if (!err.isEmpty()) {
-      return res.redirect("/404");
+      res.statusCode = 404;
+      return next(JSON.stringify(err.array()));
     }
 
     let teamName = teamConfig.name[req.params.teamNo];
@@ -51,8 +51,7 @@ module.exports = function(pool) {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /team\n" + now + ", " + err.code + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         res.status(200).render("team", {
           title: teamName,
@@ -64,11 +63,12 @@ module.exports = function(pool) {
 
   router.get("/platform/:category", [
     param("category").exists().matches(/^(pcWeb|pcApp|mobileWeb|mobileApp|API)$/)
-  ], (req, res) => {
+  ], (req, res, next) => {
     const err = validationResult(req);
 
     if (!err.isEmpty()) {
-      return res.redirect("/404");
+      res.statusCode = 404;
+      return next(JSON.stringify(err.array()));
     }
 
     let title_left = "PC Web 환경";
@@ -87,8 +87,7 @@ module.exports = function(pool) {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
       if (err) {
-        console.error("Error in /platform\n" + now + ", " + err.code + "\n---");
-        res.redirect("/500");
+        return next(err);
       } else {
         res.status(200).render("platform", {
           title: title_left,
@@ -102,12 +101,9 @@ module.exports = function(pool) {
     res.status(200).render("guide");
   });
 
+  // When the client get 500 status in the /getData
   router.get("/500", (req, res) => {
     res.status(500).render("page_500");
-  });
-
-  router.get("/404", (req, res) => {
-    res.status(404).render("page_404");
   });
   return router;
 };

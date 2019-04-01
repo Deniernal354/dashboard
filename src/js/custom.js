@@ -248,6 +248,18 @@ var chartOption = {
   },
   responsiveAnimationDuration: 0*/
 };
+
+function commonXMLHttpRequest() {
+  var xhttp = new XMLHttpRequest();
+
+  xhttp.onreadystatechange = function(){
+    if (xhttp.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  return xhttp;
+}
 // My functions end
 
 /* KNOB */
@@ -257,7 +269,7 @@ function init_knob() {
   }
   console.log("init_knob");
 
-  var knobData = new XMLHttpRequest();
+  var knobData = commonXMLHttpRequest();
   var doc = document;
 
   doc.getElementById("labelSubmit").addEventListener("click", function() {
@@ -376,15 +388,7 @@ function init_select2() {
   tmp.setAttribute("display", "none");
   divFrag.appendChild(tmp);
 
-  var customInit = new XMLHttpRequest();
-
-  customInit.onreadystatechange = function() {
-    if (customInit.status === 404) {
-      window.location = "/404";
-    } else if (customInit.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var customInit = commonXMLHttpRequest();
 
   customInit.open("GET", "/getData/getCustomData?un=pj&vi=-1", true);
   customInit.send();
@@ -426,7 +430,7 @@ function init_select2() {
         selectId[idx] = preValId;
 
         if (idx >= 0 && idx <= 2) {
-          var selectCustomData = new XMLHttpRequest();
+          var selectCustomData = commonXMLHttpRequest();
 
           selectCustomData.open("GET", "/getData/getCustomData?un=" + unitPool[idx] + "&vi=" + preValId, true);
           selectCustomData.send();
@@ -463,22 +467,20 @@ function init_select2() {
       if ($("#select2_multiple0").val() === "Project 명") {
         return;
       }
-      var deleteData = new XMLHttpRequest();
+      var deleteData = commonXMLHttpRequest();
       deleteData.open("POST", "/access/deleteData", true);
       deleteData.setRequestHeader("Content-type", "application/json");
-      deleteData.onreadystatechange = function() {
-        if (deleteData.status === 404) {
-          window.location = "/404";
-        } else if (deleteData.status === 500) {
-          window.location = "/500";
-        }
-      };
-
       deleteData.send(JSON.stringify({
         "selectId": selectId
       }));
       deleteData.addEventListener("load", function() {
-        alert("결과 : " + deleteData.responseText);
+        var parsedResult = JSON.parse(deleteData.responseText);
+
+        if (deleteData.status === 400) {
+          alert("결과 : " + parsedResult.error);
+        } else {
+          alert("결과 : " + parsedResult.success);
+        }
         location.reload();
       });
     };
@@ -514,15 +516,7 @@ function clear_modalDetail() {
 }
 
 function init_modal_detail(pj_id, build_id) {
-  var getModalDataDetail = new XMLHttpRequest();
-
-  getModalDataDetail.onreadystatechange = function() {
-    if (getModalDataDetail.status === 404) {
-      window.location = "/404";
-    } else if (getModalDataDetail.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getModalDataDetail = commonXMLHttpRequest();
 
   getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
   getModalDataDetail.send();
@@ -646,14 +640,7 @@ function init_modal(pj_id, build_id) {
       return;
     }
 
-    var getInitialModalData = new XMLHttpRequest();
-    getInitialModalData.onreadystatechange = function() {
-      if (getInitialModalData.status === 404) {
-        window.location = "/404";
-      } else if (getInitialModalData.status === 500) {
-        window.location = "/500";
-      }
-    };
+    var getInitialModalData = commonXMLHttpRequest();
 
     getInitialModalData.open("GET", "/getData/getInitialModalData?pi=" + pj_id, true);
     getInitialModalData.send();
@@ -728,15 +715,7 @@ function init_charts() {
   var doc = document;
   var url = urlByBrowser();
   url = url.substring(url.indexOf(":") + 3);
-  var getChartData = new XMLHttpRequest();
-
-  getChartData.onreadystatechange = function() {
-    if (getChartData.status === 404) {
-      window.location = "/404";
-    } else if (getChartData.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getChartData = commonXMLHttpRequest();
 
   getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/")), true);
   getChartData.send();
