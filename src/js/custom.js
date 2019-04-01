@@ -452,9 +452,9 @@ function init_select2() {
               } else if (value.method_name) {
                 optionTmp.innerText = value.method_name;
               }
-              divFragMini.append(optionTmp);
+              divFragMini.appendChild(optionTmp);
             });
-            $("#select2_multiple" + (idx + 1)).append(divFragMini);
+            document.getElementById("select2_multiple" + (idx + 1)).appendChild(divFragMini);
           });
           $("#select2_multiple" + (idx + 1)).removeAttr("disabled");
         } // if (idx >=0 && idx <=2) End
