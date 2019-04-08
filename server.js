@@ -4,6 +4,7 @@ const db = require("mysql");
 const bodyParser = require("body-parser");
 const compression = require("compression");
 const serverPortNo = 8000;
+const coreNo = 2;
 let moment = require("moment");
 // Passport + session
 const session = require("express-session");
@@ -60,7 +61,7 @@ function handleDisconnect() {
 
 if (cluster.isMaster) {
   console.log("Master started(PID : " + process.pid + ")");
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < coreNo; i++) {
     let worker = cluster.fork();
 
     console.log("Worker started(PID : " + worker.process.pid + ")");
