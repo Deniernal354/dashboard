@@ -122,7 +122,7 @@ if (cluster.isMaster) {
   app.use((err, req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-    console.error("---\nError occured : " + now);
+    console.error("---\n" + res.statusCode + " Error occured : " + now);
     console.error(err);
 
     if (res.statusCode === 400) {

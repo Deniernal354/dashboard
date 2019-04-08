@@ -34,9 +34,14 @@ module.exports = function(pool) {
     const team = convertName(req.body.pj_team, teamConfig);
     const plat = convertName(req.body.pj_platform, platformConfig);
 
-    if ((!err.isEmpty()) || (!team) || (!plat)) {
+    if (!err.isEmpty()) {
       res.statusCode = 400;
       return next(JSON.stringify(err.array()));
+    }
+
+    if ((!team) || (!plat)) {
+      res.statusCode = 400;
+      return next("/beforeSuite : Wrong teamName or platName\n(team : " + req.body.pj_team + " / plat : " + req.body.pj_platform + ")");
     }
 
     const name = req.body.pj_name;
