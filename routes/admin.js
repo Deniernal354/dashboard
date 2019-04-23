@@ -66,7 +66,7 @@ module.exports = function(passport, redisClient) {
       });
     }
     req.logout();
-    res.redirect("/");
+    res.redirect("/auto");
   });
 
   router.get("/403", (req, res) => {

@@ -717,7 +717,7 @@ function init_charts() {
   url = url.substring(url.indexOf(":") + 3);
   var getChartData = commonXMLHttpRequest();
 
-  getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/")), true);
+  getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/") + 5), true);
   getChartData.send();
   getChartData.addEventListener("load", function() {
     var parsedResult = JSON.parse(getChartData.responseText);

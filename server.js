@@ -112,7 +112,7 @@ if (cluster.isMaster) {
   app.use(passport.session());
 
   // routes
-  app.use("/", require("./routes/route.js")(pool));
+  app.use("/auto", require("./routes/route.js")(pool));
   app.use("/getData", require("./routes/getData.js")(pool, redisClient));
   app.use("/access", require("./routes/accessDB.js")(pool));
   app.use("/admin", require("./routes/admin.js")(passport, redisClient));

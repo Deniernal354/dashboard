@@ -10,10 +10,10 @@ module.exports = function(pool) {
   let moment = require("moment");
 
   router.get("/", (req, res) => {
-    res.redirect("/index");
+    res.redirect("/auto/index");
   });
   router.get("/index.html", (req, res) => {
-    res.redirect("/index");
+    res.redirect("/auto/index");
   });
   router.get("/index", (req, res) => {
     res.status(200).render("index.ejs", {
