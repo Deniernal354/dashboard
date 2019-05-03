@@ -123,18 +123,19 @@ if (cluster.isMaster) {
   app.use((err, req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-    console.error("---\n" + res.statusCode + " Error occured : " + now);
-    console.error(err);
-
-    if (res.statusCode === 400) {
+    if (res.statusCode === 400 || err.code === "ER_DATA_TOO_LONG") {
       res.status(400).json({
         "error": "Bad Request - Please Check your input values"
       });
     } else if (res.statusCode === 404) {
       res.status(404).render("page_404");
     } else {
+      res.statusCode = 500;
       res.status(500).render("page_500");
     }
+
+    console.error("---\n" + res.statusCode + " Error occured : " + now);
+    console.error(err);
   });
 
   const server = app.listen(serverPortNo, () => {
