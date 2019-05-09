@@ -1,4 +1,4 @@
-module.exports = function(passport, maxLabel) {
+module.exports = function(passport, redisClient) {
   const express = require("express");
   const router = express.Router();
 
@@ -28,19 +28,33 @@ module.exports = function(passport, maxLabel) {
   });
 
   router.get("/getKnobData", (req, res) => {
-    res.status(200).json(maxLabel.getMaxLabel());
+    redisClient.get("maxLabel", (err, reply) => {
+      redisClient.get("abmaxLabel", (err2, reply2) => {
+        res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+        res.status(200).json({
+          "cur": reply,
+          "absolute": reply2
+        });
+      });
+    });
   });
 
   router.post("/changeMaxLabel", (req, res) => {
     if (req.body.newMaxLabel && req.session.userid) {
       const newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개")) * 1;
 
-      if ((newLabel >= 1 && newLabel <= maxLabel.getAbsoluteMaxLabel()) && (maxLabel.getMaxLabel() !== newLabel)) {
-        console.log("By " + req.session.userid + ", maxLabel is changed : " + maxLabel.getMaxLabel() + " -> " + newLabel);
-        maxLabel.setMaxLabel(newLabel);
-      }
+      redisClient.get("maxLabel", (err, reply) => {
+        redisClient.get("abmaxLabel", (err2, reply2) => {
+          const preLabel = reply * 1;
+
+          if ((newLabel >= 1) && (newLabel <= reply2 * 1) && (preLabel !== newLabel)) {
+            console.log("By " + req.session.userid + ", maxLabel is changed : " + preLabel + " -> " + newLabel);
+            redisClient.set("maxLabel", newLabel);
+          }
+          res.status(200).redirect("/admin");
+        });
+      });
     }
-    res.status(200).redirect("/admin");
   });
 
   router.get("/logout", (req, res) => {
@@ -52,7 +66,7 @@ module.exports = function(passport, maxLabel) {
       });
     }
     req.logout();
-    res.redirect("/");
+    res.redirect("/auto");
   });
 
   router.get("/403", (req, res) => {

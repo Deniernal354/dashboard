@@ -203,6 +203,18 @@ $(document).ready(function() {
 });
 
 // Custom functions
+function commonXMLHttpRequest() {
+  var xhttp = new XMLHttpRequest();
+
+  xhttp.onreadystatechange = function(){
+    if (xhttp.status === 500) {
+      window.location = "/500";
+    }
+  };
+
+  return xhttp;
+}
+
 function updateProjectDetail(labels, data, idx) {
   return function() {
     var divFrag = document.createDocumentFragment();
@@ -327,15 +339,7 @@ function change_failChart(start, end) {
     uiParent.removeChild(uiParent.firstChild);
   }
 
-  var getFailChartData = new XMLHttpRequest();
-
-  getFailChartData.onreadystatechange = function() {
-    if (getFailChartData.status === 404) {
-      window.location = "/404";
-    } else if (getFailChartData.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getFailChartData = commonXMLHttpRequest();
 
   getFailChartData.open("GET", "/getData/getFailChartData?start=" + start + "&end=" + end, true);
   getFailChartData.send();
@@ -354,28 +358,32 @@ function init_platformChart(parsedResult) {
     return;
   }
 
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 5; i++) {
     document.getElementById("plat_info" + i).innerHTML += "(" + parsedResult.platResult[2][i] + "%)";
   }
 
   var platformChart = new Chart(document.getElementById("platformChartDiv"), {
     type: "doughnut",
     data: {
-      labels: ["PC Web", "Mobile Web", "Mobile App"],
+      labels: ["PC Web", "PC App", "Mobile Web", "Mobile App", "API"],
       datasets: [{
         data: parsedResult.platResult[1],
         backgroundColor: [
           "rgba(102, 194, 255, 0.7)",
+          "rgba(155, 89, 182, 0.7)",
           "rgba(255, 115, 115, 0.7)",
-          "rgba(130, 130, 130, 0.7)"
+          "rgba(255, 236, 80, 0.7)",
+          "rgba(180, 238, 180, 0.7)"
         ],
         hoverBackgroundColor: [
           "rgba(102, 194, 255, 1.0)",
+          "rgba(155, 89, 182, 1.0)",
           "rgba(255, 115, 115, 1.0)",
-          "rgba(130, 130, 130, 1.0)"
+          "rgba(255, 236, 80, 1.0)",
+          "rgba(180, 238, 180, 1.0)"
         ],
         label: [
-          "PC Web", "Mobile Web", "Mobile App"
+          "PC Web", "PC App", "Mobile Web", "Mobile App", "API"
         ]
       }]
     },
@@ -389,15 +397,7 @@ function init_platformChart(parsedResult) {
 
 function init_indexData() {
   console.log("init_indexData");
-  var getIndexData = new XMLHttpRequest();
-
-  getIndexData.onreadystatechange = function() {
-    if (getIndexData.status === 404) {
-      window.location = "/404";
-    } else if (getIndexData.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getIndexData = commonXMLHttpRequest();
 
   getIndexData.open("GET", "/getData/getIndexData", true);
   getIndexData.send();

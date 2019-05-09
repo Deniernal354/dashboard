@@ -214,6 +214,7 @@ var chartOption = {
       },
       labelColor: function(tooltipItem, chart) {
         var colortmp = tooltipItem.datasetIndex + 1;
+        var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
         colortmp = (colortmp > 2) ? 0 : colortmp;
         return {
@@ -248,248 +249,27 @@ var chartOption = {
   responsiveAnimationDuration: 0*/
 };
 
-var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
+function commonXMLHttpRequest() {
+  var xhttp = new XMLHttpRequest();
 
-function processdata(responseText) {
-  var labels = [];
-  var chartData = [];
-  var innerData = [];
-  var pjIndex = [];
-  var env = [];
-
-  // UI info - pj_name / pj_id / pj_link / build_id
-  var pjLabel = [];
-  var pjlink = [];
-  var buildTime = [];
-  var duration = [];
-
-  // initialModalData - pj_platform / pj_team / pj_author
-  var initialModalData = [];
-
-  var totalChartCount = responseText.totalChartCount;
-  pjLabel = responseText.pj_label.slice();
-
-  if (totalChartCount) {
-    var platformtmp = responseText.pj_label[0].pj_platform;
-
-    if (platformtmp === "pcWeb") {
-      platformtmp = "PC Web";
-    } else if (platformtmp === "mobileWeb") {
-      platformtmp = "Mobile Web";
-    } else if (platformtmp === "mobileApp") {
-      platformtmp = "Mobile App";
-    } else {
-      platformtmp = "Error";
-    }
-    initialModalData.push(platformtmp);
-    initialModalData.push(responseText.pj_label[0].pj_team);
-    initialModalData.push(responseText.pj_label[0].pj_author);
-  }
-
-  for (var k = 0; k < totalChartCount; k++) {
-    labels[k] = [];
-    env[k] = [];
-    chartData[k] = [];
-    chartData[k][0] = [];
-    chartData[k][1] = [];
-    chartData[k][2] = [];
-    pjIndex[k] = responseText.pj_label[k].pj_id;
-    var linktmp = responseText.pj_label[k].pj_link;
-    pjlink[k] = (linktmp.slice(0, 4) === "http") ? linktmp : "http://" + linktmp;
-    buildTime[k] = [];
-    buildTime[k][0] = []; // buildno
-    buildTime[k][1] = []; // start_t
-    duration[k] = []; // duration
-    pjLabel[k].build_id = [];
-  }
-
-  responseText.data.forEach(function(value) {
-    var idx = pjIndex.indexOf(value.pj_id);
-
-    pjLabel[idx].build_id.push(value.build_id);
-
-    if (!value.start_t) {
-      value.start_t = "0";
-    }
-
-    if (labels[idx].length < responseText.maxLabel) {
-      if (value.start_t === "0") {
-        labels[idx].push("Failed");
-      } else {
-        labels[idx].push(value.start_t.slice(5, 10));
-      }
-      env[idx].push(value.buildenv);
-    }
-
-    chartData[idx][0].push(value.pass);
-    chartData[idx][1].push(value.fail);
-    chartData[idx][2].push(value.skip);
-
-    if (buildTime[idx][0]) {
-      if (buildTime[idx][0] < value.buildno * 1) {
-        buildTime[idx][0] = value.buildno;
-        buildTime[idx][1] = (value.start_t === "0") ? "Build Failed" : value.start_t;
-        duration[idx] = value.duration.slice(0, 2) + "h " + value.duration.slice(3, 5) + "m " + value.duration.slice(6, 8) + "s";
-      }
-    } else {
-      buildTime[idx][0] = -1;
-      buildTime[idx][1] = "1453/05/29 09:00:00";
-    }
-  });
-
-  for (var h = 0; h < totalChartCount; h++) {
-    innerData[h] = {
-      labels: labels[h],
-      datasets: [{
-        label: "Fail",
-        backgroundColor: pfsColor[1] + " 0.7)",
-        borderColor: pfsColor[1] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[1] + " 1)",
-        data: chartData[h][1]
-      }, {
-        label: "Skip",
-        backgroundColor: pfsColor[2] + " 0.7)",
-        borderColor: pfsColor[2] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[2] + " 1)",
-        data: chartData[h][2]
-      }, {
-        label: "Pass",
-        backgroundColor: pfsColor[0] + " 0.7)",
-        borderColor: pfsColor[0] + " 0.7)",
-        pointHoverBackgroundColor: "#fff",
-        pointHoverBorderColor: pfsColor[0] + " 1)",
-        data: chartData[h][0]
-      }],
-      tooltip: env[h]
-    };
-  }
-
-  return {
-    getInnerData: function() {
-      return innerData;
-    },
-    getPjLabel: function() {
-      return pjLabel;
-    },
-    getBuildTime: function() {
-      return buildTime;
-    },
-    getDuration: function() {
-      return duration;
-    },
-    getPjLink: function() {
-      return pjlink;
-    },
-    getTotalChartCount: function() {
-      return totalChartCount;
-    },
-    getInitialModalData: function() {
-      return initialModalData;
+  xhttp.onreadystatechange = function(){
+    if (xhttp.status === 500) {
+      window.location = "/500";
     }
   };
-} // processdata end
 
-function processModalData(responseText) {
-  var pieChartData = [];
-  var class_pass = [];
-  var class_fail = [];
-  var class_skip = [];
-  var class_sum = [];
-  var class_passr = [];
-  var class_failr = [];
-  var class_skipr = [];
-  var build_pass = 0;
-  var build_fail = 0;
-  var build_skip = 0;
-  var build_sum = 0;
-  var nameData = [];
-  var classcount = responseText.classcount;
-
-  responseText.data.forEach(function(value) {
-    var tmpsum = value.pass + value.fail + value.skip;
-
-    class_pass.push(value.pass);
-    class_fail.push(value.fail);
-    class_skip.push(value.skip);
-    class_passr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
-    class_failr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
-    class_skipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
-    class_sum.push(tmpsum);
-
-    build_pass += value.pass;
-    build_fail += value.fail;
-    build_skip += value.skip;
-
-    nameData.push([value.package_name, value.class_name]);
-  });
-
-  build_sum = build_pass + build_fail + build_skip;
-
-  pieChartData = {
-    labels: ["Fail", "Skip", "Pass"],
-    datasets: [{
-      data: [
-        Math.round(build_fail / build_sum * 100).toFixed(1),
-        Math.round(build_skip / build_sum * 100).toFixed(1),
-        Math.round(build_pass / build_sum * 100).toFixed(1)
-      ],
-      backgroundColor: [
-        "rgba(255, 115, 115, 0.7)",
-        "rgba(130, 130, 130, 0.7)",
-        "rgba(102, 194, 255, 0.7)"
-      ],
-      hoverBackgroundColor: [
-        "rgba(255, 115, 115, 1.0)",
-        "rgba(130, 130, 130, 1.0)",
-        "rgba(102, 194, 255, 1.0)"
-      ],
-      label: [
-        "Fail", "Skip", "Pass"
-      ]
-    }]
-  };
-
-  return {
-    getpieChartData: function() {
-      return pieChartData;
-    },
-    getClassCount: function() {
-      return classcount;
-    },
-    getProgressData: function() {
-      return {
-        "pass": class_pass,
-        "fail": class_fail,
-        "skip": class_skip,
-        "sum": class_sum,
-        "passrate": class_passr,
-        "failrate": class_failr,
-        "skiprate": class_skipr
-      };
-    },
-    getNameData: function() {
-      return nameData;
-    },
-    getBuildTime: function() {
-      return responseText.data[0].start_t;
-    }
-  };
-} //processModalData end
+  return xhttp;
+}
 // My functions end
 
 /* KNOB */
 function init_knob() {
-  if (typeof($.fn.knob) === "undefined") {
-    return;
-  }
-  if (!document.getElementById("knobInput")) {
+  if ((typeof($.fn.knob) === "undefined") || (!document.getElementById("knobInput"))) {
     return;
   }
   console.log("init_knob");
 
-  var knobData = new XMLHttpRequest();
+  var knobData = commonXMLHttpRequest();
   var doc = document;
 
   doc.getElementById("labelSubmit").addEventListener("click", function() {
@@ -501,12 +281,12 @@ function init_knob() {
   knobData.addEventListener("load", function() {
     var result = JSON.parse(knobData.responseText);
 
-    doc.getElementById("knobInput").value = result;
-    doc.getElementById("MaxLabel_text").innerText = "현재 : " + result + "개";
+    doc.getElementById("knobInput").value = result.cur;
+    doc.getElementById("MaxLabel_text").innerText = "현재 : " + result.cur + "개";
 
     $(".knob").knob({
       "min": 1,
-      "max": 20,
+      "max": result.absolute * 1,
       "thickness": 0.2,
       "displayPrevious": true,
       "inputColor": "#34495E",
@@ -608,15 +388,7 @@ function init_select2() {
   tmp.setAttribute("display", "none");
   divFrag.appendChild(tmp);
 
-  var customInit = new XMLHttpRequest();
-
-  customInit.onreadystatechange = function() {
-    if (customInit.status === 404) {
-      window.location = "/404";
-    } else if (customInit.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var customInit = commonXMLHttpRequest();
 
   customInit.open("GET", "/getData/getCustomData?un=pj&vi=-1", true);
   customInit.send();
@@ -658,7 +430,7 @@ function init_select2() {
         selectId[idx] = preValId;
 
         if (idx >= 0 && idx <= 2) {
-          var selectCustomData = new XMLHttpRequest();
+          var selectCustomData = commonXMLHttpRequest();
 
           selectCustomData.open("GET", "/getData/getCustomData?un=" + unitPool[idx] + "&vi=" + preValId, true);
           selectCustomData.send();
@@ -680,9 +452,9 @@ function init_select2() {
               } else if (value.method_name) {
                 optionTmp.innerText = value.method_name;
               }
-              divFragMini.append(optionTmp);
+              divFragMini.appendChild(optionTmp);
             });
-            $("#select2_multiple" + (idx + 1)).append(divFragMini);
+            document.getElementById("select2_multiple" + (idx + 1)).appendChild(divFragMini);
           });
           $("#select2_multiple" + (idx + 1)).removeAttr("disabled");
         } // if (idx >=0 && idx <=2) End
@@ -695,22 +467,21 @@ function init_select2() {
       if ($("#select2_multiple0").val() === "Project 명") {
         return;
       }
-      var deleteData = new XMLHttpRequest();
+      var deleteData = commonXMLHttpRequest();
       deleteData.open("POST", "/access/deleteData", true);
       deleteData.setRequestHeader("Content-type", "application/json");
-      deleteData.onreadystatechange = function() {
-        if (deleteData.status === 404) {
-          window.location = "/404";
-        } else if (deleteData.status === 500) {
-          window.location = "/500";
-        }
-      };
-
       deleteData.send(JSON.stringify({
         "selectId": selectId
       }));
       deleteData.addEventListener("load", function() {
-        alert("결과 : " + deleteData.responseText);
+        var parsedResult = JSON.parse(deleteData.responseText);
+
+        if (deleteData.status === 400) {
+          alert("결과 : " + parsedResult.error);
+        } else {
+          alert("결과 : " + parsedResult.success);
+        }
+        location.reload();
       });
     };
   }
@@ -745,20 +516,12 @@ function clear_modalDetail() {
 }
 
 function init_modal_detail(pj_id, build_id) {
-  var getModalDataDetail = new XMLHttpRequest();
-
-  getModalDataDetail.onreadystatechange = function() {
-    if (getModalDataDetail.status === 404) {
-      window.location = "/404";
-    } else if (getModalDataDetail.status === 500) {
-      window.location = "/500";
-    }
-  };
+  var getModalDataDetail = commonXMLHttpRequest();
 
   getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
   getModalDataDetail.send();
   getModalDataDetail.addEventListener("load", function() {
-    var parsedResult = processModalData(JSON.parse(getModalDataDetail.responseText));
+    var parsedResult = JSON.parse(getModalDataDetail.responseText);
     var noChart = document.getElementById("noChart");
     var noInfo = document.getElementById("noInfo");
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
@@ -766,7 +529,7 @@ function init_modal_detail(pj_id, build_id) {
 
     clear_modalDetail();
 
-    if (parsedResult.getClassCount() === 0) {
+    if (parsedResult.classCount === 0) {
       noChart.innerText = "실패한 Build입니다";
       noInfo.innerText = "실패한 Build입니다";
     } else {
@@ -775,9 +538,9 @@ function init_modal_detail(pj_id, build_id) {
       var packCnt = -1;
       var tmptbody;
 
-      for (var i = 0; i < parsedResult.getClassCount(); i++) {
-        if (parsedResult.getNameData()[i][0] !== prevPackName) {
-          prevPackName = parsedResult.getNameData()[i][0];
+      for (var i = 0; i < parsedResult.classCount; i++) {
+        if (parsedResult.nameData[i][0] !== prevPackName) {
+          prevPackName = parsedResult.nameData[i][0];
           packCnt++;
 
           tmptbody = document.createElement("tbody");
@@ -794,7 +557,7 @@ function init_modal_detail(pj_id, build_id) {
           var tmptr = document.createElement("tr");
           var tmpth = document.createElement("th");
 
-          tmpth.innerText = parsedResult.getNameData()[i][0];
+          tmpth.innerText = parsedResult.nameData[i][0];
           tmptr.appendChild(tmpth);
           tmpthead.appendChild(tmptr);
 
@@ -807,7 +570,7 @@ function init_modal_detail(pj_id, build_id) {
         var tmpth2 = document.createElement("th");
         var tmpth3 = document.createElement("th");
         tmpth2.setAttribute("class", "col-lg-5 col-md-5 col-sm-5 col-xs-12");
-        tmpth2.innerText = parsedResult.getNameData()[i][1];
+        tmpth2.innerText = parsedResult.nameData[i][1];
         tmptr2.appendChild(tmpth2);
         tmpth3.setAttribute("class", "col-lg-7 col-md-7 col-sm-7 col-xs-12");
 
@@ -821,32 +584,32 @@ function init_modal_detail(pj_id, build_id) {
           "id": "propass" + i,
           "class": "progress-bar progress-bar-striped progress-pass",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().pass[i],
+          "aria-valuenow": parsedResult.progressData.pass[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().passrate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.passrate[i] + "%"
         });
-        propass.innerText = parsedResult.getProgressData().pass[i];
+        propass.innerText = parsedResult.progressData.pass[i];
         setAttributes(profail, {
           "id": "profail" + i,
           "class": "progress-bar progress-bar-striped progress-fail",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().fail[i],
+          "aria-valuenow": parsedResult.progressData.fail[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().failrate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.failrate[i] + "%"
         });
-        profail.innerText = parsedResult.getProgressData().fail[i];
+        profail.innerText = parsedResult.progressData.fail[i];
         setAttributes(proskip, {
           "id": "proskip" + i,
           "class": "progress-bar progress-bar-striped progress-skip",
           "role": "progressbar",
-          "aria-valuenow": parsedResult.getProgressData().skip[i],
+          "aria-valuenow": parsedResult.progressData.skip[i],
           "aria-valuemin": 0,
-          "aria-valuemax": parsedResult.getProgressData().sum[i],
-          "style": "width: " + parsedResult.getProgressData().skiprate[i] + "%"
+          "aria-valuemax": parsedResult.progressData.sum[i],
+          "style": "width: " + parsedResult.progressData.skiprate[i] + "%"
         });
-        proskip.innerText = parsedResult.getProgressData().skip[i];
+        proskip.innerText = parsedResult.progressData.skip[i];
 
         progresstmp.appendChild(propass);
         progresstmp.appendChild(profail);
@@ -857,12 +620,12 @@ function init_modal_detail(pj_id, build_id) {
       }
       document.getElementById("classinfo").appendChild(divFrag);
 
-      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.getBuildTime();
-      pieChart_passInfo.innerText = "성공률 : " + parsedResult.getpieChartData().datasets[0].data[2] + "%";
+      pieChart_timeInfo.innerText = "빌드 시작시간 : " + parsedResult.buildTime;
+      pieChart_passInfo.innerText = "성공률 : " + parsedResult.pieChartData.datasets[0].data[2] + "%";
 
       var pieChart = new Chart(document.getElementById("pieChart_mo"), {
         type: "pie",
-        data: parsedResult.getpieChartData(),
+        data: parsedResult.pieChartData,
         options: {
           legend: false
         }
@@ -877,30 +640,23 @@ function init_modal(pj_id, build_id) {
       return;
     }
 
-    var getInitialModalData = new XMLHttpRequest();
-    getInitialModalData.onreadystatechange = function() {
-      if (getInitialModalData.status === 404) {
-        window.location = "/404";
-      } else if (getInitialModalData.status === 500) {
-        window.location = "/500";
-      }
-    };
+    var getInitialModalData = commonXMLHttpRequest();
 
     getInitialModalData.open("GET", "/getData/getInitialModalData?pi=" + pj_id, true);
     getInitialModalData.send();
     getInitialModalData.addEventListener("load", function() {
-      var parsedResult = processdata(JSON.parse(getInitialModalData.responseText));
+      var parsedResult = JSON.parse(getInitialModalData.responseText);
       var lineChart = new Chart(document.getElementById("lineChart_mo"), {
         type: "line",
-        data: parsedResult.getInnerData()[0],
+        data: parsedResult.innerData[0],
         options: chartOption
       });
       var prevBuild = -1;
 
-      document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.getPjLabel()[0].pj_name;
-      document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.getInitialModalData()[0];
-      document.getElementById("team_mo").innerText = "팀 : " + parsedResult.getInitialModalData()[1];
-      document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.getInitialModalData()[2];
+      document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.pjLabel[0].pj_name;
+      document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.initialModalData[0];
+      document.getElementById("team_mo").innerText = "팀 : " + parsedResult.initialModalData[1];
+      document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.initialModalData[2];
 
       document.getElementById("lineChart_mo").addEventListener("click", function(evt) {
         var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
@@ -908,11 +664,11 @@ function init_modal(pj_id, build_id) {
         });
 
         if (pointData.length != 0) {
-          var buildtmp = parsedResult.getPjLabel()[0].build_id[pointData[0]._index];
+          var buildtmp = parsedResult.pjLabel[0].build_id[pointData[0]._index];
 
           if (prevBuild != buildtmp) {
             prevBuild = buildtmp;
-            init_modal_detail(parsedResult.getPjLabel()[0].pj_id, buildtmp);
+            init_modal_detail(parsedResult.pjLabel[0].pj_id, buildtmp);
           }
         }
       });
@@ -933,10 +689,7 @@ function urlByBrowser() {
 }
 
 function init_charts() {
-  if (!document.getElementById("chartDiv")) {
-    return;
-  }
-  if (typeof(Chart) === "undefined") {
+  if ((!document.getElementById("chartDiv")) || (typeof(Chart) === "undefined")) {
     return;
   }
 
@@ -962,28 +715,20 @@ function init_charts() {
   var doc = document;
   var url = urlByBrowser();
   url = url.substring(url.indexOf(":") + 3);
-  var getChartData = new XMLHttpRequest();
+  var getChartData = commonXMLHttpRequest();
 
-  getChartData.onreadystatechange = function() {
-    if (getChartData.status === 404) {
-      window.location = "/404";
-    } else if (getChartData.status === 500) {
-      window.location = "/500";
-    }
-  };
-
-  getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/")), true);
+  getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/") + 5), true);
   getChartData.send();
   getChartData.addEventListener("load", function() {
-    var parsedResult = processdata(JSON.parse(getChartData.responseText));
-    var chartloop = parsedResult.getTotalChartCount();
+    var parsedResult = JSON.parse(getChartData.responseText);
+    var chartloop = parsedResult.totalChartCount;
 
     function lineEventListener(lineChart, idx) {
       document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
         var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
           intersect: false
         });
-        var idtmp = parsedResult.getPjLabel()[idx];
+        var idtmp = parsedResult.pjLabel[idx];
 
         if (pointData.length != 0) {
           $("#detailPage").modal("show");
@@ -993,19 +738,24 @@ function init_charts() {
     }
 
     for (var i = 0; i < chartloop; i++) {
-      doc.getElementById("title" + i).innerText = parsedResult.getPjLabel()[i].pj_name;
-      doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.getBuildTime()[i][1];
-      doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.getDuration()[i];
+      var nametmp = parsedResult.pjLabel[i].pj_name;
 
-      if (parsedResult.getPjLink()[i] !== "http://-") {
-        doc.getElementById("link" + i).setAttribute("href", parsedResult.getPjLink()[i]);
+      if (nametmp.slice(1, 7) === "Mobile") {
+        nametmp = nametmp.replace("Mobile", "M");
+      }
+      doc.getElementById("title" + i).innerText = nametmp;
+      doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i][1];
+      doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.duration[i];
+
+      if (parsedResult.pjLink[i] !== "-") {
+        doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLink[i]);
         doc.getElementById("link" + i).innerText = "Report Link";
       }
 
       var lineChartTarget = document.getElementById("lineChart" + i);
       var lineChart = new Chart(lineChartTarget, {
         type: "line",
-        data: parsedResult.getInnerData()[i],
+        data: parsedResult.innerData[i],
         options: chartOption
       });
 

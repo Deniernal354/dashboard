@@ -22,65 +22,61 @@ module.exports = function(pool) {
     return result;
   }
 
-  router.post("/nametest", [body("plat").exists()], (req, res) => {
-    const err = validationResult(req);
-    const team = convertName(req.body.plat, platformConfig);
-    if ((!err.isEmpty()) || (team === "")) {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
-    }
-
-    return res.status(200).json({
-      "team": team
-    });
-  });
-
   // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
   router.post("/beforeSuite", [
     body("pj_name").exists(),
     body("pj_team").exists(),
     body("pj_platform").exists(),
     body("pj_author").exists()
-  ], (req, res) => {
+  ], (req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
     const err = validationResult(req);
     const team = convertName(req.body.pj_team, teamConfig);
     const plat = convertName(req.body.pj_platform, platformConfig);
 
-    if ((!err.isEmpty()) || (!team) || (!plat)) {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
+    if (!err.isEmpty()) {
+      res.statusCode = 400;
+      return next(JSON.stringify(err.array()));
+    }
+
+    if ((!team) || (!plat)) {
+      res.statusCode = 400;
+      return next("/beforeSuite : Wrong teamName or platName\n(team : " + req.body.pj_team + " / plat : " + req.body.pj_platform + ")");
     }
 
     const name = req.body.pj_name;
     const auth = req.body.pj_author;
-    const link = (req.body.pj_link) ? req.body.pj_link : "-";
     const env = (req.body.pj_env) ? req.body.pj_env : "Real";
+    let link = "";
+
+    if (req.body.pj_link) {
+      link = req.body.pj_link;
+      if (link.slice(0, 4) !== "http") {
+        link = "http://" + link;
+      }
+    } else {
+      link = "-";
+    }
+
     const findProject = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
     const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
 
     pool.query(findProject, (err, rows) => {
       if (err) {
-        console.error("Error in /beforeSuite/findProject\n" + now + ", " + err.code + "\n" + findProject + "\n---");
-        return res.status(500).json({
-          "error": "Internal Server Error"
-        });
+        return next(err);
       }
 
+      // IF the project exists
       if (rows[0].pj_id !== -1) {
-        if (link === "-" || link === ""){
+        // IF the project's link doesn't exists
+        if (link === "-" || link === "") {
           insertBuildno(rows[0].pj_id, env);
         } else {
           const checkLink = "update project set pj_link= '" + link + "' where pj_id = " + rows[0].pj_id + " and pj_link != '" + link + "';";
 
           pool.query(checkLink, (inerr, inrows) => {
             if (inerr) {
-              console.error("Error in /beforeSuite/checkLink\n" + now + ", " + inerr.code + "\n" + checkLink + "\n---");
-              return res.status(500).json({
-                "error": "Internal Server Error"
-              });
+              return next(inerr);
             }
             insertBuildno(rows[0].pj_id, env);
           });
@@ -88,10 +84,7 @@ module.exports = function(pool) {
       } else {
         pool.query(insertProject, (inerr, inrows) => {
           if (inerr) {
-            console.error("Error in /beforeSuite/insertProject\n" + now + ", " + inerr.code + "\n" + insertProject + "\n---");
-            return res.status(500).json({
-              "error": "Internal Server Error"
-            });
+            return next(inerr);
           }
           insertBuildno(inrows.insertId, env);
         });
@@ -102,10 +95,7 @@ module.exports = function(pool) {
 
         pool.query(insertBuild, (err, rows) => {
           if (err) {
-            console.error("Error in /beforeSuite/insertBuild\n" + now + ", " + err.code + "\n" + insertBuild + "\n---");
-            return res.status(500).json({
-              "error": "Internal Server Error"
-            });
+            return next(err);
           } else {
             res.status(200).json({
               "pj_id": pj_id,
@@ -123,14 +113,13 @@ module.exports = function(pool) {
     body("build_id").exists(),
     body("class_name").exists(),
     body("package_name").exists()
-  ], (req, res) => {
+  ], (req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
     const err = validationResult(req);
 
     if (!err.isEmpty()) {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
+      res.statusCode = 400;
+      return next(JSON.stringify(err.array()));
     }
 
     const pjId = req.body.pj_id;
@@ -142,24 +131,16 @@ module.exports = function(pool) {
 
     pool.query(findBuild, (err, rows) => {
       if (err) {
-        console.error("Error in /beforeClass/findBuild\n" + now + ", " + err.code + "\n" + findBuild + "\n---");
-        return res.status(500).json({
-          "error": "Internal Server Error"
-        });
+        return next(err);
       }
 
-      if (rows[0].pj_id === -1) {
-        console.error("Error in /beforeClass/findBuild\n" + now + ", No suitable Id");
-        res.status(400).json({
-          "error": "There is no such pj_id, build_id"
-        });
+      if (rows[0].build_id === -1) {
+        res.statusCode = 400;
+        return next("/beforeClass : There is no such pj_id, build_id\n" + findBuild);
       } else {
         pool.query(insertClass, (inerr, inrows) => {
           if (inerr) {
-            console.error("Error in /beforeClass/insertClass\n" + now + ", " + inerr.code + "\n" + insertClass + "\n---");
-            return res.status(500).json({
-              "error": "Internal Server Error"
-            });
+            return next(inerr);
           } else {
             res.status(200).json({
               "class_id": inrows.insertId
@@ -179,13 +160,12 @@ module.exports = function(pool) {
     body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
     body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
     body("result").exists().matches(/^[1-3]$/),
-  ], (req, res) => {
+  ], (req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
     const err = validationResult(req);
     if (!err.isEmpty()) {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
+      res.statusCode = 400;
+      return next(JSON.stringify(err.array()));
     }
 
     const pjId = req.body.pj_id;
@@ -195,29 +175,21 @@ module.exports = function(pool) {
     const start_t = req.body.start_t;
     const end_t = req.body.end_t;
     const testResult = req.body.result;
-    const findClass = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) build_id;";
+    const findClass = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) class_id;";
     const insertMethod = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
 
     pool.query(findClass, (err, rows) => {
       if (err) {
-        console.error("Error in /afterMethod/findClass\n" + now + ", " + err.code + "\n" + findClass + "\n---");
-        return res.status(500).json({
-          "error": "Internal Server Error"
-        });
+        return next(err);
       }
 
-      if (rows[0].pj_id === -1) {
-        console.error("Error in /afterMethod/findClass\n" + now + ", No suitable Id");
-        res.status(400).json({
-          "error": "There is no such pj_id, build_id, class_id"
-        });
+      if (rows[0].class_id === -1) {
+        res.statusCode = 400;
+        return next("/afterMethod : There is no such pj_id, build_id, class_id\n" + findClass);
       } else {
         pool.query(insertMethod, (inerr, innerrows) => {
           if (inerr) {
-            console.error("Error in /afterMethod/insertMethod\n" + now + ", " + inerr.code + "\n" + insertMethod + "\n---");
-            return res.status(500).json({
-              "error": "Internal Server Error"
-            });
+            return next(err);
           } else {
             res.status(200).json({
               "success": 1
@@ -230,7 +202,7 @@ module.exports = function(pool) {
 
   router.post("/deleteData", [
     body("selectId").exists()
-  ], (req, res) => {
+  ], (req, res, next) => {
     const now = moment().format("YYYY.MM.DD HH:mm:ss");
     const err = validationResult(req);
 
@@ -241,9 +213,8 @@ module.exports = function(pool) {
     }
 
     if (!err.isEmpty()) {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
+      res.statusCode = 400;
+      return next(JSON.stringify(err.array()));
     }
 
     const selectId = req.body.selectId;
@@ -256,20 +227,18 @@ module.exports = function(pool) {
       deleteData = "delete from " + tableName[len - 1] + " where ";
       deleteData += tableId[len - 1] + " = " + selectId[len - 1] + ";";
     } else {
-      return res.status(400).json({
-        "error": "Bad Request"
-      });
+      res.statusCode = 400;
+      return next("/deleteData : Wrong selectId request\n" + selectId);
     }
 
     pool.query(deleteData, (err, rows) => {
       if (err) {
-        console.error("Error in /deleteData\n" + now + ", " + err.code + "\n" + deleteData + "\n---");
-        return res.status(500).json({
-          "error": "Internal Server Error"
-        });
+        return next(err);
       } else {
         console.log("By " + req.session.userid + ", data is deleted : " + now + ", " + tableName[len - 1] + "(Id : " + selectId[len - 1] + ")");
-        res.status(200).send("올바르게 삭제되었습니다.");
+        res.status(200).json({
+          "success": "올바르게 삭제되었습니다."
+        });
       }
     });
   });
