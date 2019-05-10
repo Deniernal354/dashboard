@@ -69,7 +69,7 @@ module.exports = function(pool, redisClient) {
     };
 
     return {
-      "buildTime": data[0].start_t,
+      "buildTime": moment(data[0].start_t).format("YYYY/MM/DD HH:mm:ss"),
       "classCount": classcount,
       "nameData": nameData,
       "pieChartData": pieChartData,
