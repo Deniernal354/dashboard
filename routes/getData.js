@@ -421,7 +421,7 @@ module.exports = function(pool, redisClient) {
   });
 
   router.get("/getModalDataDetail", (req, res, next) => {
-    let mainData = "select c.class_id, c.class_name, c.package_name, m.pass, m.fail, m.skip, m.start_t from class c inner join (select pj_id, build_id, class_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method group by pj_id, build_id, class_id) m on m.class_id=c.class_id where c.pj_id=" + req.query.pi + " and c.build_id=" + req.query.bi + ";";
+    let mainData = "select c.class_id, c.class_name, c.package_name, count(Case when m.result = 1 then 1 end) pass, count(Case when m.result = 2 then 1 end) fail, count(Case when m.result = 3 then 1 end) skip, min(m.start_t) start_t from class c inner join method m on m.class_id=c.class_id and m.pj_id=" + req.query.pi + " and c.build_id=" + req.query.bi + " group by class_id;";
 
     pool.query(mainData, (err, rows) => {
       const now = moment().format("YYYY.MM.DD HH:mm:ss");
