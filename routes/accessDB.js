@@ -92,14 +92,22 @@ module.exports = function(pool) {
 
             function insertBuildno(pj_id, env) {
                 const insertBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
+                let afterinsert = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, ";
 
                 pool.query(insertBuild, (err, rows) => {
                     if (err) {
                         return next(err);
                     } else {
-                        res.status(200).json({
-                            "pj_id": pj_id,
-                            "build_id": rows.insertId
+                        afterinsert += rows.insertId + ", " + pj_id + ");";
+                        pool.query(afterinsert, (inerr, inrows) => {
+                            if (inerr) {
+                                return next(inerr);
+                            } else {
+                                res.status(200).json({
+                                    "pj_id": pj_id,
+                                    "build_id": rows.insertId
+                                });
+                            }
                         });
                     }
                 });
