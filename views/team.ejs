@@ -37,7 +37,7 @@
             <% include ./partials/titleRight.ejs %>
           </div>
           <div class="clearfix"></div>
-          <div id="chartDiv" class="row">
+          <div id="chartDiv" class="chartrow">
             <% for(var i=0; i< cnt; i++) { %>
               <%- include("./partials/eachChart.ejs", {i: i}) %>
               <% } %>

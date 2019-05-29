@@ -241,12 +241,12 @@ var chartOption = {
         }
     }
     /*animation: {
-    duration: 0
-  },
-  hover: {
-    animationDuration: 0
-  },
-  responsiveAnimationDuration: 0*/
+        duration: 0
+    },
+    hover: {
+        animationDuration: 0
+    },
+    responsiveAnimationDuration: 0*/
 };
 
 function commonXMLHttpRequest() {
