@@ -65,15 +65,15 @@ var $FOOTER = $("footer");
 function init_sidebar() {
     var setContentHeight = function() {
     // reset height
-        $RIGHT_COL.css("min-height", $(window).height());
+        //$RIGHT_COL.css("min-height", $(window).height());
 
         var bodyHeight = $BODY.outerHeight();
-        var footerHeight = $BODY.hasClass("footer_fixed") ? -10 : $FOOTER.height();
+        //var footerHeight = $BODY.hasClass("footer_fixed") ? -10 : $FOOTER.height();
         var leftColHeight = $LEFT_COL.eq(1).height() + $SIDEBAR_FOOTER.height();
         var contentHeight = bodyHeight < leftColHeight ? leftColHeight : bodyHeight;
 
         // normalize content
-        contentHeight -= $NAV_MENU.height() + footerHeight;
+        //contentHeight -= $NAV_MENU.height() + footerHeight;
 
         $RIGHT_COL.css("min-height", contentHeight);
     };
@@ -495,20 +495,19 @@ function init_select2() {
 }
 
 function clear_modalDetail() {
+    var newChart_mo = document.createElement("canvas");
+    newChart_mo.setAttribute("id", "pieChart_mo");
+    var newinfo = document.createElement("div");
+    newinfo.setAttribute("id", "classinfo");
     var noChart = document.getElementById("noChart");
     var noInfo = document.getElementById("noInfo");
     var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
     var pieChart_passInfo = document.getElementById("pieChart_passInfo");
 
     document.getElementById("panel_report").removeChild(document.getElementById("pieChart_mo"));
-    var newChart_mo = document.createElement("canvas");
-    newChart_mo.setAttribute("id", "pieChart_mo");
     document.getElementById("panel_report").appendChild(newChart_mo);
     document.getElementById("panel_detailReport").removeChild(document.getElementById("classinfo"));
-    var newinfo = document.createElement("div");
-    newinfo.setAttribute("id", "classinfo");
     document.getElementById("panel_detailReport").appendChild(newinfo);
-
     noChart.innerText = "";
     noInfo.innerText = "";
     pieChart_timeInfo.innerText = "";
@@ -516,6 +515,8 @@ function clear_modalDetail() {
 }
 
 function init_modal_detail(pj_id, build_id) {
+    clear_modalDetail();
+
     var getModalDataDetail = commonXMLHttpRequest();
 
     getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
@@ -526,8 +527,6 @@ function init_modal_detail(pj_id, build_id) {
         var noInfo = document.getElementById("noInfo");
         var pieChart_timeInfo = document.getElementById("pieChart_timeInfo");
         var pieChart_passInfo = document.getElementById("pieChart_passInfo");
-
-        clear_modalDetail();
 
         if (parsedResult.classCount === 0) {
             noChart.innerText = "실패한 Build입니다";
@@ -560,7 +559,6 @@ function init_modal_detail(pj_id, build_id) {
                     tmpth.innerText = parsedResult.nameData[i][0];
                     tmptr.appendChild(tmpth);
                     tmpthead.appendChild(tmptr);
-
                     tmptable.appendChild(tmpthead);
                     tmptable.appendChild(tmptbody);
                     divFrag.appendChild(tmptable);
@@ -703,12 +701,12 @@ function init_charts() {
             "id": "lineChart_mo",
             "height": "50%"
         });
-        doc.getElementById("panel_mo").removeChild(doc.getElementById("lineChart_mo"));
-        doc.getElementById("panel_mo").appendChild(newChart);
-        doc.getElementById("detailPageLabel").innerText = "More Info - ";
-        doc.getElementById("platform_mo").innerText = "환경 : ";
-        doc.getElementById("team_mo").innerText = "팀 : ";
-        doc.getElementById("author_mo").innerText = "사용자 : ";
+        document.getElementById("panel_mo").removeChild(doc.getElementById("lineChart_mo"));
+        document.getElementById("panel_mo").appendChild(newChart);
+        document.getElementById("detailPageLabel").innerText = "More Info - ";
+        document.getElementById("platform_mo").innerText = "환경 : ";
+        document.getElementById("team_mo").innerText = "팀 : ";
+        document.getElementById("author_mo").innerText = "사용자 : ";
         clear_modalDetail();
     });
 
@@ -731,8 +729,8 @@ function init_charts() {
                 var idtmp = parsedResult.pjLabel[idx];
 
                 if (pointData.length != 0) {
-                    $("#detailPage").modal("show");
                     init_modal(idtmp.pj_id, idtmp.build_id[pointData[0]._index])();
+                    $("#detailPage").modal("show");
                 }
             });
         }

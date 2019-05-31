@@ -1,59 +1,61 @@
 <!DOCTYPE html>
 <!-- Modal -->
 <div class="modal modal-center fade" id="detailPage" tabindex="-1" role="dialog" aria-labelledby="detailPageLabel">
-  <div class="modal-dialog modal-custom" role="document">
-    <div class="modal-content modal-custom">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h3 class="modal-title" id="detailPageLabel">More Info</h3>
-      </div>
+    <div class="modal-dialog modal-custom" role="document">
+        <div class="modal-content modal-custom">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="detailPageLabel">More Info</h3>
+            </div>
 
-      <div class="modal-body">
-        <div class="row">
-          <div id="panel_mo" class="x_panel">
-            <h4>최근 Build 결과</h4>
-            <canvas id="lineChart_mo" height="50%"></canvas>
-          </div>
-          <div id="panel_moInfo" class="x_panel">
-            <h4>
-              <div id="platform_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">환경 : </div>
-              <div id="team_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">팀 : </div>
-              <div id="author_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">사용자 : </div>
-            </h4>
-          </div>
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-            <div class="x_panel">
-              <div class="x_title">
-                <h4>선택한 Build 성공률(%) 및 정보</h4>
-                <div class="clearfix"></div>
-              </div>
-              <div id="panel_report">
-                <canvas id="pieChart_mo"></canvas>
-              </div>  
-              <h4>
-                <center>
-                  <div id="pieChart_timeInfo"></div>
-                  <div id="pieChart_passInfo"></div>
-                  <div id="noChart"></div>
-                </center>
-              </h4>
+            <div class="modal-body">
+                <div class="row">
+                    <div id="panel_mo" class="x_panel">
+                        <h4>최근 Build 결과</h4>
+                        <canvas id="lineChart_mo" height="50%"></canvas>
+                    </div>
+                    <div id="panel_moInfo" class="x_panel">
+                        <h4>
+                            <div id="platform_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">환경 : </div>
+                            <div id="team_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">팀 : </div>
+                            <div id="author_mo" class="col-lg-4 col-md-4 col-sm-4 col-xs-12">사용자 : </div>
+                        </h4>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                        <div class="x_panel">
+                            <div class="x_title">
+                                <h4>선택한 Build 성공률(%) 및 정보</h4>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div id="panel_report">
+                                <canvas id="pieChart_mo"></canvas>
+                            </div>
+                            <h4>
+                                <center>
+                                    <div id="pieChart_timeInfo"></div>
+                                    <div id="pieChart_passInfo"></div>
+                                    <div id="noChart"></div>
+                                </center>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                        <div id="panel_detailReport" class="x_panel">
+                            <div class="x_title">
+                                <h4>선택한 Build의 Package, Class 정보</h4>
+                                <div class="clearfix"></div>
+                            </div>
+                            <h4>
+                                <div id="noInfo" style="text-align:center;"></div>
+                            </h4>
+                            <div id="classinfo"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
-            <div id="panel_detailReport" class="x_panel">
-              <div class="x_title">
-                <h4>선택한 Build의 Package, Class 정보</h4>
-                <div class="clearfix"></div>
-              </div>
-              <h4><div id="noInfo" style="text-align:center;"></div></h4>
-              <div id="classinfo"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
-          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
     </div>
-  </div>
 </div>
