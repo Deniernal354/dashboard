@@ -1,54 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <% include ./partials/header.ejs %>
-  <title>Dashboard</title>
+    <% include ./partials/header.ejs %>
+    <title>Dashboard</title>
 </head>
 
 <body class="nav-md">
-  <div class="container body">
-    <div class="main_container">
-      <div class="col-md-3 left_col">
-        <div class="left_col scroll-view">
-          <div class="navbar nav_title" style="border: 0;">
-            <a href="/auto/index" class="site_title">
-              <i class="fa fa-window-maximize"></i><span>Dashboard</span>
-            </a>
-          </div>
-          <div class="clearfix"></div>
-          <br />
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a href="/auto/index" class="site_title">
+                            <i class="fa fa-window-maximize"></i><span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                    <br />
 
-          <% include ./partials/sideBar.ejs %>
+                    <% include ./partials/sideBar.ejs %>
 
-          <% include ./partials/menuFooter.ejs %>
-        </div>
-      </div>
-
-      <% include ./partials/topNav.ejs %>
-
-      <!-- page content -->
-      <div class="right_col" role="main">
-        <div class="">
-          <div class="page-title">
-            <div class="title_left">
-              <h3><%= title %></h3>
+                    <% include ./partials/menuFooter.ejs %>
+                </div>
             </div>
 
-            <% include ./partials/titleRight.ejs %>
-          </div>
-          <div class="clearfix"></div>
-          <div id="chartDiv" class="row">
-            <% for(var i=0; i< cnt; i++) { %>
-              <%- include("./partials/eachChart.ejs", {i: i}) %>
-              <% } %>
-            </div>
-          </div>
-        </div>
-        <!-- /page content -->
+            <% include ./partials/topNav.ejs %>
 
-        <% include ./partials/footer.ejs %>
-      </div>
+            <!-- page content -->
+            <div class="right_col" role="main">
+                <div class="">
+                    <div class="page-title">
+                        <div class="title_left">
+                            <h3>
+                                <%= title %>
+                            </h3>
+                        </div>
+
+                        <% include ./partials/titleRight.ejs %>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div id="chartDiv" class="chartrow">
+                        <% for(var i=0; i< cnt; i++) { %>
+                        <%- include("./partials/eachChart.ejs", {i: i}) %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <!-- /page content -->
+
+            <% include ./partials/footer.ejs %>
+        </div>
     </div>
     <% include ./partials/srcChart.ejs %>
-  </body>
-  </html>
+</body>
+
+</html>
