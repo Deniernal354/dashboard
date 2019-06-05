@@ -123,7 +123,7 @@ if (cluster.isMaster) {
     app.use((err, req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-        if (res.statusCode === 400 || err.code === "ER_DATA_TOO_LONG") {
+        if (err.statusCode === 400  || res.statusCode === 400 || err.code === "ER_DATA_TOO_LONG") {
             res.status(400).json({
                 "error": "Bad Request - Please Check your input values"
             });
