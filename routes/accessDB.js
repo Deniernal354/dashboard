@@ -234,6 +234,10 @@ module.exports = function(pool) {
         if (len > 0 && len < 5) {
             deleteData = "delete from " + tableName[len - 1] + " where ";
             deleteData += tableId[len - 1] + " = " + selectId[len - 1] + ";";
+            if (len === 2) {
+                deleteData += "update buildrank set rank = rank-1 where pj_id=" + selectId[len - 2] + " and build_id<" + selectId[len-1] + ";";
+                deleteData += "insert into buildrank (rank, build_id, pj_id) select b.rn, b.build_id, b.pj_id from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC) b where b.pj_id=" + selectId[len - 2] + " and b.rn =20 group by pj_id, build_id, rn;";
+            }
         } else {
             res.statusCode = 400;
             return next("/deleteData : Wrong selectId request\n" + selectId);
