@@ -479,7 +479,7 @@ function init_select2() {
                 if (deleteData.status === 400) {
                     alert("결과 : " + parsedResult.error);
                 } else {
-                    alert("결과 : " + parsedResult.success);
+                    alert("결과 : " + parsedResult.result);
                 }
                 location.reload();
             });
