@@ -8,6 +8,7 @@ module.exports = {
   },
   "extends": "eslint:recommended",
   "parserOptions": {
+    "ecmaVersion": 8, // Eslint that support async
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true,
       "jsx": true
