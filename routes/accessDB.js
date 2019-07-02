@@ -63,8 +63,8 @@ module.exports = function(pool) {
         }
 
         const findPj = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
-        const findpj_res = await pool.query(findPj);
-        let pj_id = findpj_res[0].pj_id;
+        const findPjResult = await pool.query(findPj);
+        let pj_id = findPjResult[0].pj_id;
 
         // IF the project exists
         if (pj_id !== -1) {
@@ -76,20 +76,20 @@ module.exports = function(pool) {
             }
         } else { // IF the project NOT exists -> Insert a new project
             const newPj = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
-            const newProject_res = await pool.query(newPj);
+            const newPjResult = await pool.query(newPj);
 
-            pj_id = newProject_res.insertId;
+            pj_id = newPjResult.insertId;
         }
         // pj_id, link, env is resolved
 
-        const newBu = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
-        const newBu_res = await pool.query(newBu);
-        let afterBu = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, " + newBu_res.insertId + ", " + pj_id + ");";
-        await pool.query(afterBu);
+        const newBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
+        const newBuildResult = await pool.query(newBuild);
+        let afterBuild = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, " + newBuildResult.insertId + ", " + pj_id + ");";
+        await pool.query(afterBuild);
 
         res.status(200).json({
             "pj_id": pj_id,
-            "build_id": newBu_res.insertId
+            "build_id": newBuildResult.insertId
         });
     }));
 
@@ -112,18 +112,18 @@ module.exports = function(pool) {
         const buildId = req.body.build_id;
         const cname = req.body.class_name;
         const pname = req.body.package_name;
-        const findBu = "select ifnull((select build_id from build where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
+        const findBuild = "select ifnull((select build_id from build where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
         const newClass = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
-        const findBu_res = await pool.query(findBu);
+        const findBuildResult = await pool.query(findBuild);
 
-        if (findBu_res[0].build_id === -1) {
+        if (findBuildResult[0].build_id === -1) {
             res.statusCode = 400;
-            return next("/beforeClass : There is no such pj_id, build_id\n" + findBu);
+            return next("/beforeClass : There is no such pj_id, build_id\n" + findBuild);
         } else {
-            const newClass_res = await pool.query(newClass);
+            const newClassResult = await pool.query(newClass);
 
             res.status(200).json({
-                "class_id": newClass_res.insertId
+                "class_id": newClassResult.insertId
             });
         }
     }));
@@ -155,9 +155,9 @@ module.exports = function(pool) {
         const findClass = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) class_id;";
         const newMethod = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " +
          classId + ", " + buildId + ", " + pjId + ");";
-        const findClass_res = await pool.query(findClass);
+        const findClassResult = await pool.query(findClass);
 
-        if (findClass_res[0].class_id === -1) {
+        if (findClassResult[0].class_id === -1) {
             res.statusCode = 400;
             return next("/afterMethod : There is no such pj_id, build_id, class_id\n" + findClass);
         } else {
@@ -200,9 +200,9 @@ module.exports = function(pool) {
             return next("/deleteData : Wrong selectId request\n" + selectId);
         }
 
-        const deleteData_res = await pool.query(deleteData);
+        const deleteDataResult = await pool.query(deleteData);
 
-        if (deleteData_res.affectedRows > 0) {
+        if (deleteDataResult.affectedRows > 0) {
             console.log("By " + req.session.userid + ", data is deleted : " + now + ", " + tableName[len] + "(Id : " + selectId[len] + ")");
 
             // Deleting build Case -> Need to update buildrank table
