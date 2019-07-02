@@ -2,12 +2,17 @@
 module.exports = function(pool) {
     const express = require("express");
     const router = express.Router();
+    const util = require("util");
     const teamConfig = require("../config/teamConfig.json");
-    const {
-        param,
-        validationResult
-    } = require("express-validator/check");
-    let moment = require("moment");
+    const {param, validationResult} = require("express-validator/check");
+    const makeAsync = fn => async(req, res, next) => {
+        try {
+            await fn(req, res, next);
+        } catch(err) {
+            return next(err);
+        }
+    };
+    pool.query = util.promisify(pool.query);
 
     router.get("/", (req, res) => {
         res.redirect("/auto/index");
@@ -21,23 +26,17 @@ module.exports = function(pool) {
         });
     });
 
-    router.get("/all", (req, res, next) => {
-        pool.query("select count(*) cnt from project", (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+    router.get("/all", makeAsync(async(req, res, next) => {
+        const pjCnt = await pool.query("select count(*) cnt from project");
 
-            if (err) {
-                return next(err);
-            } else {
-                res.status(200).render("all.ejs", {
-                    cnt: rows[0].cnt
-                });
-            }
+        res.status(200).render("all.ejs", {
+            cnt: pjCnt[0].cnt
         });
-    });
+    }));
 
     router.get("/team/:teamNo", [
         param("teamNo").exists().matches(/^[1-6]{1}$/)
-    ], (req, res, next) => {
+    ], makeAsync(async(req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -46,24 +45,17 @@ module.exports = function(pool) {
         }
 
         let teamName = teamConfig.name[req.params.teamNo];
+        const pjCnt_T = await pool.query("select count(*) cnt from project where pj_team = '" + teamName + "';");
 
-        pool.query("select count(*) cnt from project where pj_team = '" + teamName + "';", (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
-
-            if (err) {
-                return next(err);
-            } else {
-                res.status(200).render("team", {
-                    title: teamName,
-                    cnt: rows[0].cnt
-                });
-            }
+        res.status(200).render("team", {
+            title: teamName,
+            cnt: pjCnt_T[0].cnt
         });
-    });
+    }));
 
     router.get("/platform/:category", [
         param("category").exists().matches(/^(pcWeb|pcApp|mobileWeb|mobileApp|API)$/)
-    ], (req, res, next) => {
+    ], makeAsync(async(req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -83,19 +75,13 @@ module.exports = function(pool) {
             title_left = "API Test";
         }
 
-        pool.query("select count(*) cnt from project where pj_platform = '" + req.params.category + "';", (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        const pjCnt_P = await pool.query("select count(*) cnt from project where pj_platform = '" + req.params.category + "';");
 
-            if (err) {
-                return next(err);
-            } else {
-                res.status(200).render("platform", {
-                    title: title_left,
-                    cnt: rows[0].cnt
-                });
-            }
+        res.status(200).render("platform", {
+            title: title_left,
+            cnt: pjCnt_P[0].cnt
         });
-    });
+    }));
 
     router.get("/guide", (req, res) => {
         res.status(200).render("guide");

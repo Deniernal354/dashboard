@@ -1,13 +1,19 @@
 module.exports = function(pool) {
     const express = require("express");
     const router = express.Router();
+    const util = require("util");
+    const {body, validationResult} = require("express-validator/check");
     const teamConfig = require("../config/teamConfig.json");
     const platformConfig = require("../config/platformConfig.json");
-    const {
-        body,
-        validationResult
-    } = require("express-validator/check");
+    const makeAsync = fn => async(req, res, next) => {
+        try {
+            await fn(req, res, next);
+        } catch(err) {
+            return next(err);
+        }
+    };
     let moment = require("moment");
+    pool.query = util.promisify(pool.query);
 
     function convertName(parameter, category) {
         let result = "";
@@ -22,17 +28,21 @@ module.exports = function(pool) {
         return result;
     }
 
-    // req에서 정보들가져와서 비교. -> project생성 -> buildno 생성 -> 새 buildid 리턴
+    // Params : pj_name, pj_team, pj_platform, pj_author, pj_env, pj_link
+    // Returns : pj_id(pj_id exists ? pj_id : (new)pj_id), (new)build_id
     router.post("/beforeSuite", [
         body("pj_name").exists(),
         body("pj_team").exists(),
         body("pj_platform").exists(),
         body("pj_author").exists()
-    ], (req, res, next) => {
-        const now = moment().format("YYYY.MM.DD HH:mm:ss");
+    ], makeAsync(async(req, res, next) => {
         const err = validationResult(req);
         const team = convertName(req.body.pj_team, teamConfig);
         const plat = convertName(req.body.pj_platform, platformConfig);
+        const name = req.body.pj_name;
+        const auth = req.body.pj_author;
+        const env = (req.body.pj_env) ? req.body.pj_env : "Real";
+        let link = "-";
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
@@ -44,85 +54,53 @@ module.exports = function(pool) {
             return next("/beforeSuite : Wrong teamName or platName\n(team : " + req.body.pj_team + " / plat : " + req.body.pj_platform + ")");
         }
 
-        const name = req.body.pj_name;
-        const auth = req.body.pj_author;
-        const env = (req.body.pj_env) ? req.body.pj_env : "Real";
-        let link = "";
-
+        // Resolve link value
         if (req.body.pj_link) {
             link = req.body.pj_link;
             if (link.slice(0, 4) !== "http") {
                 link = "http://" + link;
             }
-        } else {
-            link = "-";
         }
 
-        const findProject = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
-        const insertProject = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
+        const findPj = "select ifnull((select max(pj_id) from project where pj_name= '" + name + "' and pj_team= '" + team + "' and pj_platform='" + plat + "' and pj_author= '" + auth + "'), -1) pj_id;";
+        const findPjResult = await pool.query(findPj);
+        let pj_id = findPjResult[0].pj_id;
 
-        pool.query(findProject, (err, rows) => {
-            if (err) {
-                return next(err);
+        // IF the project exists
+        if (pj_id !== -1) {
+            // IF the project's link already exists
+            if (link != "-" || link != "") {
+                const updateLink = "update project set pj_link= '" + link + "' where pj_id = " + pj_id + " and pj_link != '" + link + "';";
+
+                await pool.query(updateLink);
             }
+        } else { // IF the project NOT exists -> Insert a new project
+            const newPj = "INSERT INTO `api_db`.`project` VALUES (default, '" + name + "', '" + team + "', '" + plat + "', '" + auth + "', '" + link + "');";
+            const newPjResult = await pool.query(newPj);
 
-            // IF the project exists
-            if (rows[0].pj_id !== -1) {
-                // IF the project's link doesn't exists
-                if (link === "-" || link === "") {
-                    insertBuildno(rows[0].pj_id, env);
-                } else {
-                    const checkLink = "update project set pj_link= '" + link + "' where pj_id = " + rows[0].pj_id + " and pj_link != '" + link + "';";
+            pj_id = newPjResult.insertId;
+        }
+        // pj_id, link, env is resolved
 
-                    pool.query(checkLink, (inerr, inrows) => {
-                        if (inerr) {
-                            return next(inerr);
-                        }
-                        insertBuildno(rows[0].pj_id, env);
-                    });
-                }
-            } else {
-                pool.query(insertProject, (inerr, inrows) => {
-                    if (inerr) {
-                        return next(inerr);
-                    }
-                    insertBuildno(inrows.insertId, env);
-                });
-            }
+        const newBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
+        const newBuildResult = await pool.query(newBuild);
+        let afterBuild = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, " + newBuildResult.insertId + ", " + pj_id + ");";
+        await pool.query(afterBuild);
 
-            function insertBuildno(pj_id, env) {
-                const insertBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
-                let afterinsert = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, ";
+        res.status(200).json({
+            "pj_id": pj_id,
+            "build_id": newBuildResult.insertId
+        });
+    }));
 
-                pool.query(insertBuild, (err, rows) => {
-                    if (err) {
-                        return next(err);
-                    } else {
-                        afterinsert += rows.insertId + ", " + pj_id + ");";
-                        pool.query(afterinsert, (inerr, inrows) => {
-                            if (inerr) {
-                                return next(inerr);
-                            } else {
-                                res.status(200).json({
-                                    "pj_id": pj_id,
-                                    "build_id": rows.insertId
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        }); // findProject query END
-    });
-
-    // req에서 pj_id, Buildid가져와서 비교. -> class생성 -> 새 classid 리턴
+    // Params : pj_id, build_id, class_name, package_name
+    // Returns : (new)class_id
     router.post("/beforeClass", [
         body("pj_id").exists(),
         body("build_id").exists(),
         body("class_name").exists(),
         body("package_name").exists()
-    ], (req, res, next) => {
-        const now = moment().format("YYYY.MM.DD HH:mm:ss");
+    ], makeAsync(async(req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -135,31 +113,23 @@ module.exports = function(pool) {
         const cname = req.body.class_name;
         const pname = req.body.package_name;
         const findBuild = "select ifnull((select build_id from build where pj_id = " + pjId + " and build_id = " + buildId + "), -1) build_id;";
-        const insertClass = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
+        const newClass = "INSERT into class values (default, '" + cname + "', '" + pname + "', " + buildId + ", " + pjId + ");";
+        const findBuildResult = await pool.query(findBuild);
 
-        pool.query(findBuild, (err, rows) => {
-            if (err) {
-                return next(err);
-            }
+        if (findBuildResult[0].build_id === -1) {
+            res.statusCode = 400;
+            return next("/beforeClass : There is no such pj_id, build_id\n" + findBuild);
+        } else {
+            const newClassResult = await pool.query(newClass);
 
-            if (rows[0].build_id === -1) {
-                res.statusCode = 400;
-                return next("/beforeClass : There is no such pj_id, build_id\n" + findBuild);
-            } else {
-                pool.query(insertClass, (inerr, inrows) => {
-                    if (inerr) {
-                        return next(inerr);
-                    } else {
-                        res.status(200).json({
-                            "class_id": inrows.insertId
-                        });
-                    }
-                }); // insertClass query END
-            }
-        }); // findBuild query END
-    });
+            res.status(200).json({
+                "class_id": newClassResult.insertId
+            });
+        }
+    }));
 
-    // req에서 buildno, pj_id, classid가져와서 비교 -> method 생성하기 -> insert 수행결과 success, fail로 리턴.
+    // Params : pj_id, build_id, class_id, method_name, start_t, end_t, result
+    // Returns : success(1)
     router.post("/afterMethod", [
         body("pj_id").exists(),
         body("build_id").exists(),
@@ -168,8 +138,7 @@ module.exports = function(pool) {
         body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
         body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
         body("result").exists().matches(/^[1-3]$/),
-    ], (req, res, next) => {
-        const now = moment().format("YYYY.MM.DD HH:mm:ss");
+    ], makeAsync(async(req, res, next) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
             res.statusCode = 400;
@@ -184,33 +153,26 @@ module.exports = function(pool) {
         const end_t = req.body.end_t;
         const testResult = req.body.result;
         const findClass = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) class_id;";
-        const insertMethod = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " + classId + ", " + buildId + ", " + pjId + ");";
+        const newMethod = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " +
+         classId + ", " + buildId + ", " + pjId + ");";
+        const findClassResult = await pool.query(findClass);
 
-        pool.query(findClass, (err, rows) => {
-            if (err) {
-                return next(err);
-            }
+        if (findClassResult[0].class_id === -1) {
+            res.statusCode = 400;
+            return next("/afterMethod : There is no such pj_id, build_id, class_id\n" + findClass);
+        } else {
+            await pool.query(newMethod);
+            res.status(200).json({
+                "success": 1
+            });
+        }
+    }));
 
-            if (rows[0].class_id === -1) {
-                res.statusCode = 400;
-                return next("/afterMethod : There is no such pj_id, build_id, class_id\n" + findClass);
-            } else {
-                pool.query(insertMethod, (inerr, innerrows) => {
-                    if (inerr) {
-                        return next(err);
-                    } else {
-                        res.status(200).json({
-                            "success": 1
-                        });
-                    }
-                });
-            }
-        });
-    });
-
+    // Params : selectId
+    // Returns : result("올바르게 삭제되었습니다." or "Data가 삭제되지 않았습니다.")
     router.post("/deleteData", [
         body("selectId").exists()
-    ], (req, res, next) => {
+    ], makeAsync(async(req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
         const err = validationResult(req);
 
@@ -226,34 +188,38 @@ module.exports = function(pool) {
         }
 
         const selectId = req.body.selectId;
-        const len = selectId.length;
+        const len = selectId.length-1;
         const tableName = ["project", "build", "class", "method"];
         const tableId = ["pj_id", "build_id", "class_id", "method_id"];
         let deleteData = "";
 
-        if (len > 0 && len < 5) {
-            deleteData = "delete from " + tableName[len - 1] + " where ";
-            deleteData += tableId[len - 1] + " = " + selectId[len - 1] + ";";
-            if (len === 2) {
-                deleteData += "update buildrank set rank = rank-1 where pj_id=" + selectId[len - 2] + " and build_id<" + selectId[len-1] + ";";
-                deleteData += "insert into buildrank (rank, build_id, pj_id) select b.rn, b.build_id, b.pj_id from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC) b where b.pj_id=" + selectId[len - 2] + " and b.rn =20 group by pj_id, build_id, rn;";
-            }
+        if (len >= 0 && len < 4) {
+            deleteData = "delete from " + tableName[len] + " where " + tableId[len] + " = " + selectId[len] + ";";
         } else {
             res.statusCode = 400;
             return next("/deleteData : Wrong selectId request\n" + selectId);
         }
 
-        pool.query(deleteData, (err, rows) => {
-            if (err) {
-                return next(err);
-            } else {
-                console.log("By " + req.session.userid + ", data is deleted : " + now + ", " + tableName[len - 1] + "(Id : " + selectId[len - 1] + ")");
-                res.status(200).json({
-                    "success": "올바르게 삭제되었습니다."
-                });
+        const deleteDataResult = await pool.query(deleteData);
+
+        if (deleteDataResult.affectedRows > 0) {
+            console.log("By " + req.session.userid + ", data is deleted : " + now + ", " + tableName[len] + "(Id : " + selectId[len] + ")");
+
+            // Deleting build Case -> Need to update buildrank table
+            if (len === 1) {
+                let updateBuildRank = "update buildrank set rank = rank-1 where pj_id=" + selectId[len - 1] + " and build_id<" + selectId[len] + ";insert into buildrank (rank, build_id, pj_id) select b.rn, b.build_id, b.pj_id from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC) b where b.pj_id=" + selectId[len - 1] + " and b.rn =20 group by pj_id, build_id, rn;";
+
+                await pool.query(updateBuildRank);
             }
-        });
-    });
+            res.status(200).json({
+                "result": "올바르게 삭제되었습니다."
+            });
+        } else {
+            res.status(200).json({
+                "result": "Data가 삭제되지 않았습니다."
+            });
+        }
+    }));
 
     return router;
 };
