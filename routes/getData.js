@@ -4,6 +4,16 @@ module.exports = function(pool, redisClient) {
     const teamConfig = require("../config/teamConfig.json");
     const platformConfig = require("../config/platformConfig.json");
     let moment = require("moment");
+    const util = require("util");
+    const makeAsync = fn => async(req, res, next) => {
+        try {
+            await fn(req, res, next);
+        } catch(err) {
+            return next(err);
+        }
+    };
+    const asyncRedis = util.promisify(redisClient.get).bind(redisClient);
+    pool.query = util.promisify(pool.query);
 
     function processModalData(data, classcount) {
         // return values
@@ -290,80 +300,48 @@ module.exports = function(pool, redisClient) {
         return result;
     } // processIndexData end
 
-    router.get("/getFailChartData", (req, res, next) => {
+    router.get("/getFailChartData", makeAsync(async (req, res, next) => {
         let mainData = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where start_t > '" + req.query.start + "' and start_t < '" + req.query.end + "' group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
         let startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
         let endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
+        const mainResult = await pool.query(mainData);
 
-        pool.query(mainData, (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        res.status(200).json(processFailChartData(mainResult, endTime.diff(startTime, "days"), endTime));
+    }));
 
-            if (err) {
-                return next(err);
-            } else {
-                res.status(200).json(processFailChartData(rows, endTime.diff(startTime, "days"), endTime));
-            }
-        });
-    });
-
-    router.get("/getIndexData", (req, res, next) => {
+    router.get("/getIndexData", makeAsync(async (req, res, next) => {
         let firstQuery = "select pj_id, pj_team, pj_platform from project;";
         let secondQuery = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where start_t > '" + moment().subtract(6, "days").format("YYYY/MM/DD") + "' and start_t < '" + moment().add(1, "days").format("YYYY/MM/DD") + "' group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
+        const firResult = await pool.query(firstQuery);
+        const secResult = await pool.query(secondQuery);
 
-        pool.query(firstQuery, (err, firstrows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        res.status(200).json(processIndexData(firResult, secResult));
+    }));
 
-            if (err) {
-                return next(err);
-            } else {
-                pool.query(secondQuery, (inerr, secondrows) => {
-                    if (inerr) {
-                        return next(inerr);
-                    } else {
-                        res.status(200).json(processIndexData(firstrows, secondrows));
-                    }
-                });
-            }
-        });
-    });
+    router.get("/getChartData/:page/:detail?", makeAsync(async (req, res, next) => {
+        const maxLabel = await asyncRedis("maxLabel");
+        let labelData = "select pj_name, pj_id, pj_link from project";
+        let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildno, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + maxLabel + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id";
 
-    router.get("/getChartData/:page/:detail?", (req, res, next) => {
-        redisClient.get("maxLabel", (err, reply) => {
-            const maxLabel = reply * 1;
-            let labelData = "select pj_name, pj_id, pj_link from project";
-            let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildno, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + maxLabel + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id";
+        if (req.params.page === "team") {
+            let teamname = teamConfig.name[req.params.detail];
 
-            if (req.params.page === "team") {
-                let teamname = teamConfig.name[req.params.detail];
+            mainData = mainData + " and pj.pj_team = '" + teamname + "'";
+            labelData += " where pj_team = '" + teamname + "';";
+        } else if (req.params.page === "platform") {
+            mainData = mainData + " and pj.pj_platform = '" + req.params.detail + "'";
+            labelData += " where pj_platform = '" + req.params.detail + "';";
+        }
+        mainData += " group by pj_id, build_id;";
 
-                mainData = mainData + " and pj.pj_team = '" + teamname + "'";
-                labelData += " where pj_team = '" + teamname + "';";
-            } else if (req.params.page === "platform") {
-                mainData = mainData + " and pj.pj_platform = '" + req.params.detail + "'";
-                labelData += " where pj_platform = '" + req.params.detail + "';";
-            }
-            mainData += " group by pj_id, build_id;";
+        const mainResult = await pool.query(mainData);
+        const labelResult = await pool.query(labelData);
 
-            pool.query(mainData, (err, rows) => {
-                const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+        res.status(200).json(processdata(mainResult, labelResult, labelResult.length, maxLabel, 0));
+    }));
 
-                if (err) {
-                    return next(err);
-                } else {
-                    pool.query(labelData, (inerr, inrows) => {
-                        if (inerr) {
-                            return next(inerr);
-                        } else {
-                            res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
-                            res.status(200).json(processdata(rows, inrows, inrows.length, maxLabel, 0));
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    router.get("/getCustomData", (req, res, next) => {
+    router.get("/getCustomData", makeAsync(async (req, res, next) => {
         let teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
         let mainData = "";
 
@@ -384,61 +362,36 @@ module.exports = function(pool, redisClient) {
             mainData = "";
         }
 
-        pool.query(mainData, (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        const mainResult = await pool.query(mainData);
 
-            if (err) {
-                return next(err);
-            } else {
-                res.status(200).json(rows);
-            }
-        });
-    });
+        res.status(200).json(mainResult);
+    }));
 
-    router.get("/getInitialModalData", (req, res, next) => {
-        redisClient.get("abmaxLabel", (err, reply) => {
-            const abmaxLabel = reply * 1;
-            let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
-            let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildno, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + abmaxLabel + " and pj_id = " + req.query.pi + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank where pj_id=" + req.query.pi + ") group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;";
+    router.get("/getInitialModalData", makeAsync(async (req, res, next) => {
+        const abmaxLabel = await asyncRedis("abmaxLabel");
+        let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
+        let mainData = "select b.pj_id, b.build_id, b.buildno, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildno, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + abmaxLabel + " and pj_id = " + req.query.pi + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank where pj_id=" + req.query.pi + ") group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;";
 
-            pool.query(mainData, (err, rows) => {
-                const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        const labelResult = await pool.query(labelData);
+        const mainResult = await pool.query(mainData);
 
-                if (err) {
-                    return next(err);
-                } else {
-                    pool.query(labelData, (inerr, inrows) => {
-                        if (inerr) {
-                            return next(inerr);
-                        } else {
-                            res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
-                            res.status(200).json(processdata(rows, inrows, inrows.length, abmaxLabel, 1));
-                        }
-                    });
-                }
-            });
-        });
-    });
+        res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
+        res.status(200).json(processdata(mainResult, labelResult, labelResult.length, abmaxLabel, 1));
+    }));
 
-    router.get("/getModalDataDetail", (req, res, next) => {
+    router.get("/getModalDataDetail", makeAsync(async (req, res, next) => {
         let mainData = "select c.class_id, c.class_name, c.package_name, count(Case when m.result = 1 then 1 end) pass, count(Case when m.result = 2 then 1 end) fail, count(Case when m.result = 3 then 1 end) skip, min(m.start_t) start_t from class c inner join method m on m.class_id=c.class_id and m.pj_id=" + req.query.pi + " and c.build_id=" + req.query.bi + " group by class_id;";
 
-        pool.query(mainData, (err, rows) => {
-            const now = moment().format("YYYY.MM.DD HH:mm:ss");
+        const mainResult = await pool.query(mainData);
 
-            if (err) {
-                return next(err);
-            } else {
-                if (rows.length === 0) {
-                    res.status(200).json({
-                        "classCount": 0
-                    });
-                } else {
-                    res.status(200).json(processModalData(rows, rows.length));
-                }
-            }
-        });
-    });
+        if (mainResult.length === 0) {
+            res.status(200).json({
+                "classCount": 0
+            });
+        } else {
+            res.status(200).json(processModalData(mainResult, mainResult.length));
+        }
+    }));
 
     return router;
 };

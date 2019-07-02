@@ -208,7 +208,7 @@ function commonXMLHttpRequest() {
 
     xhttp.onreadystatechange = function(){
         if (xhttp.status === 500) {
-            window.location = "/500";
+            window.location = "/auto/500";
         }
     };
 
