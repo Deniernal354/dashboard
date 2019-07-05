@@ -240,7 +240,7 @@ module.exports = function (pool, redisClient) {
                 mainData += " where pj_team = '" + teamname + "';";
             }
         } else if (req.query.un === "bu") {
-            mainData = "select build_id, buildno, buildenv from build where pj_id = " + req.query.vi + ";";
+            mainData = "select build_id, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where pj_id=" + req.query.vi + " group by build_id;";
         } else if (req.query.un === "cl") {
             mainData = "select class_id, package_name, class_name from class where build_id = " + req.query.vi + ";";
         } else if (req.query.un === "te") {

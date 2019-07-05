@@ -441,12 +441,13 @@ function init_select2() {
                         result[idx + 1] = [];
                         $("#select2_multiple" + (idx + 1)).empty();
 
-                        // New
+                        // New info
                         result[idx + 1] = JSON.parse(selectCustomData.responseText);
                         result[idx + 1].forEach(function (value) {
                             var optionTmp = doc.createElement("option");
-                            if (value.buildno) {
-                                optionTmp.innerText = "(Build No." + value.buildno + ") ";
+
+                            if (value.build_id) {
+                                optionTmp.innerText = "Build at : " + value.start_t;
                             } else if (value.class_name) {
                                 optionTmp.innerText = value.package_name + " / " + value.class_name;
                             } else if (value.method_name) {
