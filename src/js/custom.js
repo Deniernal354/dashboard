@@ -646,15 +646,17 @@ function init_modal(pj_id, build_id) {
             var parsedResult = JSON.parse(getInitialModalData.responseText);
             var lineChart = new Chart(document.getElementById("lineChart_mo"), {
                 type: "line",
-                data: parsedResult.innerData[0],
+                data: parsedResult.innerData,
                 options: chartOption
             });
             var prevBuild = -1;
 
+            console.log(parsedResult);
+
             document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.pjLabel[0].pj_name;
-            document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.initialModalData[0];
-            document.getElementById("team_mo").innerText = "팀 : " + parsedResult.initialModalData[1];
-            document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.initialModalData[2];
+            document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.pjLabel[0].pj_platform;
+            document.getElementById("team_mo").innerText = "팀 : " + parsedResult.pjLabel[0].pj_team;
+            document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.pjLabel[0].pj_author;
 
             document.getElementById("lineChart_mo").addEventListener("click", function(evt) {
                 var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
@@ -742,11 +744,11 @@ function init_charts() {
                 nametmp = nametmp.replace("Mobile", "M");
             }
             doc.getElementById("title" + i).innerText = nametmp;
-            doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i][1];
+            doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i].start_t;
             doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.duration[i];
 
-            if (parsedResult.pjLink[i] !== "-") {
-                doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLink[i]);
+            if (parsedResult.pjLabel[i].pj_link !== "-") {
+                doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLabel[i].pj_link);
                 doc.getElementById("link" + i).innerText = "Report Link";
             }
 
