@@ -1,14 +1,14 @@
-module.exports = function(pool, redisClient) {
+module.exports = function (pool, redisClient) {
     const express = require("express");
     const router = express.Router();
     const teamConfig = require("../config/teamConfig.json");
     const platformConfig = require("../config/platformConfig.json");
     let moment = require("moment");
     const util = require("util");
-    const makeAsync = fn => async(req, res, next) => {
+    const makeAsync = fn => async (req, res, next) => {
         try {
             await fn(req, res, next);
-        } catch(err) {
+        } catch (err) {
             return next(err);
         }
     };
@@ -19,7 +19,7 @@ module.exports = function(pool, redisClient) {
         let result = {};
         let data = rows.slice();
 
-        data.forEach(function(value) {
+        data.forEach((value) => {
             value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
             value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
         });
@@ -69,15 +69,15 @@ module.exports = function(pool, redisClient) {
             platResult[1].push(0);
         }
 
-        firstrows.forEach(function(value) {
+        firstrows.forEach((value) => {
             teamResult[1][teamResult[0].indexOf(value.pj_team)]++;
             platResult[1][platResult[0].indexOf(value.pj_platform)]++;
         });
 
-        teamResult[1].forEach(function(value) {
+        teamResult[1].forEach((value) => {
             teamResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
         });
-        platResult[1].forEach(function(value) {
+        platResult[1].forEach((value) => {
             platResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
         });
 
@@ -85,7 +85,7 @@ module.exports = function(pool, redisClient) {
         result.platResult = platResult;
 
         // secondrows
-        data.forEach(function(value) {
+        data.forEach((value) => {
             if (value.start_t.slice(0, 10) === now) {
                 todayCnt++;
             }
@@ -138,7 +138,7 @@ module.exports = function(pool, redisClient) {
             pjLabel[k].build_id = [];
         }
 
-        rows.forEach(function(value) {
+        rows.forEach((value) => {
             var idx = pjIndex.indexOf(value.pj_id);
 
             pjLabel[idx].build_id.push(value.build_id);
@@ -286,7 +286,7 @@ module.exports = function(pool, redisClient) {
         chartData[1] = [];
         chartData[2] = [];
 
-        rows.forEach(function(value) {
+        rows.forEach((value) => {
             pjLabel[0].build_id.push(value.build_id);
 
             if (!value.start_t) {
@@ -371,7 +371,7 @@ module.exports = function(pool, redisClient) {
         var build_sum = 0;
 
 
-        data.forEach(function(value) {
+        data.forEach((value) => {
             var tmpsum = value.pass + value.fail + value.skip;
 
             class_pass.push(value.pass);

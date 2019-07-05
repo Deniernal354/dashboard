@@ -1,11 +1,11 @@
-module.exports = function(passport, redisClient) {
+module.exports = function (passport, redisClient) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
-    const makeAsync = fn => async(req, res, next) => {
+    const makeAsync = fn => async (req, res, next) => {
         try {
             await fn(req, res, next);
-        } catch(err) {
+        } catch (err) {
             return next(err);
         }
     };
@@ -36,7 +36,7 @@ module.exports = function(passport, redisClient) {
         res.status(200).render("admin_login");
     });
 
-    router.get("/getKnobData", makeAsync(async(req, res, next) => {
+    router.get("/getKnobData", makeAsync(async (req, res, next) => {
         const maxLabel = await asyncRedis("maxLabel");
         const abmaxLabel = await asyncRedis("abmaxLabel");
 
@@ -47,7 +47,7 @@ module.exports = function(passport, redisClient) {
         });
     }));
 
-    router.post("/changeMaxLabel", makeAsync(async(req, res) => {
+    router.post("/changeMaxLabel", makeAsync(async (req, res) => {
         if (req.body.newMaxLabel && req.session.userid) {
             const newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개")) * 1;
             const preLabel = await asyncRedis("maxLabel") * 1;

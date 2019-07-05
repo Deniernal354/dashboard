@@ -1,14 +1,17 @@
-module.exports = function(pool) {
+module.exports = function (pool) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
-    const {body, validationResult} = require("express-validator/check");
+    const {
+        body,
+        validationResult
+    } = require("express-validator/check");
     const teamConfig = require("../config/teamConfig.json");
     const platformConfig = require("../config/platformConfig.json");
-    const makeAsync = fn => async(req, res, next) => {
+    const makeAsync = fn => async (req, res, next) => {
         try {
             await fn(req, res, next);
-        } catch(err) {
+        } catch (err) {
             return next(err);
         }
     };
@@ -35,7 +38,7 @@ module.exports = function(pool) {
         body("pj_team").exists(),
         body("pj_platform").exists(),
         body("pj_author").exists()
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
         const team = convertName(req.body.pj_team, teamConfig);
         const plat = convertName(req.body.pj_platform, platformConfig);
@@ -100,7 +103,7 @@ module.exports = function(pool) {
         body("build_id").exists(),
         body("class_name").exists(),
         body("package_name").exists()
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -138,7 +141,7 @@ module.exports = function(pool) {
         body("start_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
         body("end_t").exists().matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
         body("result").exists().matches(/^[1-3]$/),
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
         if (!err.isEmpty()) {
             res.statusCode = 400;
@@ -154,7 +157,7 @@ module.exports = function(pool) {
         const testResult = req.body.result;
         const findClass = "select ifnull((select class_id from class where pj_id = " + pjId + " and build_id = " + buildId + " and class_id = " + classId + "), -1) class_id;";
         const newMethod = "INSERT into method values (default, '" + mname + "', '" + start_t + "', '" + end_t + "', " + testResult + ", " +
-         classId + ", " + buildId + ", " + pjId + ");";
+            classId + ", " + buildId + ", " + pjId + ");";
         const findClassResult = await pool.query(findClass);
 
         if (findClassResult[0].class_id === -1) {
@@ -172,7 +175,7 @@ module.exports = function(pool) {
     // Returns : result("올바르게 삭제되었습니다." or "Data가 삭제되지 않았습니다.")
     router.post("/deleteData", [
         body("selectId").exists()
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
         const err = validationResult(req);
 
@@ -188,7 +191,7 @@ module.exports = function(pool) {
         }
 
         const selectId = req.body.selectId;
-        const len = selectId.length-1;
+        const len = selectId.length - 1;
         const tableName = ["project", "build", "class", "method"];
         const tableId = ["pj_id", "build_id", "class_id", "method_id"];
         let deleteData = "";

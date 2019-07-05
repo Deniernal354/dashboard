@@ -1,14 +1,17 @@
 // get/post 터널링 조심!! (get은 get만, post는 post만) http://myweb/users?method=update&id=terry
-module.exports = function(pool) {
+module.exports = function (pool) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
     const teamConfig = require("../config/teamConfig.json");
-    const {param, validationResult} = require("express-validator/check");
-    const makeAsync = fn => async(req, res, next) => {
+    const {
+        param,
+        validationResult
+    } = require("express-validator/check");
+    const makeAsync = fn => async (req, res, next) => {
         try {
             await fn(req, res, next);
-        } catch(err) {
+        } catch (err) {
             return next(err);
         }
     };
@@ -26,7 +29,7 @@ module.exports = function(pool) {
         });
     });
 
-    router.get("/all", makeAsync(async(req, res, next) => {
+    router.get("/all", makeAsync(async (req, res, next) => {
         const pjCnt = await pool.query("select count(*) cnt from project");
 
         res.status(200).render("all.ejs", {
@@ -36,7 +39,7 @@ module.exports = function(pool) {
 
     router.get("/team/:teamNo", [
         param("teamNo").exists().matches(/^[1-6]{1}$/)
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -55,7 +58,7 @@ module.exports = function(pool) {
 
     router.get("/platform/:category", [
         param("category").exists().matches(/^(pcWeb|pcApp|mobileWeb|mobileApp|API)$/)
-    ], makeAsync(async(req, res, next) => {
+    ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
