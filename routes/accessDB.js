@@ -85,7 +85,7 @@ module.exports = function (pool) {
         }
         // pj_id, link, env is resolved
 
-        const newBuild = "insert into build values (default, (select ifnull((select max(buildno) from build b where pj_id = " + pj_id + "), 0)+1), '" + env + "', " + pj_id + ");";
+        const newBuild = "insert into build values (default, '" + env + "', " + pj_id + ");";
         const newBuildResult = await pool.query(newBuild);
         let afterBuild = "update buildrank set rank = rank+1 where pj_id = " + pj_id + ";delete from buildrank where pj_id = " + pj_id + " and rank=21;insert into buildrank values (default, 1, " + newBuildResult.insertId + ", " + pj_id + ");";
         await pool.query(afterBuild);
@@ -210,7 +210,7 @@ module.exports = function (pool) {
 
             // Deleting build Case -> Need to update buildrank table
             if (len === 1) {
-                let updateBuildRank = "update buildrank set rank = rank-1 where pj_id=" + selectId[len - 1] + " and build_id<" + selectId[len] + ";insert into buildrank (rank, build_id, pj_id) select b.rn, b.build_id, b.pj_id from (select pj_id, build_id, buildno, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC) b where b.pj_id=" + selectId[len - 1] + " and b.rn =20 group by pj_id, build_id, rn;";
+                let updateBuildRank = "update buildrank set rank = rank-1 where pj_id=" + selectId[len - 1] + " and build_id<" + selectId[len] + ";insert into buildrank (rank, build_id, pj_id) select b.rn, b.build_id, b.pj_id from (select pj_id, build_id, buildenv, @rn := IF(@prev = pj_id, @rn + 1, 1) AS rn, @prev := pj_id FROM build inner join (select @prev := NULL, @rn := 0) as vars order by pj_id, build_id DESC) b where b.pj_id=" + selectId[len - 1] + " and b.rn =20 group by pj_id, build_id, rn;";
 
                 await pool.query(updateBuildRank);
             }
