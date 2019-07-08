@@ -32,9 +32,10 @@ module.exports = function (pool, redisClient) {
     }
 
     router.get("/getFailChartData", makeAsync(async (req, res, next) => {
-        let mainData = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where start_t > '" + req.query.start + "' and start_t < '" + req.query.end + "' group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
         let startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
         let endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
+        let secondQuery = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '" + startTime + "' and start_t < '" + endTime + "') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
+        
         const mainResult = await pool.query(mainData);
 
         res.status(200).json(proFailChartData(mainResult, endTime.diff(startTime, "days"), endTime));
@@ -101,7 +102,8 @@ module.exports = function (pool, redisClient) {
 
     router.get("/getIndexData", makeAsync(async (req, res, next) => {
         let firstQuery = "select pj_id, pj_team, pj_platform from project;";
-        let secondQuery = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where start_t > '" + moment().subtract(6, "days").format("YYYY/MM/DD") + "' and start_t < '" + moment().add(1, "days").format("YYYY/MM/DD") + "' group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
+        let secondQuery = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '" + moment().subtract(6, "days").format("YYYY/MM/DD") + "' and start_t < '" + moment().add(1, "days").format("YYYY/MM/DD") + "') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
+        
         const firResult = await pool.query(firstQuery);
         const secResult = await pool.query(secondQuery);
 
