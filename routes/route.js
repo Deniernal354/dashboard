@@ -1,4 +1,3 @@
-// get/post 터널링 조심!! (get은 get만, post는 post만) http://myweb/users?method=update&id=terry
 module.exports = function (pool) {
     const express = require("express");
     const router = express.Router();

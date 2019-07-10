@@ -447,7 +447,9 @@ function init_select2() {
                             var optionTmp = doc.createElement("option");
 
                             if (value.build_id) {
-                                optionTmp.innerText = "Build at : " + value.start_t;
+                                var timeInfo = (value.start_t !== "0") ? value.start_t : "Failed";
+
+                                optionTmp.innerText = timeInfo + " Build";
                             } else if (value.class_name) {
                                 optionTmp.innerText = value.package_name + " / " + value.class_name;
                             } else if (value.method_name) {

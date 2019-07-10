@@ -56,7 +56,6 @@ module.exports = function (pool, redisClient) {
         ];
         let data = secondrows.slice();
         let todayCnt = 0;
-        let prevProject = -1;
 
         // firstrows
         result.allCnt = firstrows.length;
@@ -231,22 +230,24 @@ module.exports = function (pool, redisClient) {
     }));
 
     router.get("/getCustomData", makeAsync(async (req, res, next) => {
+        const unit = req.query.un;
+        const prev_id = req.query.vi;
         let teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
         let mainData = "";
 
-        if (req.query.un === "pj") {
+        if (unit === "pj") {
             mainData = "select pj_id, pj_name, pj_team from project";
             if (teamname === "SQA") {
                 mainData += ";";
             } else {
                 mainData += " where pj_team = '" + teamname + "';";
             }
-        } else if (req.query.un === "bu") {
-            mainData = "select build_id, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where pj_id=" + req.query.vi + " group by build_id;";
-        } else if (req.query.un === "cl") {
-            mainData = "select class_id, package_name, class_name from class where build_id = " + req.query.vi + ";";
-        } else if (req.query.un === "te") {
-            mainData = "select method_id, method_name from method where class_id = " + req.query.vi + ";";
+        } else if (unit === "bu") {
+            mainData = "select b.build_id, ifnull(m.start_t, 0) start_t from (select build_id from build where pj_id=" + prev_id + ") b left join (select build_id, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where pj_id=" + prev_id + " group by build_id) m using(build_id);";
+        } else if (unit === "cl") {
+            mainData = "select class_id, package_name, class_name from class where build_id = " + prev_id + ";";
+        } else if (unit === "te") {
+            mainData = "select method_id, method_name from method where class_id = " + prev_id + ";";
         } else {
             mainData = "";
         }
