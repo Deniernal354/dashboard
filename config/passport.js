@@ -1,6 +1,6 @@
 module.exports = function(passport, LocalStrategy, userControl) {
     const bcrypt = require("bcrypt-nodejs");
-    let moment = require("moment");
+    const moment = require("moment");
 
     passport.use(new LocalStrategy({
         usernameField: "userid",
@@ -15,7 +15,7 @@ module.exports = function(passport, LocalStrategy, userControl) {
                 if (res) {
                     const user = {
                         "userid": userid,
-                        "idx": useridx
+                        "idx": useridx,
                     };
 
                     return done(null, user);
@@ -31,7 +31,7 @@ module.exports = function(passport, LocalStrategy, userControl) {
     passport.serializeUser((user, done) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-        console.log("Serialize-User : " + user.userid + " / " + now);
+        console.log(`Serialize-User : ${user.userid} / ${now}`);
         done(null, user);
     });
 

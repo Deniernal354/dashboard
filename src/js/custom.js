@@ -4,10 +4,10 @@
  * });
  */
 
-(function($, sr) {
+(function ($, sr) {
     // debouncing function from John Hann
     // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-    var debounce = function(func, threshold, execAsap) {
+    var debounce = function (func, threshold, execAsap) {
         var timeout;
 
         return function debounced() {
@@ -31,7 +31,7 @@
     };
 
     // Smartresize
-    jQuery.fn[sr] = function(fn) {
+    jQuery.fn[sr] = function (fn) {
         return fn ? this.bind("resize", debounce(fn)) : this.trigger(sr);
     };
 })(jQuery, "smartresize");
@@ -44,7 +44,7 @@ function setAttributes(el, attrs) {
     }
 }
 
-(function() {
+(function () {
     // NProgress
     if (typeof NProgress !== "undefined") {
         NProgress.start();
@@ -63,8 +63,8 @@ var $FOOTER = $("footer");
 
 // Menu components functions
 function init_sidebar() {
-    var setContentHeight = function() {
-    // reset height
+    var setContentHeight = function () {
+        // reset height
         //$RIGHT_COL.css("min-height", $(window).height());
 
         var bodyHeight = $BODY.outerHeight();
@@ -78,13 +78,13 @@ function init_sidebar() {
         $RIGHT_COL.css("min-height", contentHeight);
     };
 
-    $SIDEBAR_MENU.find("a").on("click", function(ev) {
-    // console.log("clicked - sidebar_menu");
+    $SIDEBAR_MENU.find("a").on("click", function (ev) {
+        // console.log("clicked - sidebar_menu");
         var $li = $(this).parent();
 
         if ($li.is(".active")) {
             $li.removeClass("active active-sm");
-            $("ul:first", $li).slideUp(function() {
+            $("ul:first", $li).slideUp(function () {
                 setContentHeight();
             });
         } else {
@@ -100,15 +100,15 @@ function init_sidebar() {
             }
             $li.addClass("active");
 
-            $("ul:first", $li).slideDown(function() {
+            $("ul:first", $li).slideDown(function () {
                 setContentHeight();
             });
         }
     });
 
     // toggle small or large menu
-    $MENU_TOGGLE.on("click", function() {
-    // console.log("clicked - menu toggle");
+    $MENU_TOGGLE.on("click", function () {
+        // console.log("clicked - menu toggle");
 
         if ($BODY.hasClass("nav-md")) {
             $SIDEBAR_MENU.find("li.active ul").hide();
@@ -122,7 +122,7 @@ function init_sidebar() {
 
         setContentHeight();
 
-        $(".dataTable").each(function() {
+        $(".dataTable").each(function () {
             $(this).dataTable().fnDraw();
         });
     });
@@ -130,14 +130,14 @@ function init_sidebar() {
     // check active menu
     $SIDEBAR_MENU.find("a[href='" + CURRENT_URL + "']").parent("li").addClass("current-page");
 
-    $SIDEBAR_MENU.find("a").filter(function() {
+    $SIDEBAR_MENU.find("a").filter(function () {
         return this.href == CURRENT_URL;
-    }).parent("li").addClass("current-page").parents("ul").slideDown(function() {
+    }).parent("li").addClass("current-page").parents("ul").slideDown(function () {
         setContentHeight();
     }).parent().addClass("active");
 
     // recompute content when resizing
-    $(window).smartresize(function() {
+    $(window).smartresize(function () {
         setContentHeight();
     });
 
@@ -157,14 +157,14 @@ function init_sidebar() {
 
 // init Panel toolbox
 function init_panel() {
-    $(".collapse-link").on("click", function() {
+    $(".collapse-link").on("click", function () {
         var $BOX_PANEL = $(this).closest(".x_panel");
         var $ICON = $(this).find("i");
         var $BOX_CONTENT = $BOX_PANEL.find(".x_content");
 
         // fix for some div with hardcoded fix class
         if ($BOX_PANEL.attr("style")) {
-            $BOX_CONTENT.slideToggle(200, function() {
+            $BOX_CONTENT.slideToggle(200, function () {
                 $BOX_PANEL.removeAttr("style");
             });
         } else {
@@ -175,7 +175,7 @@ function init_panel() {
         $ICON.toggleClass("fa-chevron-up fa-chevron-down");
     });
 
-    $(".close-link").click(function() {
+    $(".close-link").click(function () {
         var $BOX_PANEL = $(this).closest(".x_panel");
 
         $BOX_PANEL.remove();
@@ -191,7 +191,7 @@ function init_tooltip() {
 // ---- Menu component functions end
 
 // initialize menu components
-$(document).ready(function() {
+$(document).ready(function () {
     init_sidebar();
     init_panel();
     init_tooltip();
@@ -205,14 +205,14 @@ var chartOption = {
     tooltips: {
         mode: "index",
         intersect: false,
-        itemSort: function(a, b) {
+        itemSort: function (a, b) {
             return b.datasetIndex - a.datasetIndex;
         },
         callbacks: {
-            title: function(tooltipItem, data) {
+            title: function (tooltipItem, data) {
                 return data.tooltip[tooltipItem[0].index];
             },
-            labelColor: function(tooltipItem, chart) {
+            labelColor: function (tooltipItem, chart) {
                 var colortmp = tooltipItem.datasetIndex + 1;
                 var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
@@ -252,7 +252,7 @@ var chartOption = {
 function commonXMLHttpRequest() {
     var xhttp = new XMLHttpRequest();
 
-    xhttp.onreadystatechange = function() {
+    xhttp.onreadystatechange = function () {
         if (xhttp.status === 500) {
             window.location = "/auto/500";
         }
@@ -264,7 +264,7 @@ function commonXMLHttpRequest() {
 
 /* KNOB */
 function init_knob() {
-    if ((typeof($.fn.knob) === "undefined") || (!document.getElementById("knobInput"))) {
+    if ((typeof ($.fn.knob) === "undefined") || (!document.getElementById("knobInput"))) {
         return;
     }
     console.log("init_knob");
@@ -272,13 +272,13 @@ function init_knob() {
     var knobData = commonXMLHttpRequest();
     var doc = document;
 
-    doc.getElementById("labelSubmit").addEventListener("click", function() {
+    doc.getElementById("labelSubmit").addEventListener("click", function () {
         doc.getElementById("newMaxLabel").value = doc.getElementById("newMaxLabel_text").innerText;
     });
 
     knobData.open("GET", "/admin/getKnobData", true);
     knobData.send();
-    knobData.addEventListener("load", function() {
+    knobData.addEventListener("load", function () {
         var result = JSON.parse(knobData.responseText);
 
         doc.getElementById("knobInput").value = result.cur;
@@ -291,18 +291,18 @@ function init_knob() {
             "displayPrevious": true,
             "inputColor": "#34495E",
             "fgColor": "#34495E",
-            change: function(value) {
+            change: function (value) {
                 // console.log("change : " + value);
             },
-            release: function(value) {
+            release: function (value) {
                 // console.log(this.$.attr("value"));
                 // console.log("release : " + value);
                 doc.getElementById("newMaxLabel_text").innerText = "변경 : " + value + "개";
             },
-            cancel: function() {
+            cancel: function () {
                 console.log("cancel : ", this);
             },
-            draw: function() {
+            draw: function () {
                 this.cursorExt = 0.3;
 
                 // a = Arc, pa = Previous arc
@@ -339,7 +339,7 @@ function init_knob() {
 
 /* SMART WIZARD */
 function init_SmartWizard() {
-    if (typeof($.fn.smartWizard) === "undefined") {
+    if (typeof ($.fn.smartWizard) === "undefined") {
         return;
     }
     console.log("init_SmartWizard");
@@ -392,9 +392,9 @@ function init_select2() {
 
     customInit.open("GET", "/getData/getCustomData?un=pj&vi=-1", true);
     customInit.send();
-    customInit.addEventListener("load", function() {
+    customInit.addEventListener("load", function () {
         result[0] = JSON.parse(customInit.responseText);
-        result[0].forEach(function(value) {
+        result[0].forEach(function (value) {
             var optionTmp = doc.createElement("option");
 
             optionTmp.innerText = value.pj_name;
@@ -406,7 +406,7 @@ function init_select2() {
 
     // Select2 Custom Functions
     function eachSelect2GetData(idx) {
-        return function() {
+        return function () {
             var previousValue = $("#select2_multiple" + idx).val();
             var selectedIndex = $("#select2_multiple" + idx)[0].selectedIndex;
             var unitPool = ["bu", "cl", "te"]; // ["build", "class", "testcase"]
@@ -434,19 +434,22 @@ function init_select2() {
 
                     selectCustomData.open("GET", "/getData/getCustomData?un=" + unitPool[idx] + "&vi=" + preValId, true);
                     selectCustomData.send();
-                    selectCustomData.addEventListener("load", function() {
+                    selectCustomData.addEventListener("load", function () {
                         var divFragMini = document.createDocumentFragment();
 
                         // Delete previous select info
                         result[idx + 1] = [];
                         $("#select2_multiple" + (idx + 1)).empty();
 
-                        // New
+                        // New info
                         result[idx + 1] = JSON.parse(selectCustomData.responseText);
-                        result[idx + 1].forEach(function(value) {
+                        result[idx + 1].forEach(function (value) {
                             var optionTmp = doc.createElement("option");
-                            if (value.buildno) {
-                                optionTmp.innerText = "(Build No." + value.buildno + ") ";
+
+                            if (value.build_id) {
+                                var timeInfo = (value.start_t !== "0") ? value.start_t : "Failed";
+
+                                optionTmp.innerText = timeInfo + " Build";
                             } else if (value.class_name) {
                                 optionTmp.innerText = value.package_name + " / " + value.class_name;
                             } else if (value.method_name) {
@@ -463,7 +466,7 @@ function init_select2() {
     }
 
     function customSubmitBtnListener() {
-        return function() {
+        return function () {
             if ($("#select2_multiple0").val() === "Project 명") {
                 return;
             }
@@ -473,7 +476,7 @@ function init_select2() {
             deleteData.send(JSON.stringify({
                 "selectId": selectId
             }));
-            deleteData.addEventListener("load", function() {
+            deleteData.addEventListener("load", function () {
                 var parsedResult = JSON.parse(deleteData.responseText);
 
                 if (deleteData.status === 400) {
@@ -521,7 +524,7 @@ function init_modal_detail(pj_id, build_id) {
 
     getModalDataDetail.open("GET", "/getData/getModalDataDetail?pi=" + pj_id + "&bi=" + build_id, true);
     getModalDataDetail.send();
-    getModalDataDetail.addEventListener("load", function() {
+    getModalDataDetail.addEventListener("load", function () {
         var parsedResult = JSON.parse(getModalDataDetail.responseText);
         var noChart = document.getElementById("noChart");
         var noInfo = document.getElementById("noInfo");
@@ -633,7 +636,7 @@ function init_modal_detail(pj_id, build_id) {
 }
 
 function init_modal(pj_id, build_id) {
-    return function() {
+    return function () {
         if (!document.getElementById("detailPage")) {
             return;
         }
@@ -642,21 +645,21 @@ function init_modal(pj_id, build_id) {
 
         getInitialModalData.open("GET", "/getData/getInitialModalData?pi=" + pj_id, true);
         getInitialModalData.send();
-        getInitialModalData.addEventListener("load", function() {
+        getInitialModalData.addEventListener("load", function () {
             var parsedResult = JSON.parse(getInitialModalData.responseText);
             var lineChart = new Chart(document.getElementById("lineChart_mo"), {
                 type: "line",
-                data: parsedResult.innerData[0],
+                data: parsedResult.innerData,
                 options: chartOption
             });
             var prevBuild = -1;
 
             document.getElementById("detailPageLabel").innerText = "More Info - " + parsedResult.pjLabel[0].pj_name;
-            document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.initialModalData[0];
-            document.getElementById("team_mo").innerText = "팀 : " + parsedResult.initialModalData[1];
-            document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.initialModalData[2];
+            document.getElementById("platform_mo").innerText = "환경 : " + parsedResult.pjLabel[0].pj_platform;
+            document.getElementById("team_mo").innerText = "팀 : " + parsedResult.pjLabel[0].pj_team;
+            document.getElementById("author_mo").innerText = "사용자 : " + parsedResult.pjLabel[0].pj_author;
 
-            document.getElementById("lineChart_mo").addEventListener("click", function(evt) {
+            document.getElementById("lineChart_mo").addEventListener("click", function (evt) {
                 var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
                     intersect: false
                 });
@@ -687,14 +690,14 @@ function urlByBrowser() {
 }
 
 function init_charts() {
-    if ((!document.getElementById("chartDiv")) || (typeof(Chart) === "undefined")) {
+    if ((!document.getElementById("chartDiv")) || (typeof (Chart) === "undefined")) {
         return;
     }
 
     console.log("init_charts");
 
     Chart.defaults.global.legend = false;
-    $("#detailPage").on("hidden.bs.modal", function() {
+    $("#detailPage").on("hidden.bs.modal", function () {
         var newChart = doc.createElement("canvas");
 
         setAttributes(newChart, {
@@ -717,12 +720,12 @@ function init_charts() {
 
     getChartData.open("GET", "/getData/getChartData" + url.substring(url.indexOf("/") + 5), true);
     getChartData.send();
-    getChartData.addEventListener("load", function() {
+    getChartData.addEventListener("load", function () {
         var parsedResult = JSON.parse(getChartData.responseText);
         var chartloop = parsedResult.totalChartCount;
 
         function lineEventListener(lineChart, idx) {
-            document.getElementById("lineChart" + idx).addEventListener("click", function(evt) {
+            document.getElementById("lineChart" + idx).addEventListener("click", function (evt) {
                 var pointData = lineChart.getElementsAtEventForMode(evt, "index", {
                     intersect: false
                 });
@@ -742,11 +745,11 @@ function init_charts() {
                 nametmp = nametmp.replace("Mobile", "M");
             }
             doc.getElementById("title" + i).innerText = nametmp;
-            doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i][1];
+            doc.getElementById("build" + i).innerText = "Last Build : " + parsedResult.buildTime[i].start_t;
             doc.getElementById("duration" + i).innerText = "Duration : " + parsedResult.duration[i];
 
-            if (parsedResult.pjLink[i] !== "-") {
-                doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLink[i]);
+            if (parsedResult.pjLabel[i].pj_link !== "-") {
+                doc.getElementById("link" + i).setAttribute("href", parsedResult.pjLabel[i].pj_link);
                 doc.getElementById("link" + i).innerText = "Report Link";
             }
 
@@ -764,17 +767,17 @@ function init_charts() {
 
 /* COMPOSE */
 function init_compose() {
-    if (typeof($.fn.slideToggle) === "undefined") {
+    if (typeof ($.fn.slideToggle) === "undefined") {
         return;
     }
     console.log("init_compose");
 
-    $("#compose, .compose-close").click(function() {
+    $("#compose, .compose-close").click(function () {
         $(".compose").slideToggle();
     });
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     init_knob();
     init_SmartWizard();
     init_charts();
@@ -782,6 +785,6 @@ $(document).ready(function() {
     init_compose();
 });
 
-$(window).on("load", function() {
+$(window).on("load", function () {
     NProgress.done();
 });

@@ -2,13 +2,10 @@ module.exports = {
   "env": {
     "browser": true,
     "commonjs": true,
-    "es6": true,
-    "node": true,
-    "jquery": true
+    "node": true
   },
-  "extends": "naver",
+  "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 8, // Eslint that support async
     "sourceType": "module"
   },
   "rules": {
@@ -28,10 +25,6 @@ module.exports = {
       "varsIgnorePattern": "^h$"
     }],
     "linebreak-style": ["error", "windows"],
-    "consistent-return": "off",
-    "array-callback-return": "off",
-    "array-element-newline": "off",
-    "max-len": "off",
     "no-console": "off"
   },
   "globals": {

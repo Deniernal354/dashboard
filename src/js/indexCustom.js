@@ -287,9 +287,11 @@ function init_failChart(parsedResult, diff, endDate) {
     }
 
     parsedResult.data.forEach(function(value) {
+        var idx = labels.indexOf(value.start_t.slice(5, 10));
+
         if (value.failrate * 1 > 10.0) {
-            data[0][labels.indexOf(value.start_t.slice(5, 10))]++;
-            data[1][labels.indexOf(value.start_t.slice(5, 10))].push(value);
+            data[0][idx]++;
+            data[1][idx].push(value);
         }
     });
 
