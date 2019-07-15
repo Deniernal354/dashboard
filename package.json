@@ -1,6 +1,6 @@
 {
   "name": "dashboard",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
@@ -13,39 +13,37 @@
   "license": "MIT",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "bootstrap": "^3.4.1",
-    "compression": "^1.7.3",
+    "compression": "^1.7.4",
     "connect-redis": "^3.4.1",
-    "daterangepicker": "^3.0.3",
-    "ejs": "^2.6.1",
-    "express": "^4.16.4",
-    "express-session": "^1.15.6",
+    "daterangepicker": "^3.0.5",
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
     "express-validator": "^5.3.1",
     "extend": "^3.0.2",
     "fastclick": "^1.0.6",
     "font-awesome": "^4.7.0",
     "jquery": "^3.4.1",
     "jquery-knob": "^1.2.11",
-    "mysql": "^2.16.0",
+    "mysql": "^2.17.1",
     "nprogress": "^0.2.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
-    "popper.js": "^1.14.7",
-    "select2": "^4.0.6-rc.1"
+    "popper.js": "^1.15.0",
+    "select2": "^4.0.7"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.6",
-    "eslint": "^5.15.0",
-    "eslint-config-airbnb": "^16.1.0",
+    "eslint": "^5.16.0",
     "eslint-config-naver": "^2.1.0",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.12.4",
-    "gulp": "^4.0.0",
-    "gulp-clean-css": "^4.0.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.2",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.2.0",
     "gulp-concat": "^2.6.1",
     "gulp-rename": "^1.4.0",
-    "gulp-uglify": "^3.0.2",
-    "gulp-util": "^3.0.8"
+    "gulp-uglify": "^3.0.2"
   }
 }

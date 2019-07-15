@@ -1,5 +1,4 @@
 const gulp = require("gulp");
-const gulpUtil = require("gulp-util");
 const concat = require("gulp-concat");
 const uglify = require("gulp-uglify");
 const cleanCSS = require("gulp-clean-css");
@@ -52,10 +51,7 @@ exports.minJS = customMinJS;
 exports.minCSS = customMinCSS;
 exports.concatJS = concatJS;
 
-gulp.task("default", gulp.series(customMinJS, customMinCSS, concatJS, done => {
-    gulpUtil.log("Gulp Default -- Other tasks are complete");
-    done();
-}));
+gulp.task("default", gulp.series(customMinJS, customMinCSS, concatJS));
 
 /*
 gulp.task("watch", function(){
