@@ -3,55 +3,54 @@ const path = require("path");
 const db = require("mysql");
 const bodyParser = require("body-parser");
 const compression = require("compression");
-const serverPortNo = 8000;
-const coreNo = 2;
-let moment = require("moment");
-// Passport + session
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt-nodejs");
-const userControl = (() => {
-    let userid = ["thepower", "conadmin", "poradmin", "woradmin", "comadmin", "seradmin", "cloadmin"];
-    let password = [];
+const moment = require("moment");
 
-    userid.forEach((value) => {
+const serverPortNo = 8000;
+const coreNo = 2;
+const userControl = (() => {
+    const userid = ["thepower", "conadmin", "poradmin", "woradmin", "comadmin", "seradmin", "cloadmin"];
+    const password = [];
+
+    userid.forEach(value => {
         password.push(bcrypt.hashSync(value, bcrypt.genSaltSync()));
     });
 
     return {
         getUserid: () => userid,
-        getPassword: () => password
+        getPassword: () => password,
     };
 })();
 const passportConfig = require("./config/passport")(passport, LocalStrategy, userControl);
-// DB
+// DB & session, Redis
 const dbConfig = require("./config/dbConfig.json");
-let pool;
-// Cluster
 const cluster = require("cluster");
-// Redis
 const redis = require("redis");
-const redisClient = redis.createClient();
 const RedisStore = require("connect-redis")(session);
+
+const redisClient = redis.createClient();
+let pool;
 
 function handleDisconnect() {
     pool = db.createPool(dbConfig);
 
-    pool.on("connection", (err) => {
+    pool.on("connection", err => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
         if (err) {
-            console.log("Connecting... : " + now);
+            console.log(`Connecting... : ${now}`);
             setTimeout(handleDisconnect, 3000);
         }
     });
 
-    pool.on("error", (err) => {
+    pool.on("error", err => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
         if (err.code === "PROTOCOL_CONNECTION_LOST") {
-            console.log("Connection Lost : " + now);
+            console.log(`Connection Lost : ${now}`);
             handleDisconnect();
         } else {
             throw err;
@@ -60,23 +59,23 @@ function handleDisconnect() {
 }
 
 if (cluster.isMaster) {
-    console.log("Master started(PID : " + process.pid + ")");
+    console.log(`Master started(PID : ${process.pid})`);
     for (let i = 0; i < coreNo; i++) {
-        let worker = cluster.fork();
+        const worker = cluster.fork();
 
-        console.log("Worker started(PID : " + worker.process.pid + ")");
+        console.log(`Worker started(PID : ${worker.process.pid})`);
     }
 
-    redisClient.on("error", (err) => {
-        console.error("Redis error : " + err);
+    redisClient.on("error", err => {
+        console.error(`Redis error : ${err}`);
     });
     redisClient.set("abmaxLabel", "20");
     redisClient.set("maxLabel", "5");
 
     cluster.on("exit", (worker, code, signal) => {
-        let newworker = cluster.fork();
+        const newworker = cluster.fork();
 
-        console.log("Worker died(PID : " + worker.process.pid + ") -> Worker started(PID : " + newworker.process.pid + ")");
+        console.log(`Worker died(PID : ${worker.process.pid}) -> Worker started(PID : ${newworker.process.pid})`);
     });
 } else {
     const app = express();
@@ -100,11 +99,11 @@ if (cluster.isMaster) {
         saveUninitialized: false,
         store: new RedisStore({
             client: redisClient,
-            logErrors: true
+            logErrors: true,
         }),
         cookie: {
-            maxAge: 30 * 60 * 1000 // 30 min
-        }
+            maxAge: 30 * 60 * 1000, // 30 min
+        },
     }));
 
     // passport
@@ -118,14 +117,14 @@ if (cluster.isMaster) {
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
     app.use((req, res, next) => {
         res.statusCode = 404;
-        next(new Error(req.url + " NOT FOUND"));
+        next(new Error(`${req.url} NOT FOUND`));
     });
     app.use((err, req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-        if (err.statusCode === 400  || res.statusCode === 400 || err.code === "ER_DATA_TOO_LONG") {
+        if (err.statusCode === 400 || res.statusCode === 400 || err.code === "ER_DATA_TOO_LONG") {
             res.status(400).json({
-                "error": "Bad Request - Please Check your input values"
+                "error": "Bad Request - Please Check your input values",
             });
         } else if (res.statusCode === 404) {
             res.status(404).render("page_404");
@@ -134,13 +133,13 @@ if (cluster.isMaster) {
             res.status(500).render("page_500");
         }
 
-        console.error("---\n" + res.statusCode + " Error occured : " + now);
+        console.error(`---\n${res.statusCode} Error occured : ${now}`);
         console.error(err);
     });
 
     const server = app.listen(serverPortNo, () => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-        console.log("Server Start : " + now);
+        console.log(`Server Start : ${now}`);
     });
 }

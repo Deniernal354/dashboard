@@ -1,9 +1,9 @@
-module.exports = function (pool, redisClient) {
+module.exports = function(pool, redisClient) {
     const express = require("express");
     const router = express.Router();
     const teamConfig = require("../config/teamConfig.json");
     const platformConfig = require("../config/platformConfig.json");
-    let moment = require("moment");
+    const moment = require("moment");
     const util = require("util");
     const makeAsync = fn => async (req, res, next) => {
         try {
@@ -13,13 +13,14 @@ module.exports = function (pool, redisClient) {
         }
     };
     const asyncRedis = util.promisify(redisClient.get).bind(redisClient);
+
     pool.query = util.promisify(pool.query);
 
     function proFailChartData(rows, diff, endTime) {
-        let result = {};
-        let data = rows.slice();
+        const result = {};
+        const data = rows.slice();
 
-        data.forEach((value) => {
+        data.forEach(value => {
             value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
             value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
         });
@@ -32,10 +33,9 @@ module.exports = function (pool, redisClient) {
     }
 
     router.get("/getFailChartData", makeAsync(async (req, res, next) => {
-        let startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
-        let endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
-        let mainData = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '" + startTime.format("YYYY/MM/DD HH:mm:ss") + "' and start_t < '" + endTime.format("YYYY/MM/DD HH:mm:ss") + "') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
-        
+        const startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
+        const endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
+        const mainData = `select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '${startTime.format("YYYY/MM/DD HH:mm:ss")}' and start_t < '${endTime.format("YYYY/MM/DD HH:mm:ss")}') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;`;
         const mainResult = await pool.query(mainData);
 
         res.status(200).json(proFailChartData(mainResult, endTime.diff(startTime, "days"), endTime));
@@ -43,18 +43,18 @@ module.exports = function (pool, redisClient) {
 
     function proIndexData(firstrows, secondrows) {
         const now = moment().format("YYYY/MM/DD");
-        let result = {};
-        let teamResult = [
+        const result = {};
+        const teamResult = [
             [],
             [],
-            []
+            [],
         ];
-        let platResult = [
+        const platResult = [
             [],
             [],
-            []
+            [],
         ];
-        let data = secondrows.slice();
+        const data = secondrows.slice();
         let todayCnt = 0;
 
         // firstrows
@@ -69,15 +69,15 @@ module.exports = function (pool, redisClient) {
             platResult[1].push(0);
         }
 
-        firstrows.forEach((value) => {
+        firstrows.forEach(value => {
             teamResult[1][teamResult[0].indexOf(value.pj_team)]++;
             platResult[1][platResult[0].indexOf(value.pj_platform)]++;
         });
 
-        teamResult[1].forEach((value) => {
+        teamResult[1].forEach(value => {
             teamResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
         });
-        platResult[1].forEach((value) => {
+        platResult[1].forEach(value => {
             platResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
         });
 
@@ -85,7 +85,7 @@ module.exports = function (pool, redisClient) {
         result.platResult = platResult;
 
         // secondrows
-        data.forEach((value) => {
+        data.forEach(value => {
             if (value.start_t.slice(0, 10) === now) {
                 todayCnt++;
             }
@@ -100,9 +100,10 @@ module.exports = function (pool, redisClient) {
     } // proIndexData end
 
     router.get("/getIndexData", makeAsync(async (req, res, next) => {
-        let firstQuery = "select pj_id, pj_team, pj_platform from project;";
-        let secondQuery = "select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '" + moment().subtract(6, "days").format("YYYY/MM/DD") + "' and start_t < '" + moment().add(1, "days").format("YYYY/MM/DD") + "') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;";
-        
+        const firstQuery = "select pj_id, pj_team, pj_platform from project;";
+        const secondQuery = `select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '${moment().subtract(6, "days")
+            .format("YYYY/MM/DD")}' and start_t < '${moment().add(1, "days")
+            .format("YYYY/MM/DD")}') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;`;
         const firResult = await pool.query(firstQuery);
         const secResult = await pool.query(secondQuery);
 
@@ -110,21 +111,21 @@ module.exports = function (pool, redisClient) {
     }));
 
     function proChartData(rows, inrows, totalChartCount, maxLabelCount) {
-        var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
+        const pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
         // return values
-        var pjLabel = inrows.slice();
-        var innerData = [];
-        var buildTime = [];
-        var duration = [];
+        const pjLabel = inrows.slice();
+        const innerData = [];
+        const buildTime = [];
+        const duration = [];
 
         // temporary arrays for innerData
-        var labels = [];
-        var chartData = [];
-        var pjIndex = [];
-        var env = [];
+        const labels = [];
+        const chartData = [];
+        const pjIndex = [];
+        const env = [];
 
-        for (var k = 0; k < totalChartCount; k++) {
+        for (let k = 0; k < totalChartCount; k++) {
             labels[k] = [];
             env[k] = [];
             chartData[k] = [];
@@ -134,13 +135,13 @@ module.exports = function (pool, redisClient) {
             pjIndex[k] = pjLabel[k].pj_id;
             buildTime[k] = {
                 "build_id": "0",
-                "start_t": "0"
+                "start_t": "0",
             };
             pjLabel[k].build_id = [];
         }
 
-        rows.forEach((value) => {
-            var idx = pjIndex.indexOf(value.pj_id);
+        rows.forEach(value => {
+            const idx = pjIndex.indexOf(value.pj_id);
 
             pjLabel[idx].build_id.push(value.build_id);
 
@@ -164,36 +165,38 @@ module.exports = function (pool, redisClient) {
             if (buildTime[idx].build_id < value.build_id * 1) {
                 buildTime[idx].build_id = value.build_id;
                 buildTime[idx].start_t = (value.start_t === "0") ? "Build Failed" : value.start_t;
-                duration[idx] = value.duration.slice(0, 2) + "h " + value.duration.slice(3, 5) + "m " + value.duration.slice(6, 8) + "s";
+                duration[idx] = `${value.duration.slice(0, 2)}h ${value.duration.slice(3, 5)}m ${value.duration.slice(6, 8)}s`;
             }
         });
 
-        for (var h = 0; h < totalChartCount; h++) {
+        for (let h = 0; h < totalChartCount; h++) {
             innerData[h] = {
                 labels: labels[h],
-                datasets: [{
-                    label: "Fail",
-                    backgroundColor: pfsColor[1] + " 0.7)",
-                    borderColor: pfsColor[1] + " 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: pfsColor[1] + " 1)",
-                    data: chartData[h][1]
-                }, {
-                    label: "Skip",
-                    backgroundColor: pfsColor[2] + " 0.7)",
-                    borderColor: pfsColor[2] + " 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: pfsColor[2] + " 1)",
-                    data: chartData[h][2]
-                }, {
-                    label: "Pass",
-                    backgroundColor: pfsColor[0] + " 0.7)",
-                    borderColor: pfsColor[0] + " 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: pfsColor[0] + " 1)",
-                    data: chartData[h][0]
-                }],
-                tooltip: env[h]
+                datasets: [
+                    {
+                        label: "Fail",
+                        backgroundColor: `${pfsColor[1]} 0.7)`,
+                        borderColor: `${pfsColor[1]} 0.7)`,
+                        pointHoverBackgroundColor: "#fff",
+                        pointHoverBorderColor: `${pfsColor[1]} 1)`,
+                        data: chartData[h][1],
+                    }, {
+                        label: "Skip",
+                        backgroundColor: `${pfsColor[2]} 0.7)`,
+                        borderColor: `${pfsColor[2]} 0.7)`,
+                        pointHoverBackgroundColor: "#fff",
+                        pointHoverBorderColor: `${pfsColor[2]} 1)`,
+                        data: chartData[h][2],
+                    }, {
+                        label: "Pass",
+                        backgroundColor: `${pfsColor[0]} 0.7)`,
+                        borderColor: `${pfsColor[0]} 0.7)`,
+                        pointHoverBackgroundColor: "#fff",
+                        pointHoverBorderColor: `${pfsColor[0]} 1)`,
+                        data: chartData[h][0],
+                    },
+                ],
+                tooltip: env[h],
             };
         }
 
@@ -202,23 +205,23 @@ module.exports = function (pool, redisClient) {
             "innerData": innerData,
             "pjLabel": pjLabel,
             "buildTime": buildTime,
-            "duration": duration
+            "duration": duration,
         };
     } // proChartData end
 
     router.get("/getChartData/:page/:detail?", makeAsync(async (req, res, next) => {
         const maxLabel = await asyncRedis("maxLabel");
         let labelData = "select pj_name, pj_id, pj_link from project";
-        let mainData = "select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + maxLabel + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id";
+        let mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${maxLabel}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id`;
 
         if (req.params.page === "team") {
-            let teamname = teamConfig.name[req.params.detail];
+            const teamname = teamConfig.name[req.params.detail];
 
-            mainData = mainData + " and pj.pj_team = '" + teamname + "'";
-            labelData += " where pj_team = '" + teamname + "';";
+            mainData += ` and pj.pj_team='${teamname}'`;
+            labelData += ` where pj_team='${teamname}';`;
         } else if (req.params.page === "platform") {
-            mainData = mainData + " and pj.pj_platform = '" + req.params.detail + "'";
-            labelData += " where pj_platform = '" + req.params.detail + "';";
+            mainData += ` and pj.pj_platform='${req.params.detail}'`;
+            labelData += ` where pj_platform='${req.params.detail}';`;
         }
         mainData += " group by pj_id, build_id;";
 
@@ -231,8 +234,8 @@ module.exports = function (pool, redisClient) {
 
     router.get("/getCustomData", makeAsync(async (req, res, next) => {
         const unit = req.query.un;
-        const prev_id = req.query.vi;
-        let teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
+        const prevId = req.query.vi;
+        const teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
         let mainData = "";
 
         if (unit === "pj") {
@@ -240,14 +243,14 @@ module.exports = function (pool, redisClient) {
             if (teamname === "SQA") {
                 mainData += ";";
             } else {
-                mainData += " where pj_team = '" + teamname + "';";
+                mainData += ` where pj_team='${teamname}';`;
             }
         } else if (unit === "bu") {
-            mainData = "select b.build_id, ifnull(m.start_t, 0) start_t from (select build_id from build where pj_id=" + prev_id + ") b left join (select build_id, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where pj_id=" + prev_id + " group by build_id) m using(build_id);";
+            mainData = `select b.build_id, ifnull(m.start_t, 0) start_t from (select build_id from build where pj_id=${prevId}) b left join (select build_id, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where pj_id=${prevId} group by build_id) m using(build_id);`;
         } else if (unit === "cl") {
-            mainData = "select class_id, package_name, class_name from class where build_id = " + prev_id + ";";
+            mainData = `select class_id, package_name, class_name from class where build_id=${prevId};`;
         } else if (unit === "te") {
-            mainData = "select method_id, method_name from method where class_id = " + prev_id + ";";
+            mainData = `select method_id, method_name from method where class_id=${prevId};`;
         } else {
             mainData = "";
         }
@@ -258,17 +261,17 @@ module.exports = function (pool, redisClient) {
     }));
 
     function proInitialModalData(rows, inrows, maxLabelCount) {
-        var pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
+        const pfsColor = ["rgba(102, 194, 255,", "rgba(255, 115, 115,", "rgba(130, 130, 130,"];
 
         // return values
-        var pjLabel = inrows.slice(); // UI info
-        var innerData = [];
+        const pjLabel = inrows.slice(); // UI info
+        let innerData = [];
 
         // temporary arrays for innerData
-        var labels = [];
-        var chartData = [];
-        var env = [];
-        var platformtmp = pjLabel[0].pj_platform;
+        const labels = [];
+        const chartData = [];
+        const env = [];
+        const platformtmp = pjLabel[0].pj_platform;
 
         if (platformtmp === "pcWeb") {
             pjLabel[0].pj_platform = "PC Web";
@@ -289,7 +292,7 @@ module.exports = function (pool, redisClient) {
         chartData[1] = [];
         chartData[2] = [];
 
-        rows.forEach((value) => {
+        rows.forEach(value => {
             pjLabel[0].build_id.push(value.build_id);
 
             if (!value.start_t) {
@@ -311,43 +314,44 @@ module.exports = function (pool, redisClient) {
         });
 
         innerData = {
-            labels: labels,
-            datasets: [{
-                label: "Fail",
-                backgroundColor: pfsColor[1] + " 0.7)",
-                borderColor: pfsColor[1] + " 0.7)",
-                pointHoverBackgroundColor: "#fff",
-                pointHoverBorderColor: pfsColor[1] + " 1)",
-                data: chartData[1]
-            }, {
-                label: "Skip",
-                backgroundColor: pfsColor[2] + " 0.7)",
-                borderColor: pfsColor[2] + " 0.7)",
-                pointHoverBackgroundColor: "#fff",
-                pointHoverBorderColor: pfsColor[2] + " 1)",
-                data: chartData[2]
-            }, {
-                label: "Pass",
-                backgroundColor: pfsColor[0] + " 0.7)",
-                borderColor: pfsColor[0] + " 0.7)",
-                pointHoverBackgroundColor: "#fff",
-                pointHoverBorderColor: pfsColor[0] + " 1)",
-                data: chartData[0]
-            }],
-            tooltip: env
+            labels,
+            datasets: [
+                {
+                    label: "Fail",
+                    backgroundColor: `${pfsColor[1]} 0.7)`,
+                    borderColor: `${pfsColor[1]} 0.7)`,
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: `${pfsColor[1]} 1)`,
+                    data: chartData[1],
+                }, {
+                    label: "Skip",
+                    backgroundColor: `${pfsColor[2]} 0.7)`,
+                    borderColor: `${pfsColor[2]} 0.7)`,
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: `${pfsColor[2]} 1)`,
+                    data: chartData[2],
+                }, {
+                    label: "Pass",
+                    backgroundColor: `${pfsColor[0]} 0.7)`,
+                    borderColor: `${pfsColor[0]} 0.7)`,
+                    pointHoverBackgroundColor: "#fff",
+                    pointHoverBorderColor: `${pfsColor[0]} 1)`,
+                    data: chartData[0],
+                },
+            ],
+            tooltip: env,
         };
 
         return {
             "innerData": innerData,
-            "pjLabel": pjLabel
+            "pjLabel": pjLabel,
         };
     } // proInitialModalData end
 
     router.get("/getInitialModalData", makeAsync(async (req, res, next) => {
         const abmaxLabel = await asyncRedis("abmaxLabel");
-        let labelData = "select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id = '" + req.query.pi + "';";
-        let mainData = "select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=" + abmaxLabel + " and pj_id = " + req.query.pi + ") order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where build_id in (select build_id from buildrank where pj_id=" + req.query.pi + ") group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;";
-
+        const labelData = `select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id='${req.query.pi}';`;
+        const mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${abmaxLabel} and pj_id=${req.query.pi}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where build_id in (select build_id from buildrank where pj_id=${req.query.pi}) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;`;
         const labelResult = await pool.query(labelData);
         const mainResult = await pool.query(mainData);
 
@@ -357,65 +361,65 @@ module.exports = function (pool, redisClient) {
 
     function proModalDataDetail(data, classcount) {
         // return values
-        var nameData = [];
-        var pieChartData = [];
+        const nameData = [];
+        let pieChartData = [];
 
         // temporary arrays for progressData
-        var class_pass = [];
-        var class_fail = [];
-        var class_skip = [];
-        var class_sum = [];
-        var class_passr = [];
-        var class_failr = [];
-        var class_skipr = [];
-        var build_pass = 0;
-        var build_fail = 0;
-        var build_skip = 0;
-        var build_sum = 0;
+        const classPass = [];
+        const classFail = [];
+        const classSkip = [];
+        const classTotal = [];
+        const classPassr = [];
+        const classFailr = [];
+        const classSkipr = [];
+        let buildPass = 0;
+        let buildFail = 0;
+        let buildSkip = 0;
+        let buildTotal = 0;
 
 
-        data.forEach((value) => {
-            var tmpsum = value.pass + value.fail + value.skip;
+        data.forEach(value => {
+            const tmpsum = value.pass + value.fail + value.skip;
 
-            class_pass.push(value.pass);
-            class_fail.push(value.fail);
-            class_skip.push(value.skip);
-            class_passr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
-            class_failr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
-            class_skipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
-            class_sum.push(tmpsum);
+            classPass.push(value.pass);
+            classFail.push(value.fail);
+            classSkip.push(value.skip);
+            classPassr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
+            classFailr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
+            classSkipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
+            classTotal.push(tmpsum);
 
-            build_pass += value.pass;
-            build_fail += value.fail;
-            build_skip += value.skip;
+            buildPass += value.pass;
+            buildFail += value.fail;
+            buildSkip += value.skip;
 
             nameData.push([value.package_name, value.class_name]);
         });
 
-        build_sum = build_pass + build_fail + build_skip;
+        buildTotal = buildPass + buildFail + buildSkip;
 
         pieChartData = {
             labels: ["Fail", "Skip", "Pass"],
-            datasets: [{
-                data: [
-                    Math.round(build_fail / build_sum * 100).toFixed(1),
-                    Math.round(build_skip / build_sum * 100).toFixed(1),
-                    Math.round(build_pass / build_sum * 100).toFixed(1)
-                ],
-                backgroundColor: [
-                    "rgba(255, 115, 115, 0.7)",
-                    "rgba(130, 130, 130, 0.7)",
-                    "rgba(102, 194, 255, 0.7)"
-                ],
-                hoverBackgroundColor: [
-                    "rgba(255, 115, 115, 1.0)",
-                    "rgba(130, 130, 130, 1.0)",
-                    "rgba(102, 194, 255, 1.0)"
-                ],
-                label: [
-                    "Fail", "Skip", "Pass"
-                ]
-            }]
+            datasets: [
+                {
+                    data: [
+                        Math.round(buildFail / buildTotal * 100).toFixed(1),
+                        Math.round(buildSkip / buildTotal * 100).toFixed(1),
+                        Math.round(buildPass / buildTotal * 100).toFixed(1),
+                    ],
+                    backgroundColor: [
+                        "rgba(255, 115, 115, 0.7)",
+                        "rgba(130, 130, 130, 0.7)",
+                        "rgba(102, 194, 255, 0.7)",
+                    ],
+                    hoverBackgroundColor: [
+                        "rgba(255, 115, 115, 1.0)",
+                        "rgba(130, 130, 130, 1.0)",
+                        "rgba(102, 194, 255, 1.0)",
+                    ],
+                    label: ["Fail", "Skip", "Pass"],
+                },
+            ],
         };
 
         return {
@@ -424,25 +428,25 @@ module.exports = function (pool, redisClient) {
             "nameData": nameData,
             "pieChartData": pieChartData,
             "progressData": {
-                "pass": class_pass,
-                "fail": class_fail,
-                "skip": class_skip,
-                "sum": class_sum,
-                "passrate": class_passr,
-                "failrate": class_failr,
-                "skiprate": class_skipr
-            }
+                "pass": classPass,
+                "fail": classFail,
+                "skip": classSkip,
+                "sum": classTotal,
+                "passrate": classPassr,
+                "failrate": classFailr,
+                "skiprate": classSkipr,
+            },
         };
-    } //proModalDataDetail end
+    } // proModalDataDetail end
 
     router.get("/getModalDataDetail", makeAsync(async (req, res, next) => {
-        let mainData = "select c.class_id, c.class_name, c.package_name, count(Case when m.result = 1 then 1 end) pass, count(Case when m.result = 2 then 1 end) fail, count(Case when m.result = 3 then 1 end) skip, min(m.start_t) start_t from class c inner join method m on m.class_id=c.class_id and m.pj_id=" + req.query.pi + " and c.build_id=" + req.query.bi + " group by class_id;";
+        const mainData = `select c.class_id, c.class_name, c.package_name, count(Case when m.result = 1 then 1 end) pass, count(Case when m.result = 2 then 1 end) fail, count(Case when m.result = 3 then 1 end) skip, min(m.start_t) start_t from class c inner join method m on m.class_id=c.class_id and m.pj_id=${req.query.pi} and c.build_id=${req.query.bi} group by class_id;`;
 
         const mainResult = await pool.query(mainData);
 
         if (mainResult.length === 0) {
             res.status(200).json({
-                "classCount": 0
+                "classCount": 0,
             });
         } else {
             res.status(200).json(proModalDataDetail(mainResult, mainResult.length));

@@ -1,4 +1,4 @@
-module.exports = function (passport, redisClient) {
+module.exports = function(passport, redisClient) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
@@ -21,7 +21,7 @@ module.exports = function (passport, redisClient) {
 
     router.post("/checkAdmin", passport.authenticate("local", {
         successRedirect: "/admin",
-        failureRedirect: "/admin/403"
+        failureRedirect: "/admin/403",
     }));
 
     router.get("/", isAuthenticated, (req, res) => {
@@ -43,7 +43,7 @@ module.exports = function (passport, redisClient) {
         res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
         res.status(200).json({
             "cur": maxLabel,
-            "absolute": abmaxLabel
+            "absolute": abmaxLabel,
         });
     }));
 
@@ -54,7 +54,7 @@ module.exports = function (passport, redisClient) {
             const abmaxLabel = await asyncRedis("abmaxLabel") * 1;
 
             if ((newLabel >= 1) && (newLabel <= abmaxLabel) && (preLabel !== newLabel)) {
-                console.log("By " + req.session.userid + ", maxLabel is changed : " + preLabel + " -> " + newLabel);
+                console.log(`By ${req.session.userid}, maxLabel is changed : ${preLabel} -> ${newLabel}`);
                 redisClient.set("maxLabel", newLabel);
             }
 
@@ -66,7 +66,7 @@ module.exports = function (passport, redisClient) {
         if (req.session.userid) {
             req.session.destroy(err => {
                 if (err) {
-                    console.error("logout session destroy failed" + err);
+                    console.error(`logout session destroy failed\n${err}`);
                 }
             });
         }
@@ -76,7 +76,7 @@ module.exports = function (passport, redisClient) {
 
     router.get("/403", (req, res) => {
         res.status(403).render("page_403", {
-            title: "Forbidden"
+            title: "Forbidden",
         });
     });
 
