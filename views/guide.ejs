@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <% include ./partials/header.ejs %>
   <title>Dashboard</title>
@@ -43,20 +44,43 @@
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
-              <ul>
-                <li><h3>최신 DashboardAPI : ver 0.7 </h3></li>
+              <h4>
                 <ul>
                   <li>
-                    공통 라이브러리 미사용 프로젝트 대상
+                    <h3>개편된 팀 정보 관련</h3>
                   </li>
+                  <ul>
+                    <li>
+                      <h3>적용시점 : 7/17(수) 20:00 이후</h3>
+                    </li><br>
+                    <li>
+                      기존 데이터들은 변경되는 팀으로 이전됩니다.
+                    </li><br>
+                    <li>
+                      원래 팀 정보로 자동화를 수행하실 경우 새로운 프로젝트로 인식되어 노출되므로, <b>변경된 팀 정보로 변경후 수행</b> 부탁드립니다.
+                    </li><br>
+                    <li>
+                      팀 정보 변경법 : config.properties의 "TEAM= " 부분을 변경
+                    </li>
+                  </ul>
+                </ul>
+              </h4>
+              <br>
+              <ul>
+                <li>
+                  <h3>최신 DashboardAPI : ver 0.7 </h3>
+                </li>
+                <ul>
                   <li>
-                    DNS 변경 이후 프로젝트 결과가 갑자기 연동되지 않는 경우, <b>API를 0.7버전으로 업데이트하시면 동작</b>합니다.
+                    (공통 라이브러리 미사용 프로젝트 대상) DNS 변경 이후 프로젝트 결과가 갑자기 연동되지 않는 경우, <b>API를 0.7버전으로 업데이트하시면 동작</b>합니다.
                   </li>
                 </ul>
               </ul>
               <br>
               <ul>
-                <li><h3> Data가 깨져나오는 경우 </h3></li>
+                <li>
+                  <h3> Data가 깨져나오는 경우 </h3>
+                </li>
                 <ul>
                   <li>
                     기본 인코딩은 DB와 Dashboard 모두 <b>UTF-8</b>을 사용하고 있습니다.
@@ -77,67 +101,88 @@
             <div class="x_content">
               <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
                 <div class="panel">
-                  <a class="panel-heading" role="tab" id="headingOne" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  <a class="panel-heading" role="tab" id="headingOne" data-toggle="collapse" data-parent="#accordion"
+                    href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                     <h4 class="panel-title">common-unit-lib 사용시</h4>
                   </a>
                   <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
                     <div class="panel-body">
                       <div class="col-md-6 col-sm-6 com-xs-12">
-                        <img style="max-width: 100%;height: auto" src="/images/guide_pom.PNG"/>
+                        <img style="max-width: 100%;height: auto" src="/images/guide_pom.PNG" />
                       </div>
                       <div class="col-md-6 col-sm-6 com-xs-12">
                         <div class="x_panel">
                           <ol>
-                            <h3><li> pom.xml 업데이트</li></h3>
+                            <h3>
+                              <li> pom.xml 업데이트</li>
+                            </h3>
                             <ul>
-                              <p><li>pom.xml > common-unit-lib의 version을 3.X 이상으로 업데이트해주세요.</li></p>
-                              <p><li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li></p>
+                              <p>
+                                <li>pom.xml > common-unit-lib의 version을 3.X 이상으로 업데이트해주세요.</li>
+                              </p>
+                              <p>
+                                <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
+                              </p>
                             </ul>
                             <hr />
-                            <h3><li> config.properties 작성</li></h3>
+                            <h3>
+                              <li> config.properties 작성</li>
+                            </h3>
                             <ul>
-                              <p><li>
-                                <b>필수 작성 항목 : PROJECT_NAME, AUTHOR, DASHBOARD, TEAM</b>
-                                <ul>
-                                  <li>PROJECT_NAME : [플랫폼정보]프로젝트이름</li>
-                                  <li>AUTHOR : 관리자이름</li>
-                                  <li>DASHBOARD : true (연동여부)</li>
-                                  <li>TEAM : 팀이름</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                선택 작성 항목 : SERVER_ENVIRONMENT, JENKINS_URL
-                                <ul>
-                                  <li>SERVER_ENVIRONMENT : Real / Stage 환경정보</li>
-                                  <li>JENKINS_URL : 연동할 jenkins 링크주소</li>
-                                </ul>
-                              </li></p>
+                              <p>
+                                <li>
+                                  <b>필수 작성 항목 : PROJECT_NAME, AUTHOR, DASHBOARD, TEAM</b>
+                                  <ul>
+                                    <li>PROJECT_NAME : [플랫폼정보]프로젝트이름</li>
+                                    <li>AUTHOR : 관리자이름</li>
+                                    <li>DASHBOARD : true (연동여부)</li>
+                                    <li>TEAM : 팀이름</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  선택 작성 항목 : SERVER_ENVIRONMENT, JENKINS_URL
+                                  <ul>
+                                    <li>SERVER_ENVIRONMENT : Real / Stage 환경정보</li>
+                                    <li>JENKINS_URL : 연동할 jenkins 링크주소</li>
+                                  </ul>
+                                </li>
+                              </p>
                             </ul>
                             <hr />
-                            <h3><li> 주의사항</li></h3>
+                            <h3>
+                              <li> 주의사항</li>
+                            </h3>
                             <ol>
-                              <p><li>
-                                PROJECT_NAME의 [플랫폼정보]안에는 아래의 항목중 1개가 입력되어야 합니다.
-                                <ul>
-                                  <li>PC Web</li>
-                                  <li>PC App</li>
-                                  <li>Mobile Web</li>
-                                  <li>Mobile App</li>
-                                  <li>API</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                AUTHOR는 반드시 구별가능한 이름을 사용해주세요.
-                                <ul>
-                                  <li>추후 문제 발생시 해당 정보를 참조하여 연락드립니다.</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                팀 이름, 플랫폼 정보의 값들은 한글을 지원하지 않습니다.
-                                <ul>
-                                  <li>영문 대/소문자, 띄어쓰기 여부는 모두 같은것으로 인식합니다.</li>
-                                </ul>
-                              </li></p>
+                              <p>
+                                <li>
+                                  PROJECT_NAME의 [플랫폼정보]안에는 아래의 항목중 1개가 입력되어야 합니다.
+                                  <ul>
+                                    <li>PC Web</li>
+                                    <li>PC App</li>
+                                    <li>Mobile Web</li>
+                                    <li>Mobile App</li>
+                                    <li>API</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  AUTHOR는 반드시 구별가능한 이름을 사용해주세요.
+                                  <ul>
+                                    <li>추후 문제 발생시 해당 정보를 참조하여 연락드립니다.</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  팀 이름, 플랫폼 정보의 값들은 한글을 지원하지 않습니다.
+                                  <ul>
+                                    <li>영문 대/소문자, 띄어쓰기 여부는 모두 같은것으로 인식합니다.</li>
+                                  </ul>
+                                </li>
+                              </p>
                             </ol>
                           </ol>
                         </div>
@@ -147,78 +192,103 @@
                 </div>
 
                 <div class="panel">
-                  <a class="panel-heading collapsed" role="tab" id="headingTwo" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  <a class="panel-heading collapsed" role="tab" id="headingTwo" data-toggle="collapse"
+                    data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                     <h4 class="panel-title">common-unit-lib 미사용시</h4>
                   </a>
                   <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                     <div class="panel-body">
                       <div class="col-md-6 col-sm-6 com-xs-12">
-                        <img style="max-width: 100%;height: auto" src="/images/guide_pom2.PNG"/>
+                        <img style="max-width: 100%;height: auto" src="/images/guide_pom2.PNG" />
                         <hr />
-                        <img style="max-width: 100%;height: auto" src="/images/guide_nolib.PNG"/>
+                        <img style="max-width: 100%;height: auto" src="/images/guide_nolib.PNG" />
                       </div>
                       <div class="col-md-6 col-sm-6 com-xs-12">
                         <div class="x_panel">
                           <ol>
-                            <h3><li> pom.xml Dependency 추가</li></h3>
+                            <h3>
+                              <li> pom.xml Dependency 추가</li>
+                            </h3>
                             <ul>
-                              <p><li>pom.xml > dependency를 사진과 같이 추가해주세요.</li></p>
-                              <p><li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li></p>
+                              <p>
+                                <li>pom.xml > dependency를 사진과 같이 추가해주세요.</li>
+                              </p>
+                              <p>
+                                <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
+                              </p>
                             </ul>
                             <hr />
-                            <h3><li> 해당하는 위치에서 API 호출</li></h3>
+                            <h3>
+                              <li> 해당하는 위치에서 API 호출</li>
+                            </h3>
                             <ul>
-                              <p><li>
-                                DashboardAPI.beforeSuite
-                                <ul>
-                                  <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
-                                  <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경)</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                DashboardAPI.beforeClass
-                                <ul>
-                                  <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
-                                  <li>Parameter : (클래스명, 패키지명)</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                DashboardAPI.afterMethod - <b>testNG 사용</b>
-                                <ul>
-                                  <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                  <li>Parameter : (메소드명, 테스트결과)</li>
-                                  <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                DashboardAPI.afterMethod - <b>testNG 미사용</b>
-                                <ul>
-                                  <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                  <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
-                                  <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
-                                  <li>테스트결과는 Pass - 1 / Fail - 2 / Skip - 3 으로 넘겨주시면 됩니다. </li>
-                                </ul>
-                              </li></p>
+                              <p>
+                                <li>
+                                  DashboardAPI.beforeSuite
+                                  <ul>
+                                    <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
+                                    <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경)</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  DashboardAPI.beforeClass
+                                  <ul>
+                                    <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
+                                    <li>Parameter : (클래스명, 패키지명)</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  DashboardAPI.afterMethod - <b>testNG 사용</b>
+                                  <ul>
+                                    <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                    <li>Parameter : (메소드명, 테스트결과)</li>
+                                    <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  DashboardAPI.afterMethod - <b>testNG 미사용</b>
+                                  <ul>
+                                    <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                    <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
+                                    <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
+                                    <li>테스트결과는 Pass - 1 / Fail - 2 / Skip - 3 으로 넘겨주시면 됩니다. </li>
+                                  </ul>
+                                </li>
+                              </p>
                             </ul>
                             <hr />
-                            <h3><li> 주의사항</li></h3>
+                            <h3>
+                              <li> 주의사항</li>
+                            </h3>
                             <ol>
-                              <p><li>
-                                <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
-                                <ul>
-                                  <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
-                                  <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                한글 사용시 encoding을 한번 더 확인해주세요.
-                                <ul>
-                                  <li>UTF-8이 아닌 데이터는 깨져서 노출될 수 있습니다.</li>
-                                </ul>
-                              </li></p>
-                              <p><li>
-                                각 Parameter의 제약사항은 common-unit-lib사용 항목도 참고해주세요.
-                              </li></p>
+                              <p>
+                                <li>
+                                  <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
+                                  <ul>
+                                    <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
+                                    <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  한글 사용시 encoding을 한번 더 확인해주세요.
+                                  <ul>
+                                    <li>UTF-8이 아닌 데이터는 깨져서 노출될 수 있습니다.</li>
+                                  </ul>
+                                </li>
+                              </p>
+                              <p>
+                                <li>
+                                  각 Parameter의 제약사항은 common-unit-lib사용 항목도 참고해주세요.
+                                </li>
+                              </p>
                             </ol>
                           </ol>
                         </div>
@@ -241,4 +311,5 @@
   <!-- Custom Theme Scripts -->
   <script src="/js/custom.min.js"></script>
 </body>
+
 </html>

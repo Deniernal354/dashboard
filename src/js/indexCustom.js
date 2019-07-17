@@ -528,7 +528,7 @@ function init_PNotify() {
         text: "팀 소속이 변경된 분들은 공지사항을 참고해주세요!",   
         styling: "bootstrap3",
         icons: "fontawesome4",
-        delay: 5000,
+        delay: 3000,
         modules: {
             Buttons: {
                 sticker: false
