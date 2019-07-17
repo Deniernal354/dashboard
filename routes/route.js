@@ -39,7 +39,7 @@ module.exports = function(pool) {
 
     router.get("/team/:teamNo", [
         param("teamNo").exists()
-            .matches(/^[1-6]{1}$/),
+            .matches(/^[1-7]{1}$/),
     ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
