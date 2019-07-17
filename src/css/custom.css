@@ -608,7 +608,6 @@ a:focus {
   float: right
 }
 .top_nav .navbar-right li {
-  display: inline-block;
   float: right;
   position: static
 }
@@ -986,7 +985,6 @@ h2 {
   border: 1px solid #E6E9ED;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
-  column-break-inside: avoid;
   opacity: 1;
   transition: all .2s ease
 }
@@ -1124,6 +1122,7 @@ h3.degrees {
 .paging_full_numbers a.paginate_button,
 .paging_full_numbers a.paginate_active {
   border: 1px solid #aaa;
+  border-radius: 5px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   padding: 2px 5px;
@@ -1214,6 +1213,7 @@ ul.msg_list li a .message {
   background: #fff;
   margin-top: 0;
   border: 1px solid #D9DEE4;
+  box-shadow: none;
   -webkit-box-shadow: none;
   right: 0;
   left: auto;
@@ -1293,7 +1293,6 @@ ul.quick-list li i {
 }
 .dashboard-widget-content .sidebar-widget {
   width: 50%;
-  display: inline-block;
   vertical-align: top;
   background: #fff;
   border: 1px solid #abd9ea;
@@ -1877,6 +1876,7 @@ select.parsley-error {
   box-shadow: 0 0 4px -2px #CE5454;
   position: relative;
   left: 0;
+  animation: 0.7s 1 shake linear;
   -moz-animation: .7s 1 shake linear;
   -webkit-animation: 0.7s 1 shake linear
 }
@@ -2115,6 +2115,7 @@ textarea:focus {
   overflow-y: auto
 }
 span.tag {
+  border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
   display: block;
@@ -2352,7 +2353,6 @@ img.avatar {
   height: 32px;
   width: 32px;
   float: left;
-  display: inline-block;
   border-radius: 2px;
   padding: 2px;
   background: #f7f7f7;
