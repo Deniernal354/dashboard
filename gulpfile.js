@@ -29,6 +29,8 @@ function concatJS() {
         "node_modules/bootstrap/dist/js/bootstrap.min.js",
         "node_modules/fastclick/lib/fastclick.js",
         "node_modules/nprogress/nprogress.js",
+        "node_modules/pnotify/dist/iife/PNotify.js",
+        "node_modules/pnotify/dist/iife/PNotifyButtons.js",
     ])
         .pipe(concat("libraries.js"))
         .pipe(uglify())
