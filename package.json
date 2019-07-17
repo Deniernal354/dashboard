@@ -31,6 +31,7 @@
     "nprogress": "^0.2.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "pnotify": "^4.0.0",
     "popper.js": "^1.15.0",
     "select2": "^4.0.7"
   },

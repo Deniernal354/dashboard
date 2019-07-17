@@ -518,10 +518,31 @@ function init_daterangepicker() {
   });*/
 }
 
+function init_PNotify() {
+
+    if( typeof (PNotify) === "undefined"){ return; }
+    console.log("init_PNotify");
+  
+    PNotify.info({
+        title: "v2.1.1\n\n개편된 팀 정보가 적용되었습니다.",
+        text: "팀 소속이 변경된 분들은 공지사항을 참고해주세요!",   
+        styling: "bootstrap3",
+        icons: "fontawesome4",
+        delay: 3000,
+        modules: {
+            Buttons: {
+                sticker: false
+            },
+        },
+        addClass: "dark",
+    });
+}
+
 $(document).ready(function() {
     init_compose();
     init_indexData();
     init_daterangepicker();
+    init_PNotify();
 });
 
 $(window).on("load", function() {
