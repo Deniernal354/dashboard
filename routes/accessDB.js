@@ -56,7 +56,7 @@ module.exports = function(pool) {
 
         if ((!team) || (!plat)) {
             res.statusCode = 400;
-            return next(`/beforeSuite : Wrong teamName or platName\n(team : ${req.body.pj_team} / plat : ${req.body.pj_platform})`);
+            return next(`/beforeSuite : Wrong teamName or platName\n(Project : ${name} / team : ${req.body.pj_team} / plat : ${req.body.pj_platform})`);
         }
 
         // Resolve link value
