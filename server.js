@@ -113,7 +113,7 @@ if (cluster.isMaster) {
     // routes
     app.use("/auto", require("./routes/route.js")(pool));
     app.use("/getData", require("./routes/getData.js")(pool, redisClient));
-    app.use("/access", require("./routes/accessDB.js")(pool));
+    app.use("/access", require("./routes/accessDB.js")(pool, redisClient));
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
     app.use((req, res, next) => {
         res.statusCode = 404;

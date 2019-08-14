@@ -1,4 +1,4 @@
-module.exports = function(pool) {
+module.exports = function(pool, redisClient) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
@@ -16,6 +16,7 @@ module.exports = function(pool) {
         }
     };
     const moment = require("moment");
+    const alertMail = require("./alertMail.js")(pool, redisClient);
 
     pool.query = util.promisify(pool.query);
 
@@ -171,11 +172,43 @@ module.exports = function(pool) {
             return next(`/afterMethod : There is no such pj_id, build_id, class_id\n${findClass}`);
         } else {
             await pool.query(newMethod);
+            alertMail.addRedis(pjId, mname, testResult);
+
             res.status(200).json({
                 "success": 1,
             });
         }
     }));
+
+
+    // Must think about pjId=undefined
+    router.get("/test", [body("mail_pj_id").exists()], (req, res, next) => {
+        const err = validationResult(req);
+
+        if (!err.isEmpty()) {
+            res.statusCode = 400;
+            return next(JSON.stringify(err.array()));
+        }
+
+        const pjId = req.body.mail_pj_id;
+
+        alertMail.checkMail(pjId);
+        res.status(200).send({
+            "success": 1,
+        });
+    });
+
+    router.get("/test2/:pjId", async (req, res, next) => {
+        const data = await alertMail.test(req.params.pjId).catch(console.error);
+
+        res.status(200).render("mailtemplate.ejs", {
+            "projectName": data.projectInfo[0].pj_name,
+            "projectTeam": data.projectInfo[0].pj_team,
+            "projectPlat": data.projectInfo[0].pj_platform,
+            "projectAuth": data.projectInfo[0].pj_author,
+            "faildMethods": data.failedMethods,
+        });
+    });
 
     // Params : selectId
     // Returns : result("올바르게 삭제되었습니다." or "Data가 삭제되지 않았습니다.")
