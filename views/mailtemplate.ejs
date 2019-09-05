@@ -17,10 +17,10 @@
                         <tr>
                             <td width="30px">&nbsp;</td>
                             <td>
-                                <table width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;">
+                                <table width="100%" cellpadding="0" cellspacing="0" style="font-family:'맑은고딕',Malgun Gothic,'돋움',Dotum,Helvetica,'Apple SD Gothic Neo',Sans-serif;">
                                     <tbody>
                                         <tr>
-                                            <td colspan="2" style="font-size:38px;height:120px;" title="말풍선입니다">자동화 오류 알림 메일입니다.</td>
+                                            <td colspan="2" style="font-size:38px;height:120px;">자동화 오류 알림 메일입니다.</td>
                                         </tr>
                                         <tr height="2" style="white-space: nowrap;">
                                             <td colspan="2" bgcolor="#2a3f54"></td>
@@ -29,19 +29,19 @@
                                             <td colspan="2" height="15"></td>
                                         </tr>
                                         <tr style="font-size:18px;">
-                                            <td height="35">
+                                            <td width="30%" height="35">
                                                 프로젝트
                                             </td>
-                                            <td>
+                                            <td width="70%" >
                                                 <%= projectName %>
                                             </td>
                                         </tr>
                                         <tr style="font-size:18px;">
                                             <td height="35">
-                                                빌드시간
+                                                빌드종료시간
                                             </td>
                                             <td>
-                                                <%= projectName %>
+                                                <%= buildTime %>
                                             </td>
                                         </tr>
                                         <tr style="font-size:18px;">
@@ -78,31 +78,48 @@
                                             <td colspan="2" bgcolor="#2a3f54"></td>
                                         </tr>
                                         <tr>
+                                            <td colspan="2" height="10"></td>
+                                        </tr>
+                                        <tr>
                                             <td colspan="2">
-                                                <table>
+                                                <table width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed;color:#95999c;font-family:'맑은고딕',Malgun Gothic,'돋움',Dotum,Helvetica,'Apple SD Gothic Neo',Sans-serif;">
                                                     <tbody>
-                                                        <tr>
-                                                            <td>
-                                                                본문
-                                                            </td>
-                                                        </tr>
+                                                        <% for(var key in failedMethods) { %>
+                                                            <tr>
+                                                                <td width="40%" height="35" style="font-size:16px;">
+                                                                    <span style="border-bottom:1px solid #95999c;padding-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                                        <%= key %>
+                                                                    </span>
+                                                                </td>
+                                                                <td width="60%"></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2" height="8"></td>
+                                                            </tr>
+                                                            <% failedMethods[key].forEach(function(value) { %>
+                                                                <tr>
+                                                                    <td title=<%= value[0] %> style="font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">                      
+                                                                        <%= value[0] %>
+                                                                    </td>
+                                                                    <td title=<%= value[1] %> style="font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">                      
+                                                                        <%= value[1] %>
+                                                                    </td>
+                                                                </tr>
+                                                            <% }); %>
+                                                            <tr>
+                                                                <td colspan="2" height="10"></td>
+                                                            </tr>
+                                                        <% } %>
                                                     </tbody>
                                                 </table>
                                             </td>
                                         </tr>
-                                        <tr height="1" style="white-space: nowrap;">
-                                                <td colspan="2" bgcolor="#2a3f54"></td>
+                                        <tr>
+                                            <td colspan="2" height="25"></td>
                                         </tr>
-                                        <!-- <tr>
-                                            <td height="350" align="center" width="20%" style="font-size:18px;border:3px solid #2a3f54;"><b>실패한<br />Method 목록</b></td>
-                                            <td width="80%" style="border:3px solid #2a3f54;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;">
-                                                <h3><ol>
-                                                    <% faildMethods.forEach(function(value) { %>
-                                                        <li><%= value %></li>
-                                                    <% }); %>
-                                                </ol></h3>
-                                            </td>
-                                        </tr> -->
+                                        <tr>
+                                            <td colspan="2" height="1" bgcolor="#2a3f54"></td>
+                                        </tr>
                                         <tr>
                                             <td align="center" colspan="2" height="90" style="text-align:center;">
                                                 <a href="http://sqa.navercorp.com/auto/" target="_blank">

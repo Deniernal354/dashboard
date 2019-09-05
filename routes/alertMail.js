@@ -5,7 +5,7 @@ module.exports = function(pool, redisClient) {
 
     pool.query = util.promisify(pool.query);
 
-    async function sendMail(projectInfo, failedMethods) {
+    async function sendMail(projectInfo, failedMethods, now) {
         const transporter = nodemailer.createTransport({
             host: "localhost",
             port: 25,
@@ -13,14 +13,15 @@ module.exports = function(pool, redisClient) {
 
         const info = await transporter.sendMail({
             from: "dashboard@nts-corp.com",
-            to: "smileansi@nts-corp.com", // projectInfo[0].pj_mail smileansi@nts-corp.com
+            to: projectInfo[0].pj_mail,
             subject: "메일 테스트입니다.",
             html: await ejs.renderFile(`${__dirname}/../views/mailtemplate.ejs`, {
                 "projectName": projectInfo[0].pj_name,
                 "projectTeam": projectInfo[0].pj_team,
                 "projectPlat": projectInfo[0].pj_platform,
                 "projectAuth": projectInfo[0].pj_author,
-                "faildMethods": failedMethods,
+                "buildTime": now,
+                "failedMethods": failedMethods,
             }),
         });
 
@@ -28,57 +29,47 @@ module.exports = function(pool, redisClient) {
         transporter.close();
     }
 
-    // pjId, mname, testResult is filtered in accessDB.js -> Never be undefined
-    function addRedis(pjId, mname, testResult) {
+    // pjId, combinedName, testResult is filtered in accessDB.js -> Never be undefined
+    function addRedis(pjId, combinedName, testResult) {
         if (testResult === 2) { // fail case
-            redisClient.HINCRBY(pjId, mname, 1);
+            redisClient.HINCRBY(pjId, combinedName, 1);
         } else {
-            redisClient.HDEL(pjId, mname);
+            redisClient.HDEL(pjId, combinedName);
         }
     }
 
-    async function checkMail(pjId) {
-        const findPj = `select pj_name, pj_team, pj_platform, pj_author from project where pj_id=${pjId};`;
+    async function checkMail(pjId, now) {
+        const findPj = `select pj_name, pj_team, pj_platform, pj_author, pj_mail from project where pj_id=${pjId};`;
         const projectInfo = await pool.query(findPj);
 
-        if (projectInfo.length === 0) {
-            console.error(`Invalid checkMail Call : There is no project with id(${pjId})`);
+        if (projectInfo.length === 0 || projectInfo[0].pj_mail === "-") {
+            console.error(`Invalid checkMail Call : There is no project or no e-mail address with id(${pjId})`);
         } else {
             const asyncHGETALL = util.promisify(redisClient.HGETALL).bind(redisClient);
             const redisResult = await asyncHGETALL(pjId);
-            const failedMethods = [];
+            const failedMethods = {};
 
             for (const key in redisResult) {
                 const value = redisResult[key] * 1;
+                const firstToken = key.indexOf("%%");
+                const lastToken = key.lastIndexOf("%%");
+                const pname = key.substring(0, firstToken);
+                const cname = key.substring(firstToken + 2, lastToken);
+                const mname = key.substring(lastToken + 2);
 
                 if (value >= 3) {
-                    failedMethods.push(key);
+                    if (!failedMethods[pname]) {
+                        failedMethods[pname] = [];
+                    }
+                    failedMethods[pname].push([cname, mname]);
                 }
             }
-            sendMail(projectInfo, failedMethods).catch(console.error);
-        }
-    }
 
-    async function test(pjId) {
-        const asyncHGETALL = util.promisify(redisClient.HGETALL).bind(redisClient);
-        const redisResult = await asyncHGETALL(pjId);
-        const findPj = `select pj_name, pj_team, pj_platform, pj_author from project where pj_id=${pjId};`;
-        const projectInfo = await pool.query(findPj);
-        const failedMethods = [];
-
-        for (const key in redisResult) {
-            const value = redisResult[key] * 1;
-
-            if (value === 3) {
-                failedMethods.push(key);
+            if (Object.keys(failedMethods).length !== 0) {
+                sendMail(projectInfo, failedMethods, now).catch(console.error);
             }
         }
-
-        return {
-            projectInfo,
-            failedMethods,
-        };
     }
 
-    return {addRedis, checkMail, test};
+    return {addRedis, checkMail};
 };

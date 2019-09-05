@@ -48,6 +48,7 @@ module.exports = function(pool, redisClient) {
         const name = req.body.pj_name;
         const auth = req.body.pj_author;
         const env = (req.body.pj_env) ? req.body.pj_env : "Real";
+        const mail = (req.body.pj_mail) ? req.body.pj_mail : "-";
         let link = "-";
 
         if (!err.isEmpty()) {
@@ -80,13 +81,20 @@ module.exports = function(pool, redisClient) {
 
                 await pool.query(updateLink);
             }
+
+            // IF the project's mail already exists
+            if (mail !== "-" || mail !== "") {
+                const updateMail = `update project set pj_mail='${mail}' where pj_id=${projectId} and pj_link!='${mail}';`;
+
+                await pool.query(updateMail);
+            }
         } else { // IF the project NOT exists -> Insert a new project
-            const newPj = `INSERT INTO project VALUES (default, '${name}', '${team}', '${plat}', '${auth}', '${link}');`;
+            const newPj = `INSERT INTO project VALUES (default, '${name}', '${team}', '${plat}', '${auth}', '${link}', '${mail}');`;
             const newPjResult = await pool.query(newPj);
 
             projectId = newPjResult.insertId;
         }
-        // pj_id, link, env is resolved
+        // pj_id, link, env, mail is resolved
 
         const newBuild = `insert into build values (default, '${env}', ${projectId});`;
         const newBuildResult = await pool.query(newBuild);
@@ -172,7 +180,10 @@ module.exports = function(pool, redisClient) {
             return next(`/afterMethod : There is no such pj_id, build_id, class_id\n${findClass}`);
         } else {
             await pool.query(newMethod);
-            alertMail.addRedis(pjId, mname, testResult);
+            const findClassName = `select package_name pname, class_name cname from class where class_id=${classId};`;
+            const findClassNameResult = await pool.query(findClassName);
+
+            alertMail.addRedis(pjId, `${findClassNameResult[0].pname}%%${findClassNameResult[0].cname}%%${mname}`, testResult);
 
             res.status(200).json({
                 "success": 1,
@@ -180,9 +191,10 @@ module.exports = function(pool, redisClient) {
         }
     }));
 
-
+    // Params : mail_pj_id
+    // Returns : success(1)
     // Must think about pjId=undefined
-    router.get("/test", [body("mail_pj_id").exists()], (req, res, next) => {
+    router.post("/afterSuite", [body("mail_pj_id").exists()], (req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -191,22 +203,11 @@ module.exports = function(pool, redisClient) {
         }
 
         const pjId = req.body.mail_pj_id;
+        const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
-        alertMail.checkMail(pjId);
+        alertMail.checkMail(pjId, now).catch(console.error);
         res.status(200).send({
             "success": 1,
-        });
-    });
-
-    router.get("/test2/:pjId", async (req, res, next) => {
-        const data = await alertMail.test(req.params.pjId).catch(console.error);
-
-        res.status(200).render("mailtemplate.ejs", {
-            "projectName": data.projectInfo[0].pj_name,
-            "projectTeam": data.projectInfo[0].pj_team,
-            "projectPlat": data.projectInfo[0].pj_platform,
-            "projectAuth": data.projectInfo[0].pj_author,
-            "faildMethods": data.failedMethods,
         });
     });
 
