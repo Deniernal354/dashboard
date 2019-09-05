@@ -42,9 +42,8 @@ module.exports = function(pool, redisClient) {
         const findPj = `select pj_name, pj_team, pj_platform, pj_author, pj_mail from project where pj_id=${pjId};`;
         const projectInfo = await pool.query(findPj);
 
-        if (projectInfo.length === 0 || projectInfo[0].pj_mail === "-") {
-            console.error(`Invalid checkMail Call : There is no project or no e-mail address with id(${pjId})`);
-        } else {
+        // Only the project & the e-mail address exist
+        if ((projectInfo.length !== 0) && (projectInfo[0].pj_mail !== "-")) {
             const asyncHGETALL = util.promisify(redisClient.HGETALL).bind(redisClient);
             const redisResult = await asyncHGETALL(pjId);
             const failedMethods = {};
