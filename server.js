@@ -12,7 +12,7 @@ const moment = require("moment");
 const serverPortNo = 8000;
 const coreNo = 2;
 const userControl = (() => {
-    const userid = ["thepower", "comadmin", "conadmin", "lbiadmin", "nbiadmin", "poradmin", "seradmin", "woradmin"];
+    const userid = require("./config/adminUser.json").userid;
     const password = [];
 
     userid.forEach(value => {
@@ -113,7 +113,7 @@ if (cluster.isMaster) {
     // routes
     app.use("/auto", require("./routes/route.js")(pool));
     app.use("/getData", require("./routes/getData.js")(pool, redisClient));
-    app.use("/access", require("./routes/accessDB.js")(pool));
+    app.use("/access", require("./routes/accessDB.js")(pool, redisClient));
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
     app.use((req, res, next) => {
         res.statusCode = 404;

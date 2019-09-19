@@ -2,3 +2,4 @@
 /node_modules
 /config/dbConfig.json
 /config/teamConfig.json
+/config/adminUser.json
