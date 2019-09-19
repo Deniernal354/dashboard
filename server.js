@@ -12,7 +12,7 @@ const moment = require("moment");
 const serverPortNo = 8000;
 const coreNo = 2;
 const userControl = (() => {
-    const userid = ["thepower", "comadmin", "conadmin", "lbiadmin", "nbiadmin", "poradmin", "seradmin", "woradmin"];
+    const userid = require("./config/adminUser.json").userid;
     const password = [];
 
     userid.forEach(value => {
