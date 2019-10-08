@@ -183,7 +183,7 @@ module.exports = function(pool, redisClient) {
             const findClassName = `select package_name pname, class_name cname from class where class_id=${classId};`;
             const findClassNameResult = await pool.query(findClassName);
 
-            alertMail.addRedis(pjId, `${findClassNameResult[0].pname}%%${findClassNameResult[0].cname}%%${mname}`, testResult);
+            alertMail.addRedis(buildId, `${findClassNameResult[0].pname}%%${findClassNameResult[0].cname}%%${mname}`, testResult);
 
             res.status(200).json({
                 "success": 1,
@@ -193,8 +193,8 @@ module.exports = function(pool, redisClient) {
 
     // Params : mail_pj_id
     // Returns : success(1)
-    // Must think about pjId=undefined
-    router.post("/afterSuite", [body("mail_pj_id").exists()], (req, res, next) => {
+    // checkFalsy option assure the mail_pj_id isn't any falsy value.
+    router.post("/afterSuite", [body("mail_pj_id").exists({"checkFalsy": true})], (req, res, next) => {
         const err = validationResult(req);
 
         if (!err.isEmpty()) {
@@ -205,6 +205,7 @@ module.exports = function(pool, redisClient) {
         const pjId = req.body.mail_pj_id;
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
+        // /afterSuite isn't an async function -> So there is no wrapper function -> Must catch the error.
         alertMail.checkMail(pjId, now).catch(console.error);
         res.status(200).send({
             "success": 1,
