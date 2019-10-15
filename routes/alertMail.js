@@ -38,6 +38,15 @@ module.exports = function(pool, redisClient) {
         }
     }
 
+    async function delRedis(pjId) {
+        const findBu = `select build_id id from buildrank where pj_id=${pjId} order by rank;`;
+        const buildInfo = await pool.query(findBu);
+
+        buildInfo.forEach(key => {
+            redisClient.del(key.id);
+        });
+    }
+
     async function checkMail(pjId, now) {
         const findPj = `select pj_name, pj_team, pj_platform, pj_author, pj_mail from project where pj_id=${pjId};`;
         const projectInfo = await pool.query(findPj);
@@ -80,5 +89,5 @@ module.exports = function(pool, redisClient) {
         }
     }
 
-    return {addRedis, checkMail};
+    return {addRedis, delRedis, checkMail};
 };

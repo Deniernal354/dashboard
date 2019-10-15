@@ -76,10 +76,16 @@ module.exports = function(pool, redisClient) {
 
         // IF the project exists
         if (projectId !== -1) {
-            // Update the project's link info
-            await pool.query(`update project set pj_link='${link}' where pj_id=${projectId} and pj_link!='${link}';`);
+            const prevMail = await pool.query(`select pj_mail from project where pj_id=${projectId}`);
+
+            // Mail address removal case
+            if (prevMail[0].pj_mail !== "-" && mail === "-") {
+                alertMail.delRedis(projectId);
+            }
             // Update the project's mail info
             await pool.query(`update project set pj_mail='${mail}' where pj_id=${projectId} and pj_mail!='${mail}';`);
+            // Update the project's link info
+            await pool.query(`update project set pj_link='${link}' where pj_id=${projectId} and pj_link!='${link}';`);
         } else {
             // IF the project NOT exists -> Insert a new project
             const newPj = `INSERT INTO project VALUES (default, '${name}', '${team}', '${plat}', '${auth}', '${link}', '${mail}');`;
