@@ -2,6 +2,7 @@ module.exports = function(pool, redisClient) {
     const ejs = require("ejs");
     const util = require("util");
     const nodemailer = require("nodemailer");
+    const asyncLrange = util.promisify(redisClient.LRANGE).bind(redisClient);
 
     pool.query = util.promisify(pool.query);
 
@@ -27,7 +28,7 @@ module.exports = function(pool, redisClient) {
 
         const info = await transporter.sendMail(mailOption);
 
-        console.log("Message sent: %s", info.messageId);
+        console.log("Message sent: %s", info.accepted[0]);
         transporter.close();
     }
 
@@ -38,13 +39,44 @@ module.exports = function(pool, redisClient) {
         }
     }
 
-    async function delRedis(pjId) {
-        const findBu = `select build_id id from buildrank where pj_id=${pjId} order by rank;`;
-        const buildInfo = await pool.query(findBu);
+    // selectId : [Project Id, Build Id, Class Id, Method Id]
+    async function delRedis(deleteUnit, selectId) {
+        switch (deleteUnit) {
+        case 0: { // project
+            const buildIdList = await pool.query(`select build_id id from build where pj_id=${selectId[0]}`);
 
-        buildInfo.forEach(key => {
-            redisClient.del(key.id);
-        });
+            buildIdList.forEach(key => {
+                redisClient.del(key.id);
+            });
+            break;
+        }
+        case 1: { // build
+            redisClient.del(selectId[1]);
+            break;
+        }
+        case 2: { // class
+            const nameInfo = await pool.query(`select package_name pn, class_name cn from class where class_id=${selectId[2]};`);
+            const criteria = `${nameInfo[0].pn}%%${nameInfo[0].cn}`;
+            const allBuild = await asyncLrange(selectId[1], 0, -1);
+
+            allBuild.forEach(value => {
+                const lastToken = value.lastIndexOf("%%");
+
+                if (value.substring(0, lastToken) === criteria) {
+                    redisClient.lrem(selectId[1], 1, value);
+                }
+            });
+            break;
+        }
+        case 3: { // method
+            const nameInfo = await pool.query(`select c.package_name pn, c.class_name cn, m.method_name mn from class c join method m on c.class_id=m.class_id and method_id=${selectId[3]};`);
+
+            redisClient.lrem(selectId[1], 1, `${nameInfo[0].pn}%%${nameInfo[0].cn}%%${nameInfo[0].mn}`);
+            break;
+        }
+        default:
+            console.log("here!");
+        }
     }
 
     async function checkMail(pjId, now) {
@@ -52,7 +84,6 @@ module.exports = function(pool, redisClient) {
         const projectInfo = await pool.query(findPj);
         const findBu = `select build_id id from buildrank where pj_id=${pjId} and rank<=4 order by rank;`;
         const buildInfo = await pool.query(findBu);
-        const asyncLrange = util.promisify(redisClient.LRANGE).bind(redisClient);
 
         // Only the project & the e-mail address exist
         if ((projectInfo.length !== 0) && (projectInfo[0].pj_mail !== "-") && (buildInfo.length > 2)) {

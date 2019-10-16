@@ -80,7 +80,7 @@ module.exports = function(pool, redisClient) {
 
             // Mail address removal case
             if (prevMail[0].pj_mail !== "-" && mail === "-") {
-                alertMail.delRedis(projectId);
+                alertMail.delRedis(0, [projectId]);
             }
             // Update the project's mail info
             await pool.query(`update project set pj_mail='${mail}' where pj_id=${projectId} and pj_mail!='${mail}';`);
@@ -237,6 +237,7 @@ module.exports = function(pool, redisClient) {
 
         if (len >= 0 && len < 4) {
             deleteData = `delete from ${tableName[len]} where ${tableId[len]}=${selectId[len]};`;
+            alertMail.delRedis(len, selectId);
         } else {
             res.statusCode = 400;
             return next(`/deleteData : Wrong selectId request\n${selectId}`);
