@@ -778,23 +778,34 @@ function init_compose() {
 }
 
 function init_PNotify() {
+    if (typeof (PNotify) === "undefined") {
+        return;
+    }
+    if (document.cookie.indexOf("boardPopup") === -1) {
+        console.log("init_PNotify");
 
-    if( typeof (PNotify) === "undefined"){ return; }
-    console.log("init_PNotify");
-  
-    PNotify.info({
-        title: "v2.1.1\n\n개편된 팀 정보가 적용되었습니다.",
-        text: "팀 소속이 변경된 분들은 공지사항을 참고해주세요!",   
-        styling: "bootstrap3",
-        icons: "fontawesome4",
-        delay: 3000,
-        modules: {
-            Buttons: {
-                sticker: false
+        var noti = PNotify.info({
+            title: "v2.2.0",
+            text: "알림 메일 기능이 추가되었습니다.\n공지사항을 참고해주세요.",   
+            styling: "bootstrap3",
+            icons: "fontawesome4",
+            delay: 3000,
+            modules: {
+                Buttons: {
+                    sticker: false
+                },
             },
-        },
-        addClass: "dark",
-    });
+            addClass: "dark",
+        });
+
+        noti.on("click", function(){
+            noti.close();
+        });
+        var date = new Date();
+        date.setHours(date.getHours()+6);
+
+        document.cookie = "boardPopup=1; path=/; SameSite=Strict; Secure; expires=" + date.toUTCString();
+    }
 }
 
 $(document).ready(function () {
