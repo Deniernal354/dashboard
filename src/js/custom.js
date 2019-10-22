@@ -802,9 +802,9 @@ function init_PNotify() {
             noti.close();
         });
         var date = new Date();
-        date.setHours(date.getHours()+6);
+        date.setHours(date.getHours()+3);
 
-        document.cookie = "boardPopup=1; path=/; SameSite=Strict; Secure; expires=" + date.toUTCString();
+        document.cookie = "boardPopup=1; path=/; SameSite=Strict; expires=" + date.toUTCString();
     }
 }
 
