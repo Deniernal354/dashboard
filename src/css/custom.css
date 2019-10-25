@@ -988,6 +988,12 @@ h2 {
   opacity: 1;
   transition: all .2s ease
 }
+.x_panel>ol>li {
+  font-size: 24px;
+}
+.x_panel>ol>li>ul {
+  font-size: 14px;
+}
 .x_title {
   border-bottom: 2px solid #E6E9ED;
   padding: 1px 5px 6px;

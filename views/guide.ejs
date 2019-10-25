@@ -168,62 +168,62 @@
                       <div class="col-md-6 col-sm-6 com-xs-12">
                         <div class="x_panel">
                           <ol>
-                            <h3>
-                              <li> pom.xml 업데이트</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>pom.xml > common-unit-lib의 version을 3.2.0 이상으로 업데이트해주세요.</li>
-                              </p>
-                              <p>
-                                <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
-                              </p>
-                            </ul>
+                            <li>
+                              pom.xml 업데이트
+                              <ul>
+                                <p>
+                                  <li>pom.xml > common-unit-lib의 version을 3.2.0 이상으로 업데이트해주세요.</li>
+                                </p>
+                                <p>
+                                  <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
+                                </p>        
+                              </ul>
+                            </li>
                             <hr />
-                            <h3>
-                              <li> config.properties 작성</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>
-                                  <b>필수 작성 항목 : PROJECT_NAME, AUTHOR, DASHBOARD, TEAM</b>
-                                  <ul>
-                                    <li>PROJECT_NAME : [플랫폼정보] 프로젝트이름</li>
-                                    <li>AUTHOR : 관리자이름</li>
-                                    <li>DASHBOARD : true (연동여부)</li>
-                                    <li>TEAM : 팀이름</li>
-                                  </ul>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  선택 작성 항목 : SERVER_ENVIRONMENT, JENKINS_URL, EMAIL_ADDRESS
-                                  <ul>
-                                    <li>SERVER_ENVIRONMENT : Real / Stage 환경정보</li>
-                                    <li>JENKINS_URL : 연동할 jenkins 링크주소</li>
-                                    <li>EMAIL_ADDRESS : 자동화 실패 알림을 받아볼 메일주소</li>
-                                  </ul>
-                                </li>
-                              </p>
-                            </ul>
+                            <li>
+                              config.properties 작성
+                              <ul>
+                                <p>
+                                  <li>
+                                    필수 작성 항목 : <b>PROJECT_NAME, AUTHOR, DASHBOARD, TEAM</b>
+                                    <ul>
+                                      <li>PROJECT_NAME : [플랫폼정보] 프로젝트이름</li>
+                                      <li>AUTHOR : 관리자이름</li>
+                                      <li>DASHBOARD : true (연동여부)</li>
+                                      <li>TEAM : 팀이름</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                                <p>
+                                  <li>
+                                    선택 작성 항목 : SERVER_ENVIRONMENT, JENKINS_URL, EMAIL_ADDRESS
+                                    <ul>
+                                      <li>SERVER_ENVIRONMENT : Real / Stage 환경정보</li>
+                                      <li>JENKINS_URL : 연동할 jenkins 링크주소</li>
+                                      <li>EMAIL_ADDRESS : 자동화 실패 알림을 받아볼 메일주소</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                              </ul>
+                            </li>
                             <hr />
-                            <h3>
-                              <li> 주의사항</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>
-                                  <b style="font-size:18px;">PROJECT_NAME의 [플랫폼정보]</b>안에는 아래의 항목중 1개가 입력되어야 합니다.
-                                  <ul>
-                                    <li>PCWeb</li>
-                                    <li>PCApp</li>
-                                    <li>MobileWeb</li>
-                                    <li>MobileApp</li>
-                                    <li>API</li>
-                                  </ul>
-                                </li>
-                              </p>
-                            </ul>
+                            <li>
+                              주의사항
+                              <ul>
+                                <p>
+                                  <li>
+                                    <b style="font-size:16px;">PROJECT_NAME의 [플랫폼정보]</b>안에는 아래의 항목중 1개가 입력되어야 합니다.
+                                    <ul>
+                                      <li>PCWeb</li>
+                                      <li>PCApp</li>
+                                      <li>MobileWeb</li>
+                                      <li>MobileApp</li>
+                                      <li>API</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                              </ul>
+                            </li>
                             <br>
                           </ol>
                         </div>
@@ -247,91 +247,89 @@
                       <div class="col-md-6 col-sm-6 com-xs-12">
                         <div class="x_panel">
                           <ol>
-                            <h3>
-                              <li> pom.xml Dependency 추가</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>pom.xml > dependency를 사진과 같이 추가해주세요.</li>
-                              </p>
-                              <p>
-                                <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
-                              </p>
-                            </ul>
+                            <li>
+                              pom.xml Dependency 추가
+                              <ul>
+                                <p>
+                                  <li>pom.xml > dependency를 사진과 같이 추가해주세요.</li>
+                                </p>
+                                <p>
+                                  <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
+                                </p>
+                              </ul>
+                            </li>
                             <hr />
-                            <h3>
-                              <li> 해당하는 위치에서 API 호출</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>
-                                  <b>Import Package : com.nts.gt.support.client.*</b>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  DashboardClient.beforeSuite
-                                  <ul>
-                                    <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
-                                    <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경, 메일주소)</li>
-                                  </ul>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  DashboardClient.beforeClass
-                                  <ul>
-                                    <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
-                                    <li>Parameter : (클래스명, 패키지명)</li>
-                                  </ul>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  DashboardClient.afterMethod - <b>testNG 사용하는 경우</b>
-                                  <ul>
-                                    <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                    <li>Parameter : (메소드명, 테스트결과)</li>
-                                    <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
-                                  </ul>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  DashboardClient.afterMethod - <b>testNG 사용하지 않는 경우</b>
-                                  <ul>
-                                    <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                    <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
-                                    <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
-                                    <li>테스트결과는 <b>Pass - 1 / Fail - 2 / Skip - 3 </b>으로 넘겨주시면 됩니다. </li>
-                                  </ul>
-                                </li>
-                              </p>
-                              <p>
-                                <li>
-                                  DashboardClient.afterSuite (자동화 실패 알림 기능을 사용할 경우)
-                                  <ul>
-                                    <li>호출 위치 : @AfterSuite Annotation / 모든 프로젝트 수행종료후 1회</li>
-                                    <li>Parameter : 없음</li>
-                                  </ul>
-                                </li>
-                              </p>
-                            </ul>
+                            <li>
+                              해당하는 위치에서 API 호출
+                              <ul>
+                                <p>
+                                  <li><b>Import Package : com.nts.gt.support.client.*</b></li>
+                                </p>
+                                <p>
+                                  <li>
+                                    DashboardClient.beforeSuite
+                                    <ul>
+                                      <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
+                                      <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경, 메일주소)</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                                <p>
+                                  <li>
+                                    DashboardClient.beforeClass
+                                    <ul>
+                                      <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
+                                      <li>Parameter : (클래스명, 패키지명)</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                                <p>
+                                  <li>
+                                    DashboardClient.afterMethod - <b>testNG 사용하는 경우</b>
+                                    <ul>
+                                      <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                      <li>Parameter : (메소드명, 테스트결과)</li>
+                                      <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                                <p>
+                                  <li>
+                                    DashboardClient.afterMethod - <b>testNG 사용하지 않는 경우</b>
+                                    <ul>
+                                      <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                      <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
+                                      <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
+                                      <li>테스트결과는 <b>Pass - 1 / Fail - 2 / Skip - 3 </b>으로 넘겨주시면 됩니다. </li>
+                                    </ul>
+                                  </li>
+                                </p>
+                                <p>
+                                  <li>
+                                    DashboardClient.afterSuite (자동화 실패 알림 기능을 사용할 경우)
+                                    <ul>
+                                      <li>호출 위치 : @AfterSuite Annotation / 모든 프로젝트 수행종료후 1회</li>
+                                      <li>Parameter : 없음</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                              </ul>
+                            </li>
                             <hr />
-                            <h3>
-                              <li> 주의사항</li>
-                            </h3>
-                            <ul>
-                              <p>
-                                <li>
-                                  <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
-                                  <ul>
-                                    <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
-                                    <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
-                                  </ul>
-                                </li>
-                              </p>
-                            </ul>
+                            <li>
+                              주의사항
+                              <ul>
+                                <p>
+                                  <li>
+                                    <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
+                                    <ul>
+                                      <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
+                                      <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
+                                    </ul>
+                                  </li>
+                                </p>
+                              </ul>
+                            </li>
                             <br>
                           </ol>
                         </div>
@@ -355,91 +353,89 @@
                         <div class="col-md-6 col-sm-6 com-xs-12">
                           <div class="x_panel">
                             <ol>
-                              <h3>
-                                <li> pom.xml Dependency 추가</li>
-                              </h3>
-                              <ul>
-                                <p>
-                                  <li>pom.xml > dependency를 사진과 같이 추가해주세요.</li>
-                                </p>
-                                <p>
-                                  <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
-                                </p>
-                              </ul>
+                              <li>
+                                pom.xml Dependency 추가
+                                <ul>
+                                  <p>
+                                    <li>pom.xml > dependency를 사진과 같이 추가해주세요.</li>
+                                  </p>
+                                  <p>
+                                    <li>project 우클릭 > Maven > Update Project 를 수행하여 pom.xml 업데이트를 반영해주세요.</li>
+                                  </p>
+                                </ul>
+                              </li>
                               <hr />
-                              <h3>
-                                <li> 해당하는 위치에서 API 호출</li>
-                              </h3>
-                              <ul>
-                                <p>
-                                  <li>
-                                    <b>Import Package : com.nts.gt.auto.dashboard.DashboardAPI</b>
-                                  </li>
-                                </p>
-                                <p>
-                                  <li>
-                                    DashboardAPI.beforeSuite
-                                    <ul>
-                                      <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
-                                      <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경)</li>
-                                    </ul>
-                                  </li>
-                                </p>
-                                <p>
-                                  <li>
-                                    DashboardAPI.beforeClass
-                                    <ul>
-                                      <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
-                                      <li>Parameter : (클래스명, 패키지명)</li>
-                                    </ul>
-                                  </li>
-                                </p>
-                                <p>
-                                  <li>
-                                    DashboardAPI.afterMethod - <b>testNG 사용</b>
-                                    <ul>
-                                      <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                      <li>Parameter : (메소드명, 테스트결과)</li>
-                                      <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
-                                    </ul>
-                                  </li>
-                                </p>
-                                <p>
-                                  <li>
-                                    DashboardAPI.afterMethod - <b>testNG 미사용</b>
-                                    <ul>
-                                      <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
-                                      <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
-                                      <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
-                                      <li>테스트결과는 Pass - 1 / Fail - 2 / Skip - 3 으로 넘겨주시면 됩니다. </li>
-                                    </ul>
-                                  </li>
-                                </p>
-                                <p>
-                                  <li>
-                                    DashboardAPI.afterSuite (자동화 실패 알림 기능을 사용할 경우)
-                                    <ul>
-                                      <li>호출 위치 : @AfterSuite Annotation / 모든 프로젝트 수행종료후 1회</li>
-                                      <li>Parameter : 없음</li>
-                                    </ul>
-                                  </li>
-                                </p>
-                              </ul>
+                              <li>
+                                해당하는 위치에서 API 호출
+                                <ul>
+                                  <p>
+                                    <li><b>Import Package : com.nts.gt.auto.dashboard.DashboardAPI</b></li>
+                                  </p>
+                                  <p>
+                                    <li>
+                                      DashboardAPI.beforeSuite
+                                      <ul>
+                                        <li>호출 위치 : @BeforeSuite Annotation / 프로젝트 수행시 초기 1회 </li>
+                                        <li>Parameter : (프로젝트명, 팀명, 플랫폼명, 관리자명, Jenkins링크주소, 수행환경)</li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                  <p>
+                                    <li>
+                                      DashboardAPI.beforeClass
+                                      <ul>
+                                        <li>호출 위치 : @BeforeClass Annotation / 각 Class 수행시마다 초기 1회 </li>
+                                        <li>Parameter : (클래스명, 패키지명)</li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                  <p>
+                                    <li>
+                                      DashboardAPI.afterMethod - <b>testNG 사용</b>
+                                      <ul>
+                                        <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                        <li>Parameter : (메소드명, 테스트결과)</li>
+                                        <li>테스트결과는 ITestResult를 넘겨주시면 됩니다.</li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                  <p>
+                                    <li>
+                                      DashboardAPI.afterMethod - <b>testNG 미사용</b>
+                                      <ul>
+                                        <li>호출 위치 : @AfterMethod Annotation / 각 Method 수행종료후 1회</li>
+                                        <li>Parameter : (메소드명, 시작시간, 종료시간, 테스트결과)</li>
+                                        <li>시작시간과 종료시간은 "yyyy-MM-dd HH:mm:ss" 형식으로 입력해주세요.</li>
+                                        <li>테스트결과는 Pass - 1 / Fail - 2 / Skip - 3 으로 넘겨주시면 됩니다. </li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                  <p>
+                                    <li>
+                                      DashboardAPI.afterSuite (자동화 실패 알림 기능을 사용할 경우)
+                                      <ul>
+                                        <li>호출 위치 : @AfterSuite Annotation / 모든 프로젝트 수행종료후 1회</li>
+                                        <li>Parameter : 없음</li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                </ul>
+                              </li>
                               <hr />
-                              <h3>
-                                <li> 주의사항</li>
-                              </h3>
-                              <ul>
-                                <p>
-                                  <li>
-                                    <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
-                                    <ul>
-                                      <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
-                                      <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
-                                    </ul>
-                                  </li>
-                                </p>
-                              </ul>
+                              <li>
+                                주의사항
+                                <ul>
+                                  <p>
+                                    <li>
+                                      <b><big>beforeSuite과 beforeClass는 순서대로 최소 1회 호출</big></b>되어야 합니다.
+                                      <ul>
+                                        <li>프로젝트 구조가 다르거나, Annotation 미지원시에도 최소 1회는 호출되어야 합니다.</li>
+                                        <li>해당 API 호출순서가 뒤바뀌면 결과값이 올바르게 반영되지 않습니다.</li>
+                                      </ul>
+                                    </li>
+                                  </p>
+                                </ul>
+                              </li>
                               <br>
                             </ol>
                           </div>
