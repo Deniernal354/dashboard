@@ -1,16 +1,22 @@
 const express = require("express");
+const cluster = require("cluster");
 const path = require("path");
-const db = require("mysql");
 const bodyParser = require("body-parser");
 const compression = require("compression");
 const session = require("express-session");
+// Login
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcrypt-nodejs");
+// Mysql, Redis
+const db = require("mysql");
+const dbConfig = require("./config/dbConfig.json");
+const redis = require("redis");
+const RedisStore = require("connect-redis")(session);
+// Utils
 const moment = require("moment");
-
-const serverPortNo = 8000;
-const coreNo = 2;
+const util = require("util");
+// Custom Config, values
 const userControl = (() => {
     const userid = require("./config/adminUser.json").userid;
     const password = [];
@@ -25,17 +31,16 @@ const userControl = (() => {
     };
 })();
 const passportConfig = require("./config/passport")(passport, LocalStrategy, userControl);
-// DB & session, Redis
-const dbConfig = require("./config/dbConfig.json");
-const cluster = require("cluster");
-const redis = require("redis");
-const RedisStore = require("connect-redis")(session);
+const teamInfo = require("./config/teamConfig.json");
+const platformInfo = require("./config/platformConfig.json");
+
+const serverPortNo = 8000;
+const coreNo = 2;
 
 const redisClient = redis.createClient();
-let pool;
 
 function handleDisconnect() {
-    pool = db.createPool(dbConfig);
+    const pool = db.createPool(dbConfig);
 
     pool.on("connection", err => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
@@ -56,6 +61,8 @@ function handleDisconnect() {
             throw err;
         }
     });
+
+    return pool;
 }
 
 if (cluster.isMaster) {
@@ -79,8 +86,9 @@ if (cluster.isMaster) {
     });
 } else {
     const app = express();
+    const pool = handleDisconnect();
+    const asyncQuery = util.promisify(pool.query).bind(pool);
 
-    handleDisconnect();
     app.use(compression());
     app.set("views", path.join(__dirname, "/views"));
     app.use("/scripts", express.static(path.join(__dirname, "/node_modules")));
@@ -111,9 +119,9 @@ if (cluster.isMaster) {
     app.use(passport.session());
 
     // routes
-    app.use("/auto", require("./routes/route.js")(pool));
-    app.use("/getData", require("./routes/getData.js")(pool, redisClient));
-    app.use("/access", require("./routes/accessDB.js")(pool, redisClient));
+    app.use("/auto", require("./routes/route.js")(asyncQuery, teamInfo));
+    app.use("/getData", require("./routes/getData.js")(asyncQuery, redisClient, teamInfo, platformInfo));
+    app.use("/access", require("./routes/accessDB.js")(asyncQuery, redisClient, teamInfo, platformInfo));
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
     app.use((req, res, next) => {
         res.statusCode = 404;

@@ -1,10 +1,8 @@
-module.exports = function(pool, redisClient) {
+module.exports = function(asyncQuery, redisClient) {
     const ejs = require("ejs");
     const util = require("util");
     const nodemailer = require("nodemailer");
     const asyncLrange = util.promisify(redisClient.LRANGE).bind(redisClient);
-
-    pool.query = util.promisify(pool.query);
 
     async function sendMail(projectInfo, failedMethods, now) {
         const transporter = nodemailer.createTransport({
@@ -43,7 +41,7 @@ module.exports = function(pool, redisClient) {
     async function delRedis(deleteUnit, selectId) {
         switch (deleteUnit) {
         case 0: { // project
-            const buildIdList = await pool.query(`select build_id id from build where pj_id=${selectId[0]}`);
+            const buildIdList = await asyncQuery(`select build_id id from build where pj_id=${selectId[0]}`);
 
             buildIdList.forEach(key => {
                 redisClient.del(key.id);
@@ -55,7 +53,7 @@ module.exports = function(pool, redisClient) {
             break;
         }
         case 2: { // class
-            const nameInfo = await pool.query(`select package_name pn, class_name cn from class where class_id=${selectId[2]};`);
+            const nameInfo = await asyncQuery(`select package_name pn, class_name cn from class where class_id=${selectId[2]};`);
             const criteria = `${nameInfo[0].pn}%%${nameInfo[0].cn}`;
             const allBuild = await asyncLrange(selectId[1], 0, -1);
 
@@ -69,7 +67,7 @@ module.exports = function(pool, redisClient) {
             break;
         }
         case 3: { // method
-            const nameInfo = await pool.query(`select c.package_name pn, c.class_name cn, m.method_name mn from class c join method m on c.class_id=m.class_id and method_id=${selectId[3]};`);
+            const nameInfo = await asyncQuery(`select c.package_name pn, c.class_name cn, m.method_name mn from class c join method m on c.class_id=m.class_id and method_id=${selectId[3]};`);
 
             redisClient.lrem(selectId[1], 1, `${nameInfo[0].pn}%%${nameInfo[0].cn}%%${nameInfo[0].mn}`);
             break;
@@ -81,9 +79,9 @@ module.exports = function(pool, redisClient) {
 
     async function checkMail(pjId, now) {
         const findPj = `select pj_name, pj_team, pj_platform, pj_author, pj_mail from project where pj_id=${pjId};`;
-        const projectInfo = await pool.query(findPj);
+        const projectInfo = await asyncQuery(findPj);
         const findBu = `select build_id id from buildrank where pj_id=${pjId} and rank<=4 order by rank;`;
-        const buildInfo = await pool.query(findBu);
+        const buildInfo = await asyncQuery(findBu);
 
         // Only the project & the e-mail address exist
         if ((projectInfo.length !== 0) && (projectInfo[0].pj_mail !== "-") && (buildInfo.length > 2)) {

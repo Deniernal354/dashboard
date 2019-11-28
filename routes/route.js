@@ -1,8 +1,6 @@
-module.exports = function(pool) {
+module.exports = function(asyncQuery, teamInfo) {
     const express = require("express");
     const router = express.Router();
-    const util = require("util");
-    const teamConfig = require("../config/teamConfig.json");
     const {
         param,
         validationResult,
@@ -15,8 +13,6 @@ module.exports = function(pool) {
         }
     };
 
-    pool.query = util.promisify(pool.query);
-
     router.get("/", (req, res) => {
         res.redirect("/auto/index");
     });
@@ -25,12 +21,12 @@ module.exports = function(pool) {
     });
     router.get("/index", (req, res) => {
         res.status(200).render("index.ejs", {
-            cnt: teamConfig.name.length - 1,
+            cnt: teamInfo.name.length - 1,
         });
     });
 
     router.get("/all", makeAsync(async (req, res, next) => {
-        const pjCnt = await pool.query("select count(*) cnt from project");
+        const pjCnt = await asyncQuery("select count(*) cnt from project");
 
         res.status(200).render("all.ejs", {
             cnt: pjCnt[0].cnt,
@@ -48,8 +44,8 @@ module.exports = function(pool) {
             return next(JSON.stringify(err.array()));
         }
 
-        const teamName = teamConfig.name[req.params.teamNo];
-        const pjTeamCnt = await pool.query(`select count(*) cnt from project where pj_team = '${teamName}';`);
+        const teamName = teamInfo.name[req.params.teamNo];
+        const pjTeamCnt = await asyncQuery(`select count(*) cnt from project where pj_team = '${teamName}';`);
 
         res.status(200).render("team", {
             title: teamName,
@@ -80,7 +76,7 @@ module.exports = function(pool) {
             pageTitle = "API Test";
         }
 
-        const pjPlatCnt = await pool.query(`select count(*) cnt from project where pj_platform = '${req.params.category}';`);
+        const pjPlatCnt = await asyncQuery(`select count(*) cnt from project where pj_platform = '${req.params.category}';`);
 
         res.status(200).render("platform", {
             title: pageTitle,

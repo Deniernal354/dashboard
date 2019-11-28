@@ -1,8 +1,6 @@
-module.exports = function(pool, redisClient) {
+module.exports = function(asyncQuery, redisClient, teamInfo, platformInfo) {
     const express = require("express");
     const router = express.Router();
-    const teamConfig = require("../config/teamConfig.json");
-    const platformConfig = require("../config/platformConfig.json");
     const moment = require("moment");
     const util = require("util");
     const makeAsync = fn => async (req, res, next) => {
@@ -13,8 +11,6 @@ module.exports = function(pool, redisClient) {
         }
     };
     const asyncRedis = util.promisify(redisClient.get).bind(redisClient);
-
-    pool.query = util.promisify(pool.query);
 
     function proFailChartData(rows, diff, endTime) {
         const result = {};
@@ -36,7 +32,7 @@ module.exports = function(pool, redisClient) {
         const startTime = moment(req.query.start, "YYYY/MM/DD HH:mm:ss");
         const endTime = moment(req.query.end, "YYYY/MM/DD HH:mm:ss");
         const mainData = `select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '${startTime.format("YYYY/MM/DD HH:mm:ss")}' and start_t < '${endTime.format("YYYY/MM/DD HH:mm:ss")}') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;`;
-        const mainResult = await pool.query(mainData);
+        const mainResult = await asyncQuery(mainData);
 
         res.status(200).json(proFailChartData(mainResult, endTime.diff(startTime, "days"), endTime));
     }));
@@ -59,13 +55,13 @@ module.exports = function(pool, redisClient) {
 
         // firstrows
         result.allCnt = firstrows.length;
-        for (let i = 1; i < teamConfig.name.length; i++) {
-            teamResult[0].push(teamConfig.name[i]);
+        for (let i = 1; i < teamInfo.name.length; i++) {
+            teamResult[0].push(teamInfo.name[i]);
             teamResult[1].push(0);
         }
 
-        for (let i = 0; i < platformConfig.name.length; i++) {
-            platResult[0].push(platformConfig.name[i]);
+        for (let i = 0; i < platformInfo.name.length; i++) {
+            platResult[0].push(platformInfo.name[i]);
             platResult[1].push(0);
         }
 
@@ -104,8 +100,8 @@ module.exports = function(pool, redisClient) {
         const secondQuery = `select pj.pj_id, pj.pj_name, pj.pj_author, sum(ifnull(m.pass, 0)) pass, sum(ifnull(m.fail, 0)) fail, sum(ifnull(m.skip, 0)) skip, min(ifnull(m.start_t, 0)) start_t from project pj right join (select pj_id, build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method inner join (select method_id from method where start_t > '${moment().subtract(6, "days")
             .format("YYYY/MM/DD")}' and start_t < '${moment().add(1, "days")
             .format("YYYY/MM/DD")}') m2 using (method_id) group by pj_id, build_id) m on pj.pj_id = m.pj_id group by pj_id, build_id;`;
-        const firResult = await pool.query(firstQuery);
-        const secResult = await pool.query(secondQuery);
+        const firResult = await asyncQuery(firstQuery);
+        const secResult = await asyncQuery(secondQuery);
 
         res.status(200).json(proIndexData(firResult, secResult));
     }));
@@ -215,7 +211,7 @@ module.exports = function(pool, redisClient) {
         let mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${maxLabel}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id`;
 
         if (req.params.page === "team") {
-            const teamname = teamConfig.name[req.params.detail];
+            const teamname = teamInfo.name[req.params.detail];
 
             mainData += ` and pj.pj_team='${teamname}'`;
             labelData += ` where pj_team='${teamname}';`;
@@ -225,8 +221,8 @@ module.exports = function(pool, redisClient) {
         }
         mainData += " group by pj_id, build_id;";
 
-        const mainResult = await pool.query(mainData);
-        const labelResult = await pool.query(labelData);
+        const mainResult = await asyncQuery(mainData);
+        const labelResult = await asyncQuery(labelData);
 
         res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
         res.status(200).json(proChartData(mainResult, labelResult, labelResult.length, maxLabel));
@@ -235,7 +231,7 @@ module.exports = function(pool, redisClient) {
     router.get("/getCustomData", makeAsync(async (req, res, next) => {
         const unit = req.query.un;
         const prevId = req.query.vi;
-        const teamname = teamConfig.name[req.user.idx] ? teamConfig.name[req.user.idx] : "SQA";
+        const teamname = teamInfo.name[req.user.idx] ? teamInfo.name[req.user.idx] : "SQA";
         let mainData = "";
 
         if (unit === "pj") {
@@ -255,7 +251,7 @@ module.exports = function(pool, redisClient) {
             mainData = "";
         }
 
-        const mainResult = await pool.query(mainData);
+        const mainResult = await asyncQuery(mainData);
 
         res.status(200).json(mainResult);
     }));
@@ -352,8 +348,8 @@ module.exports = function(pool, redisClient) {
         const abmaxLabel = await asyncRedis("abmaxLabel");
         const labelData = `select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id='${req.query.pi}';`;
         const mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${abmaxLabel} and pj_id=${req.query.pi}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where build_id in (select build_id from buildrank where pj_id=${req.query.pi}) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;`;
-        const labelResult = await pool.query(labelData);
-        const mainResult = await pool.query(mainData);
+        const labelResult = await asyncQuery(labelData);
+        const mainResult = await asyncQuery(mainData);
 
         res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
         res.status(200).json(proInitialModalData(mainResult, labelResult, abmaxLabel));
@@ -442,7 +438,7 @@ module.exports = function(pool, redisClient) {
     router.get("/getModalDataDetail", makeAsync(async (req, res, next) => {
         const mainData = `select c.class_id, c.class_name, c.package_name, count(Case when m.result = 1 then 1 end) pass, count(Case when m.result = 2 then 1 end) fail, count(Case when m.result = 3 then 1 end) skip, min(m.start_t) start_t from class c inner join method m on m.class_id=c.class_id and m.pj_id=${req.query.pi} and c.build_id=${req.query.bi} group by class_id;`;
 
-        const mainResult = await pool.query(mainData);
+        const mainResult = await asyncQuery(mainData);
 
         if (mainResult.length === 0) {
             res.status(200).json({
