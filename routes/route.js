@@ -1,17 +1,11 @@
 module.exports = function(asyncQuery, teamInfo) {
     const express = require("express");
     const router = express.Router();
+    const makeAsync = require("./makeAsync.js");
     const {
         param,
         validationResult,
     } = require("express-validator/check");
-    const makeAsync = fn => async (req, res, next) => {
-        try {
-            await fn(req, res, next);
-        } catch (err) {
-            return next(err);
-        }
-    };
 
     router.get("/", (req, res) => {
         res.redirect("/auto/index");

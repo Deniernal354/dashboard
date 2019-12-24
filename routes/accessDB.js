@@ -2,18 +2,12 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const express = require("express");
     const router = express.Router();
     const moment = require("moment");
+    const makeAsync = require("./makeAsync.js");
     const alertMail = require("./alertMail.js")(asyncQuery, redisClient);
     const {
         body,
         validationResult,
     } = require("express-validator/check");
-    const makeAsync = fn => async (req, res, next) => {
-        try {
-            await fn(req, res, next);
-        } catch (err) {
-            return next(err);
-        }
-    };
 
     function convertName(parameter, category) {
         let result = "";

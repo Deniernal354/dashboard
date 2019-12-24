@@ -3,14 +3,8 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const router = express.Router();
     const moment = require("moment");
     const util = require("util");
-    const makeAsync = fn => async (req, res, next) => {
-        try {
-            await fn(req, res, next);
-        } catch (err) {
-            return next(err);
-        }
-    };
-    const asyncRedis = util.promisify(redisClient.get).bind(redisClient);
+    const makeAsync = require("./makeAsync.js");
+    const asyncRedisGet = util.promisify(redisClient.get).bind(redisClient);
 
     function proFailChartData(rows, diff, endTime) {
         const result = {};
@@ -206,7 +200,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     } // proChartData end
 
     router.get("/getChartData/:page/:detail?", makeAsync(async (req, res, next) => {
-        const maxLabel = await asyncRedis("maxLabel");
+        const maxLabel = await asyncRedisGet("maxLabel");
         let labelData = "select pj_name, pj_id, pj_link from project";
         let mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t, sec_to_time(ifnull(m.duration, 0)) duration from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${maxLabel}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t, unix_timestamp(max(end_t)) - unix_timestamp(min(start_t)) as duration from method where build_id in (select build_id from buildrank) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id=b.pj_id`;
 
@@ -345,7 +339,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     } // proInitialModalData end
 
     router.get("/getInitialModalData", makeAsync(async (req, res, next) => {
-        const abmaxLabel = await asyncRedis("abmaxLabel");
+        const abmaxLabel = await asyncRedisGet("abmaxLabel");
         const labelData = `select pj_name, pj_team, pj_platform, pj_author, pj_id, pj_link from project where pj_id='${req.query.pi}';`;
         const mainData = `select b.pj_id, b.build_id, b.buildenv, ifnull(m.pass, 0) pass, ifnull(m.fail, 0) fail, ifnull(m.skip, 0) skip, min(ifnull(m.start_t, 0)) start_t from (select pj_id, build_id, buildenv FROM build where build_id in (select build_id from buildrank where rank<=${abmaxLabel} and pj_id=${req.query.pi}) order by pj_id, build_id DESC) b left join (select build_id, count(Case when result = 1 then 1 end) pass, count(Case when result = 2 then 1 end) fail, count(Case when result = 3 then 1 end) skip, Date_format(min(start_t), '%Y/%m/%d %H:%i:%s') start_t from method where build_id in (select build_id from buildrank where pj_id=${req.query.pi}) group by build_id) m on b.build_id=m.build_id inner join project pj on pj.pj_id= b.pj_id group by pj_id, build_id;`;
         const labelResult = await asyncQuery(labelData);
