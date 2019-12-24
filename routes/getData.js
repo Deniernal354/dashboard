@@ -1,4 +1,4 @@
-module.exports = function(asyncQuery, redisClient, teamInfo, platformInfo) {
+module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const express = require("express");
     const router = express.Router();
     const moment = require("moment");
@@ -60,8 +60,8 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platformInfo) {
             teamResult[1].push(0);
         }
 
-        for (let i = 0; i < platformInfo.name.length; i++) {
-            platResult[0].push(platformInfo.name[i]);
+        for (let i = 0; i < platInfo.name.length; i++) {
+            platResult[0].push(platInfo.name[i]);
             platResult[1].push(0);
         }
 

@@ -32,7 +32,7 @@ const userControl = (() => {
 })();
 const passportConfig = require("./config/passport")(passport, LocalStrategy, userControl);
 const teamInfo = require("./config/teamConfig.json");
-const platformInfo = require("./config/platformConfig.json");
+const platInfo = require("./config/platformConfig.json");
 
 const serverPortNo = 8000;
 const coreNo = 2;
@@ -120,8 +120,8 @@ if (cluster.isMaster) {
 
     // routes
     app.use("/auto", require("./routes/route.js")(asyncQuery, teamInfo));
-    app.use("/getData", require("./routes/getData.js")(asyncQuery, redisClient, teamInfo, platformInfo));
-    app.use("/access", require("./routes/accessDB.js")(asyncQuery, redisClient, teamInfo, platformInfo));
+    app.use("/getData", require("./routes/getData.js")(asyncQuery, redisClient, teamInfo, platInfo));
+    app.use("/access", require("./routes/accessDB.js")(asyncQuery, redisClient, teamInfo, platInfo));
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
     app.use((req, res, next) => {
         res.statusCode = 404;

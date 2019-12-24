@@ -1,4 +1,4 @@
-module.exports = function(asyncQuery, redisClient, teamInfo, platformInfo) {
+module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const express = require("express");
     const router = express.Router();
     const moment = require("moment");
@@ -45,7 +45,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platformInfo) {
         }
 
         const team = convertName(req.body.pj_team, teamInfo);
-        const plat = convertName(req.body.pj_platform, platformInfo);
+        const plat = convertName(req.body.pj_platform, platInfo);
         const name = req.body.pj_name;
         const auth = req.body.pj_author;
         const env = (req.body.pj_env) ? req.body.pj_env : "Real";
