@@ -1,6 +1,5 @@
 module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const express = require("express");
-    const router = express.Router();
     const moment = require("moment");
     const makeAsync = require("./makeAsync.js");
     const alertMail = require("./alertMail.js")(asyncQuery, redisClient);
@@ -8,6 +7,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         body,
         validationResult,
     } = require("express-validator/check");
+    const router = express.Router();
 
     function convertName(parameter, category) {
         let result = "";
@@ -48,7 +48,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if ((!team) || (!plat)) {
             res.statusCode = 400;
-            return next(`/beforeSuite : Wrong teamName or platName\n(Project : ${name} / team : ${req.body.pj_team} / plat : ${req.body.pj_platform})`);
+            return next(`/beforeSuite : (Project : ${name} / team : ${req.body.pj_team} / plat : ${req.body.pj_platform})`);
         }
 
         // Resolve link value
@@ -98,8 +98,8 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     // Params : pj_id, build_id, class_name, package_name
     // Returns : (new)class_id
     router.post("/beforeClass", [
-        body("pj_id").exists(),
-        body("build_id").exists(),
+        body("pj_id").exists({"checkFalsy": true}),
+        body("build_id").exists({"checkFalsy": true}),
         body("class_name").exists(),
         body("package_name").exists(),
     ], makeAsync(async (req, res, next) => {
@@ -120,7 +120,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (findBuildResult[0].build_id === -1) {
             res.statusCode = 400;
-            return next(`/beforeClass : There is no such pj_id, build_id\n${findBuild}`);
+            return next(`/beforeClass : ${findBuild}`);
         } else {
             const newClassResult = await asyncQuery(newClass);
 
@@ -133,9 +133,9 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     // Params : pj_id, build_id, class_id, method_name, start_t, end_t, result
     // Returns : success(1)
     router.post("/afterMethod", [
-        body("pj_id").exists(),
-        body("build_id").exists(),
-        body("class_id").exists(),
+        body("pj_id").exists({"checkFalsy": true}),
+        body("build_id").exists({"checkFalsy": true}),
+        body("class_id").exists({"checkFalsy": true}),
         body("method_name").exists(),
         body("start_t").exists()
             .matches(/^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])\s([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/),
@@ -165,7 +165,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (findClassResult[0].class_id === -1) {
             res.statusCode = 400;
-            return next(`/afterMethod : There is no such pj_id, build_id, class_id\n${findClass}`);
+            return next(`/afterMethod : ${findClass}`);
         } else {
             if (findProjectResult[0].pj_mail !== "-") {
                 const findClassName = `select package_name pname, class_name cname from class where class_id=${classId};`;
@@ -202,7 +202,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
     // Params : selectId
     // Returns : result("올바르게 삭제되었습니다." or "Data가 삭제되지 않았습니다.")
-    router.post("/deleteData", [body("selectId").exists()], makeAsync(async (req, res, next) => {
+    router.post("/deleteData", [body("selectId").exists({"checkFalsy": true})], makeAsync(async (req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
         const err = validationResult(req);
 
