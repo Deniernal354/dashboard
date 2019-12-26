@@ -36,7 +36,6 @@ const platInfo = require("./config/platformConfig.json");
 
 const serverPortNo = 8000;
 const coreNo = 2;
-
 const redisClient = redis.createClient();
 
 function handleDisconnect() {
@@ -123,10 +122,12 @@ if (cluster.isMaster) {
     app.use("/getData", require("./routes/getData.js")(asyncQuery, redisClient, teamInfo, platInfo));
     app.use("/access", require("./routes/accessDB.js")(asyncQuery, redisClient, teamInfo, platInfo));
     app.use("/admin", require("./routes/admin.js")(passport, redisClient));
+    // Else -> 404 Page
     app.use((req, res, next) => {
         res.statusCode = 404;
         next(new Error(`${req.url} NOT FOUND`));
     });
+    // Error handler
     app.use((err, req, res, next) => {
         const now = moment().format("YYYY.MM.DD HH:mm:ss");
 

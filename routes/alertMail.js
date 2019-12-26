@@ -1,8 +1,8 @@
 module.exports = function(asyncQuery, redisClient) {
     const ejs = require("ejs");
+    const moment = require("moment");
     const util = require("util");
     const nodemailer = require("nodemailer");
-    const moment = require("moment");
     const asyncLrange = util.promisify(redisClient.LRANGE).bind(redisClient);
 
     async function sendMail(projectInfo, failedMethods) {

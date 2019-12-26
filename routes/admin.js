@@ -1,8 +1,8 @@
 module.exports = function(passport, redisClient) {
     const express = require("express");
-    const router = express.Router();
     const util = require("util");
     const makeAsync = require("./makeAsync.js");
+    const router = express.Router();
     const asyncRedisGet = util.promisify(redisClient.get).bind(redisClient);
 
     function isAuthenticated(req, res, next) {
