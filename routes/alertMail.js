@@ -2,9 +2,11 @@ module.exports = function(asyncQuery, redisClient) {
     const ejs = require("ejs");
     const util = require("util");
     const nodemailer = require("nodemailer");
+    const moment = require("moment");
     const asyncLrange = util.promisify(redisClient.LRANGE).bind(redisClient);
 
-    async function sendMail(projectInfo, failedMethods, now) {
+    async function sendMail(projectInfo, failedMethods) {
+        const now = moment().format("YYYY.MM.DD HH:mm:ss");
         const transporter = nodemailer.createTransport({
             host: "localhost",
             port: 25,
@@ -77,7 +79,7 @@ module.exports = function(asyncQuery, redisClient) {
         }
     }
 
-    async function checkMail(pjId, now) {
+    async function checkMail(pjId) {
         const findPj = `select pj_name, pj_team, pj_platform, pj_author, pj_mail from project where pj_id=${pjId};`;
         const projectInfo = await asyncQuery(findPj);
         const findBu = `select build_id id from buildrank where pj_id=${pjId} and rank<=4 order by rank;`;
@@ -113,7 +115,7 @@ module.exports = function(asyncQuery, redisClient) {
 
             // Send a mail only if there is content
             if (Object.keys(failedMethods).length !== 0) {
-                sendMail(projectInfo, failedMethods, now).catch(console.error);
+                sendMail(projectInfo, failedMethods).catch(console.error);
             }
         }
     }

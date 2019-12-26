@@ -192,10 +192,9 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         }
 
         const pjId = req.body.mail_pj_id;
-        const now = moment().format("YYYY.MM.DD HH:mm:ss");
 
         // /afterSuite isn't an async function -> So there is no wrapper function -> Must catch the error.
-        alertMail.checkMail(pjId, now).catch(console.error);
+        alertMail.checkMail(pjId).catch(console.error);
         res.status(200).send({
             "success": 1,
         });
