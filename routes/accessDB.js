@@ -1,4 +1,4 @@
-module.exports = function(pool) {
+module.exports = function(pool, redisClient) {
     const express = require("express");
     const router = express.Router();
     const util = require("util");
@@ -16,6 +16,7 @@ module.exports = function(pool) {
         }
     };
     const moment = require("moment");
+    const alertMail = require("./alertMail.js")(pool, redisClient);
 
     pool.query = util.promisify(pool.query);
 
@@ -42,17 +43,19 @@ module.exports = function(pool) {
         body("pj_author").exists(),
     ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
-        const team = convertName(req.body.pj_team, teamConfig);
-        const plat = convertName(req.body.pj_platform, platformConfig);
-        const name = req.body.pj_name;
-        const auth = req.body.pj_author;
-        const env = (req.body.pj_env) ? req.body.pj_env : "Real";
-        let link = "-";
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
             return next(JSON.stringify(err.array()));
         }
+
+        const team = convertName(req.body.pj_team, teamConfig);
+        const plat = convertName(req.body.pj_platform, platformConfig);
+        const name = req.body.pj_name;
+        const auth = req.body.pj_author;
+        const env = (req.body.pj_env) ? req.body.pj_env : "Real";
+        const mail = (req.body.pj_mail) ? req.body.pj_mail : "-";
+        let link = "-";
 
         if ((!team) || (!plat)) {
             res.statusCode = 400;
@@ -73,26 +76,30 @@ module.exports = function(pool) {
 
         // IF the project exists
         if (projectId !== -1) {
-            // IF the project's link already exists
-            if (link !== "-" || link !== "") {
-                const updateLink = `update project set pj_link='${link}' where pj_id=${projectId} and pj_link!='${link}';`;
+            const prevMail = await pool.query(`select pj_mail from project where pj_id=${projectId}`);
 
-                await pool.query(updateLink);
+            // Mail address removal case
+            if (prevMail[0].pj_mail !== "-" && mail === "-") {
+                alertMail.delRedis(0, [projectId]);
             }
-        } else { // IF the project NOT exists -> Insert a new project
-            const newPj = `INSERT INTO project VALUES (default, '${name}', '${team}', '${plat}', '${auth}', '${link}');`;
+            // Update the project's mail info
+            await pool.query(`update project set pj_mail='${mail}' where pj_id=${projectId} and pj_mail!='${mail}';`);
+            // Update the project's link info
+            await pool.query(`update project set pj_link='${link}' where pj_id=${projectId} and pj_link!='${link}';`);
+        } else {
+            // IF the project NOT exists -> Insert a new project
+            const newPj = `INSERT INTO project VALUES (default, '${name}', '${team}', '${plat}', '${auth}', '${link}', '${mail}');`;
             const newPjResult = await pool.query(newPj);
 
             projectId = newPjResult.insertId;
         }
-        // pj_id, link, env is resolved
+        // pj_id, link, env, mail is resolved
 
         const newBuild = `insert into build values (default, '${env}', ${projectId});`;
         const newBuildResult = await pool.query(newBuild);
         const afterBuild = `update buildrank set rank = rank+1 where pj_id = ${projectId};delete from buildrank where pj_id=${projectId} and rank=21;insert into buildrank values (default, 1, ${newBuildResult.insertId}, ${projectId});`;
 
         await pool.query(afterBuild);
-
         res.status(200).json({
             "pj_id": projectId,
             "build_id": newBuildResult.insertId,
@@ -163,19 +170,47 @@ module.exports = function(pool) {
         const endTime = req.body.end_t;
         const testResult = req.body.result;
         const findClass = `select ifnull((select class_id from class where pj_id=${pjId} and build_id=${buildId} and class_id=${classId}), -1) class_id;`;
-        const newMethod = `INSERT into method values (default, '${mname}', '${startTime}', '${endTime}', ${testResult}, ${classId}, ${buildId}, ${pjId});`;
         const findClassResult = await pool.query(findClass);
+        const newMethod = `INSERT into method values (default, '${mname}', '${startTime}', '${endTime}', ${testResult}, ${classId}, ${buildId}, ${pjId});`;
+        const findProjectResult = await pool.query(`select pj_mail from project where pj_id=${pjId}`);
 
         if (findClassResult[0].class_id === -1) {
             res.statusCode = 400;
             return next(`/afterMethod : There is no such pj_id, build_id, class_id\n${findClass}`);
         } else {
+            if (findProjectResult[0].pj_mail !== "-") {
+                const findClassName = `select package_name pname, class_name cname from class where class_id=${classId};`;
+                const findClassNameResult = await pool.query(findClassName);
+
+                alertMail.addRedis(buildId, `${findClassNameResult[0].pname}%%${findClassNameResult[0].cname}%%${mname}`, testResult);
+            }
             await pool.query(newMethod);
             res.status(200).json({
                 "success": 1,
             });
         }
     }));
+
+    // Params : mail_pj_id
+    // Returns : success(1)
+    // checkFalsy option assure the mail_pj_id isn't any falsy value.
+    router.post("/afterSuite", [body("mail_pj_id").exists({"checkFalsy": true})], (req, res, next) => {
+        const err = validationResult(req);
+
+        if (!err.isEmpty()) {
+            res.statusCode = 400;
+            return next(JSON.stringify(err.array()));
+        }
+
+        const pjId = req.body.mail_pj_id;
+        const now = moment().format("YYYY.MM.DD HH:mm:ss");
+
+        // /afterSuite isn't an async function -> So there is no wrapper function -> Must catch the error.
+        alertMail.checkMail(pjId, now).catch(console.error);
+        res.status(200).send({
+            "success": 1,
+        });
+    });
 
     // Params : selectId
     // Returns : result("올바르게 삭제되었습니다." or "Data가 삭제되지 않았습니다.")
@@ -202,6 +237,7 @@ module.exports = function(pool) {
 
         if (len >= 0 && len < 4) {
             deleteData = `delete from ${tableName[len]} where ${tableId[len]}=${selectId[len]};`;
+            alertMail.delRedis(len, selectId);
         } else {
             res.statusCode = 400;
             return next(`/deleteData : Wrong selectId request\n${selectId}`);
