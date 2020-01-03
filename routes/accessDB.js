@@ -44,7 +44,19 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
                 return "-";
             }
         }),
-        body("pj_mail").customSanitizer(value => value || "-"),
+        body("pj_mail").customSanitizer(value => {
+            if (value) {
+                const tmp = new RegExp(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/, "i");
+
+                if (tmp.test(value)) {
+                    return value;
+                } else {
+                    return "+++";
+                }
+            } else {
+                return "-";
+            }
+        }),
     ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
@@ -61,7 +73,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         const mail = req.body.pj_mail;
         const link = req.body.pj_link;
 
-        if ((!team) || (!plat)) {
+        if ((!team) || (!plat) || (mail === "+++")) {
             res.statusCode = 400;
             return next(`/beforeSuite : (${name} / ${req.body.pj_team} / ${req.body.pj_platform})`);
         }
