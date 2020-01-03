@@ -4,7 +4,7 @@ module.exports = function(asyncQuery, teamInfo) {
     const {
         param,
         validationResult,
-    } = require("express-validator/check");
+    } = require("express-validator");
     const router = express.Router();
 
     router.get("/", (req, res) => {

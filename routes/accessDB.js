@@ -6,7 +6,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
     const {
         body,
         validationResult,
-    } = require("express-validator/check");
+    } = require("express-validator");
     const router = express.Router();
 
     function convertName(parameter, category) {
