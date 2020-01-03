@@ -23,13 +23,28 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         return result;
     }
 
-    // Params : pj_name, pj_team, pj_platform, pj_author, pj_env, pj_link
-    // Returns : pj_id(pj_id exists ? pj_id : (new)pj_id), (new)build_id
+    // Params :
+    // (Essential) pj_name, pj_team, pj_platform, pj_author
+    // (Optional) pj_env, pj_link, pj_mail
+    // Returns : pj_id, build_id
     router.post("/beforeSuite", [
         body("pj_name").exists(),
         body("pj_team").exists(),
         body("pj_platform").exists(),
         body("pj_author").exists(),
+        body("pj_env").customSanitizer(value => value || "Real"),
+        body("pj_link").customSanitizer(value => {
+            if (value) {
+                if (value.slice(0, 4) !== "http") {
+                    return `http://${value}`;
+                } else {
+                    return value;
+                }
+            } else {
+                return "-";
+            }
+        }),
+        body("pj_mail").customSanitizer(value => value || "-"),
     ], makeAsync(async (req, res, next) => {
         const err = validationResult(req);
 
@@ -42,21 +57,13 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         const plat = convertName(req.body.pj_platform, platInfo);
         const name = req.body.pj_name;
         const auth = req.body.pj_author;
-        const env = (req.body.pj_env) ? req.body.pj_env : "Real";
-        const mail = (req.body.pj_mail) ? req.body.pj_mail : "-";
-        let link = "-";
+        const env = req.body.pj_env;
+        const mail = req.body.pj_mail;
+        const link = req.body.pj_link;
 
         if ((!team) || (!plat)) {
             res.statusCode = 400;
-            return next(`/beforeSuite : (Project : ${name} / team : ${req.body.pj_team} / plat : ${req.body.pj_platform})`);
-        }
-
-        // Resolve link value
-        if (req.body.pj_link) {
-            link = req.body.pj_link;
-            if (link.slice(0, 4) !== "http") {
-                link = `http://${link}`;
-            }
+            return next(`/beforeSuite : (${name} / ${req.body.pj_team} / ${req.body.pj_platform})`);
         }
 
         const findPj = `select ifnull((select max(pj_id) from project where pj_name='${name}' and pj_team='${team}' and pj_platform='${plat}' and pj_author='${auth}'), -1) pj_id;`;
