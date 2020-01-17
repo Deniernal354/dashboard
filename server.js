@@ -7,7 +7,8 @@ const session = require("express-session");
 // Login
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt-nodejs");
+// This value is never used, but only for the uniformity.
+const passportConfig = require("./config/passport")(passport, LocalStrategy);
 // Mysql, Redis
 const db = require("mysql");
 const dbConfig = require("./config/dbConfig.json");
@@ -16,21 +17,7 @@ const RedisStore = require("connect-redis")(session);
 // Utils
 const moment = require("moment");
 const util = require("util");
-// Custom Config, values
-const userControl = (() => {
-    const userid = require("./config/adminUser.json").userid;
-    const password = [];
-
-    userid.forEach(value => {
-        password.push(bcrypt.hashSync(value, bcrypt.genSaltSync()));
-    });
-
-    return {
-        getUserid: () => userid,
-        getPassword: () => password,
-    };
-})();
-const passportConfig = require("./config/passport")(passport, LocalStrategy, userControl);
+// Custom config
 const teamInfo = require("./config/teamConfig.json");
 const platInfo = require("./config/platformConfig.json");
 
