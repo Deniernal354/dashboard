@@ -62,7 +62,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
-            return next(JSON.stringify(err.array()));
+            return next(`/beforeSuite : ${JSON.stringify(err.array())}`);
         }
 
         const team = convertName(req.body.pj_team, teamInfo);
@@ -126,7 +126,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
-            return next(JSON.stringify(err.array()));
+            return next(`/beforeClass : ${JSON.stringify(err.array())}`);
         }
 
         const pjId = req.body.pj_id;
@@ -167,7 +167,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
-            return next(JSON.stringify(err.array()));
+            return next(`/afterMethod : ${JSON.stringify(err.array())}`);
         }
 
         const pjId = req.body.pj_id;
@@ -207,7 +207,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
-            return next(JSON.stringify(err.array()));
+            return next(`/afterSuite : ${JSON.stringify(err.array())}`);
         }
 
         const pjId = req.body.mail_pj_id;
@@ -233,7 +233,7 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         if (!err.isEmpty()) {
             res.statusCode = 400;
-            return next(JSON.stringify(err.array()));
+            return next(`/deleteData : ${JSON.stringify(err.array())}`);
         }
 
         const selectId = req.body.selectId;
