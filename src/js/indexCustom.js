@@ -384,9 +384,7 @@ function init_platformChart(parsedResult) {
                     "rgba(255, 236, 80, 1.0)",
                     "rgba(180, 238, 180, 1.0)"
                 ],
-                label: [
-                    "PC Web", "PC App", "Mobile Web", "Mobile App", "API"
-                ]
+                label: ["PC Web", "PC App", "Mobile Web", "Mobile App", "API"]
             }]
         },
         options: {
@@ -423,7 +421,7 @@ function init_indexData() {
             document.getElementById("teamright" + i).innerText = parsedResult.teamResult[1][i] + " 개";
             setAttributes(document.getElementById("teamcenter" + i), {
                 "aria-valuenow": parsedResult.teamResult[1][i],
-                "aria-valuemax": parsedResult.allCnt,
+                "aria-valuemax": parsedResult.maxTeamCnt,
                 "style": "width: " + parsedResult.teamResult[2][i] + "%"
             });
         }

@@ -64,14 +64,17 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
             platResult[1][platResult[0].indexOf(value.pj_platform)]++;
         });
 
+        const maxTeamCnt = Math.max.apply(null, teamResult[1]);
+
         teamResult[1].forEach(value => {
-            teamResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
+            teamResult[2].push(Math.round(value / maxTeamCnt * 100).toFixed(1));
         });
         platResult[1].forEach(value => {
             platResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
         });
 
         result.teamResult = teamResult;
+        result.maxTeamCnt = maxTeamCnt;
         result.platResult = platResult;
 
         // secondrows
