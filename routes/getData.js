@@ -11,8 +11,8 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         const data = rows.slice();
 
         data.forEach(value => {
-            value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
-            value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+            value.passrate = (value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+            value.failrate = (value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
         });
 
         result.data = data;
@@ -67,10 +67,10 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
         const maxTeamCnt = Math.max.apply(null, teamResult[1]);
 
         teamResult[1].forEach(value => {
-            teamResult[2].push(Math.round(value / maxTeamCnt * 100).toFixed(1));
+            teamResult[2].push((value / maxTeamCnt * 100).toFixed(1));
         });
         platResult[1].forEach(value => {
-            platResult[2].push(Math.round(value / result.allCnt * 100).toFixed(1));
+            platResult[2].push((value / result.allCnt * 100).toFixed(1));
         });
 
         result.teamResult = teamResult;
@@ -82,8 +82,8 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
             if (value.start_t.slice(0, 10) === now) {
                 todayCnt++;
             }
-            value.passrate = Math.round(value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
-            value.failrate = Math.round(value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+            value.passrate = (value.pass / (value.pass + value.skip + value.fail) * 100).toFixed(1);
+            value.failrate = (value.fail / (value.pass + value.skip + value.fail) * 100).toFixed(1);
         });
 
         result.todayCnt = todayCnt;
@@ -373,13 +373,24 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
 
         data.forEach(value => {
             const tmpsum = value.pass + value.fail + value.skip;
+            const tmpPassr = Math.round(value.pass / tmpsum * 100);
+            let tmpFailr = Math.round(value.fail / tmpsum * 100);
+            let tmpSkipr = Math.round(value.skip / tmpsum * 100);
+
+            if ((tmpPassr + tmpFailr + tmpSkipr) > 100) {
+                if (tmpFailr) {
+                    tmpFailr--;
+                } else {
+                    tmpSkipr--;
+                }
+            }
 
             classPass.push(value.pass);
             classFail.push(value.fail);
             classSkip.push(value.skip);
-            classPassr.push(Math.round(value.pass / tmpsum * 100).toFixed(1));
-            classFailr.push(Math.round(value.fail / tmpsum * 100).toFixed(1));
-            classSkipr.push(Math.round(value.skip / tmpsum * 100).toFixed(1));
+            classPassr.push(tmpPassr);
+            classFailr.push(tmpFailr);
+            classSkipr.push(tmpSkipr);
             classTotal.push(tmpsum);
 
             buildPass += value.pass;
@@ -396,9 +407,9 @@ module.exports = function(asyncQuery, redisClient, teamInfo, platInfo) {
             datasets: [
                 {
                     data: [
-                        Math.round(buildFail / buildTotal * 100).toFixed(1),
-                        Math.round(buildSkip / buildTotal * 100).toFixed(1),
-                        Math.round(buildPass / buildTotal * 100).toFixed(1),
+                        (buildFail / buildTotal * 100).toFixed(1),
+                        (buildSkip / buildTotal * 100).toFixed(1),
+                        (buildPass / buildTotal * 100).toFixed(1),
                     ],
                     backgroundColor: [
                         "rgba(255, 115, 115, 0.7)",

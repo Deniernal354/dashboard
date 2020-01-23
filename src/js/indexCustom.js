@@ -247,7 +247,7 @@ function updateProjectDetail(labels, data, idx) {
             a2.innerText = rawdata.pj_name;
             var p1 = document.createElement("p");
             var tmpTotal = rawdata.pass + rawdata.skip + rawdata.fail;
-            var tmprate = Math.round(rawdata.fail / tmpTotal * 100).toFixed(1);
+            var tmprate = (rawdata.fail / tmpTotal * 100).toFixed(1);
             p1.setAttribute("id", "failp" + i);
             p1.innerText = tmpTotal + "개 TC중 " + rawdata.fail + "개 TC Fail (" + tmprate + "%)";
             var p2 = document.createElement("p");
@@ -361,15 +361,15 @@ function init_platformChart(parsedResult) {
     }
 
     for (var i = 0; i < 5; i++) {
-        document.getElementById("plat_info" + i).innerHTML += "(" + parsedResult.platResult[2][i] + "%)";
+        document.getElementById("plat_info" + i).innerHTML += "(" + parsedResult.platResult[1][i] + "개)";
     }
 
     var platformChart = new Chart(document.getElementById("platformChartDiv"), {
         type: "doughnut",
         data: {
-            labels: ["PC Web", "PC App", "Mobile Web", "Mobile App", "API"],
+            labels: ["PC Web(%)", "PC App(%)", "Mobile Web(%)", "Mobile App(%)", "API(%)"],
             datasets: [{
-                data: parsedResult.platResult[1],
+                data: parsedResult.platResult[2],
                 backgroundColor: [
                     "rgba(102, 194, 255, 0.7)",
                     "rgba(155, 89, 182, 0.7)",
@@ -390,7 +390,7 @@ function init_platformChart(parsedResult) {
         options: {
             legend: false,
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
         }
     });
 }
@@ -412,7 +412,7 @@ function init_indexData() {
         if (parsedResult.data.length === 0) {
             document.getElementById("passCnt").innerText = "0.0%";
         } else {
-            document.getElementById("passCnt").innerText = Math.round(tmppass / parsedResult.data.length).toFixed(1) + "%";
+            document.getElementById("passCnt").innerText = (tmppass / parsedResult.data.length).toFixed(1) + "%";
         }
         $("#todayProject").html(moment().format("YYYY.MM.DD") + " 기준");
 
