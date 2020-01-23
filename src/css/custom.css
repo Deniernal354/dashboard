@@ -388,7 +388,9 @@ body .container.body .right_col {
 }
 .container {
   width: 100%;
-  padding: 0
+  padding: 0;
+  overflow: auto;
+  height: 100%;
 }
 .navbar-nav>li>a,
 .navbar-brand,
@@ -406,7 +408,7 @@ body {
   color: #73879C;
   background: #2A3F54;
   font-family: "Helvetica Neue", Roboto, Arial, "Droid Sans", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 1.471
 }
@@ -1695,12 +1697,11 @@ button,
   margin-right: 5px
 }
 .modal-open {
-  overflow: auto;
-  overflow-y: scroll;
-  padding-right:0 !important;
+  padding-right: 0 !important;
 }
 .modal.modal-center {
   text-align: center;
+  overflow: hidden;
 }
 .modal.modal-center:before {
   vertical-align: middle;
