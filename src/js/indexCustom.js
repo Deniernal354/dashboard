@@ -517,6 +517,7 @@ function init_daterangepicker() {
 }
 
 $(document).ready(function() {
+    Chart.defaults.global.defaultFontSize = 16;
     init_compose();
     init_indexData();
     init_daterangepicker();
