@@ -1,0 +1,27 @@
+#integration-list {
+  width: 100%;
+  margin: 0 auto;
+  display: table
+}
+
+#integration-list ul {
+  padding: 0;
+  margin: 20px 0;
+  color: #555
+}
+
+#integration-list ul>li {
+  list-style: none;
+  border-top: 1px solid #ddd;
+  display: block;
+  padding: 15px;
+  overflow: hidden
+}
+
+#integration-list ul:last-child {
+  border-bottom: 1px solid #ddd
+}
+
+#integration-list ul>li:hover {
+  background: #efefef
+}

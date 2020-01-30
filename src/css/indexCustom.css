@@ -56,6 +56,117 @@ ul.top_profiles li:nth-child(odd) {
 .media .profile_thumb i {
   font-size: 30px
 }
+
+.daterangepicker .ranges li {
+  color: #73879C
+}
+.daterangepicker .ranges li.active,
+.daterangepicker .ranges li:hover {
+  background: #536A7F;
+  border: 1px solid #536A7F;
+  color: #fff
+}
+.daterangepicker .input-mini {
+  background-color: #eee;
+  border: 1px solid #ccc;
+  box-shadow: none !important
+}
+.daterangepicker .input-mini.active {
+  border: 1px solid #ccc
+}
+.daterangepicker select.monthselect,
+.daterangepicker select.yearselect,
+.daterangepicker select.hourselect,
+.daterangepicker select.minuteselect,
+.daterangepicker select.secondselect,
+.daterangepicker select.ampmselect {
+  font-size: 12px;
+  padding: 1px;
+  height: auto;
+  margin: 0;
+  cursor: default;
+  height: 30px;
+  border: 1px solid #ADB2B5;
+  line-height: 30px;
+  border-radius: 0px !important
+}
+.daterangepicker select.monthselect {
+  margin-right: 2%
+}
+.daterangepicker td.in-range {
+  background: #E4E7EA;
+  color: #73879C
+}
+.daterangepicker td.active,
+.daterangepicker td.active:hover {
+  background-color: #536A7F;
+  color: #fff
+}
+.daterangepicker th.available:hover {
+  background: #eee;
+  color: #34495E
+}
+.daterangepicker:before,
+.daterangepicker:after {
+  content: none
+}
+.daterangepicker .calendar.single {
+  margin: 0 0 4px 0
+}
+.daterangepicker .calendar.single .calendar-table {
+  width: 224px;
+  padding: 0 0 4px 0 !important
+}
+.daterangepicker .calendar.single .calendar-table thead tr:first-child th {
+  padding: 8px 5px
+}
+.daterangepicker .calendar.single .calendar-table thead th {
+  border-radius: 0
+}
+.daterangepicker.picker_1 {
+  color: #fff;
+  background: #34495E
+}
+.daterangepicker.picker_1 .calendar-table {
+  background: #34495E
+}
+.daterangepicker.picker_1 .calendar-table thead tr {
+  background: #213345
+}
+.daterangepicker.picker_1 .calendar-table thead tr:first-child {
+  background: #1ABB9C
+}
+.daterangepicker.picker_1 .calendar-table td.off {
+  background: #34495E;
+  color: #999
+}
+.daterangepicker.picker_1 .calendar-table td.available:hover {
+  color: #34495E
+}
+.daterangepicker.picker_2 .calendar-table thead tr {
+  color: #1ABB9C
+}
+.daterangepicker.picker_2 .calendar-table thead tr:first-child {
+  color: #73879C
+}
+.daterangepicker.picker_3 .calendar-table thead tr:first-child {
+  color: #fff;
+  background: #1ABB9C
+}
+.daterangepicker.picker_4 .calendar-table thead tr:first-child {
+  color: #fff;
+  background: #34495E
+}
+.daterangepicker.picker_4 .calendar-table td,
+.daterangepicker.picker_4 .calendar-table td.off {
+  background: #ECF0F1;
+  border: 1px solid #fff;
+  border-radius: 0
+}
+.daterangepicker.picker_4 .calendar-table td.active {
+  background: #34495E
+}
+
 .left_col {
   background: #2A3F54
 }
@@ -271,7 +382,7 @@ body .container.body .right_col {
 .container {
   width: 100%;
   padding: 0;
-  overflow: auto;
+  overflow: visible;
   height: 100%;
 }
 .navbar-nav>li>a,
@@ -321,6 +432,21 @@ body {
 }
 .page-title .title_right .pull-right {
   margin: 10px 0
+}
+.fixed_height_320 {
+  height: 320px
+}
+.fixed_height_350 {
+  height: 350px;
+}
+.fixed_height_390 {
+  height: 390px
+}
+.fixed_height_200 {
+  height: 200px
+}
+.overflow_hidden {
+  overflow: hidden
 }
 .progress-bar-dark {
   background-color: #34495E !important
@@ -421,11 +547,6 @@ table.no-margin .progress {
 .row {
   margin-right: -10px;
   margin-left: -10px
-}
-.chartrow {
-  margin-right: -10px;
-  margin-left: -10px;
-  overflow: hidden;
 }
 .grid_slider .col-md-6 {
   padding: 0 40px
@@ -939,22 +1060,9 @@ h3.degrees {
   font-size: 13px;
   font-weight: 300
 }
-.daily-weather .day {
-  font-size: 14px;
-  border-top: 2px solid rgba(115, 135, 156, 0.36);
-  text-align: center;
-  border-bottom: 2px solid rgba(115, 135, 156, 0.36);
-  padding: 5px 0
-}
-.weather-days .col-sm-2 {
-  overflow: hidden;
-  width: 16.66666667%
-}
-.weather .row {
-  margin-bottom: 0
-}
-.bulk-actions {
-  display: none
+
+.example_alt_pagination div.dataTables_info {
+  width: 40%
 }
 table.display tr.even.row_selected td {
   background-color: #B0BED9
@@ -1625,68 +1733,6 @@ legend {
   font-size: 18px;
   color: inherit
 }
-.form-horizontal .form-group {
-  margin-right: 0;
-  margin-left: 0
-}
-.form-control-feedback {
-  margin-top: 8px;
-  height: 23px;
-  color: #bbb;
-  line-height: 24px;
-  font-size: 15px
-}
-.form-control-feedback.left {
-  border-right: 1px solid #ccc;
-  left: 13px
-}
-.form-control-feedback.right {
-  border-left: 1px solid #ccc;
-  right: 13px
-}
-.form-control.has-feedback-left {
-  padding-left: 45px
-}
-.form-control.has-feedback-right {
-  padding-right: 45px
-}
-.form-group {
-  margin-bottom: 10px
-}
-.validate {
-  margin-top: 10px
-}
-.invalid-form-error-message {
-  margin-top: 10px;
-  padding: 5px
-}
-.invalid-form-error-message.filled {
-  border-left: 2px solid #E74C3C
-}
-p.parsley-success {
-  color: #468847;
-  background-color: #DFF0D8;
-  border: 1px solid #D6E9C6
-}
-p.parsley-error {
-  color: #B94A48;
-  background-color: #F2DEDE;
-  border: 1px solid #EED3D7
-}
-ul.parsley-errors-list {
-  list-style: none;
-  color: #E74C3C;
-  padding-left: 0
-}
-input.parsley-error,
-textarea.parsley-error,
-select.parsley-error {
-  background: #FAEDEC;
-  border: 1px solid #E85445
-}
-.btn-group .parsley-errors-list {
-  display: none
-}
 .bad input,
 .bad select,
 .bad textarea {
@@ -1697,65 +1743,6 @@ select.parsley-error {
   animation: 0.7s 1 shake linear;
   -moz-animation: .7s 1 shake linear;
   -webkit-animation: 0.7s 1 shake linear
-}
-.item input,
-.item textarea {
-  transition: 0.42s
-}
-.item .alert {
-  float: left;
-  margin: 0 0 0 20px;
-  padding: 3px 10px;
-  color: #FFF;
-  border-radius: 3px 4px 4px 3px;
-  background-color: #CE5454;
-  max-width: 170px;
-  white-space: pre;
-  position: relative;
-  left: -15px;
-  opacity: 0;
-  z-index: 1;
-  transition: 0.15s ease-out
-}
-.item .alert::after {
-  content: '';
-  display: block;
-  height: 0;
-  width: 0;
-  border-color: transparent #CE5454 transparent transparent;
-  border-style: solid;
-  border-width: 11px 7px;
-  position: absolute;
-  left: -13px;
-  top: 1px
-}
-.item.bad .alert {
-  left: 0;
-  opacity: 1
-}
-.inl-bl {
-  display: inline-block
-}
-.well .markup {
-  background: #fff;
-  color: #777;
-  position: relative;
-  padding: 45px 15px 15px;
-  margin: 15px 0 0 0;
-  background-color: #fff;
-  border-radius: 0 0 4px 4px;
-  box-shadow: none
-}
-.well .markup::after {
-  content: "Example";
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  font-size: 12px;
-  font-weight: bold;
-  color: #bbb;
-  text-transform: uppercase;
-  letter-spacing: 1px
 }
 .autocomplete-suggestions {
   border: 1px solid #e4e4e4;
@@ -2026,7 +2013,6 @@ ul.bar_tabs.right li {
 a:focus {
   outline: none
 }
-
 .chart {
   position: relative;
   display: inline-block;
@@ -2148,119 +2134,6 @@ ul.user_data li .progress {
   margin: 0
 }
 
-.thumbnail .image {
-  height: 120px;
-  overflow: hidden
-}
-.caption {
-  padding: 9px 5px;
-  background: #F7F7F7
-}
-.caption p {
-  margin-bottom: 5px
-}
-.thumbnail {
-  height: 190px;
-  overflow: hidden
-}
-.view {
-  overflow: hidden;
-  position: relative;
-  text-align: center;
-  box-shadow: 1px 1px 2px #e6e6e6;
-  cursor: default
-}
-.view .mask,
-.view .content {
-  position: absolute;
-  width: 100%;
-  overflow: hidden;
-  top: 0;
-  left: 0
-}
-.view img {
-  display: block;
-  position: relative
-}
-.view .tools {
-  text-transform: uppercase;
-  color: #fff;
-  text-align: center;
-  position: relative;
-  font-size: 17px;
-  padding: 3px;
-  background: rgba(0, 0, 0, 0.35);
-  margin: 43px 0 0 0
-}
-.mask.no-caption .tools {
-  margin: 90px 0 0 0
-}
-.view .tools a {
-  display: inline-block;
-  color: #FFF;
-  font-size: 18px;
-  font-weight: 400;
-  padding: 0 4px
-}
-.view p {
-  font-family: Georgia, serif;
-  font-style: italic;
-  font-size: 12px;
-  position: relative;
-  color: #fff;
-  padding: 10px 20px 20px;
-  text-align: center
-}
-.view a.info {
-  display: inline-block;
-  text-decoration: none;
-  padding: 7px 14px;
-  background: #000;
-  color: #fff;
-  text-transform: uppercase;
-  box-shadow: 0 0 1px #000
-}
-.view-first img {
-  transition: all 0.2s linear
-}
-.view-first .mask {
-  opacity: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  transition: all 0.4s ease-in-out
-}
-.view-first .tools {
-  transform: translateY(-100px);
-  opacity: 0;
-  transition: all 0.2s ease-in-out
-}
-.view-first p {
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.2s linear
-}
-.view-first:hover img {
-  transform: scale(1.1)
-}
-.view-first:hover .mask {
-  opacity: 1
-}
-.view-first:hover .tools,
-.view-first:hover p {
-  opacity: 1;
-  transform: translateY(0px)
-}
-.view-first:hover p {
-  transition-delay: 0.1s
-}
-.form-group.has-feedback span {
-  display: block !important;
-}
-.form-group .btn {
-  margin-bottom: -6px;
-}
-
-.input-group-btn .btn { margin-bottom:0; }
-
 /*!
 * bootstrap-vertical-tabs - v1.2.1
 * https://dbtek.github.io/bootstrap-vertical-tabs
@@ -2352,27 +2225,6 @@ ul.user_data li .progress {
 }
 .sideways.tabs-left>li {
   transform: rotate(-90deg)
-}
-.morris-hover {
-  position: absolute;
-  z-index: 1000
-}
-.morris-hover.morris-default-style {
-  padding: 6px;
-  color: #666;
-  background: rgba(243, 242, 243, 0.8);
-  border: solid 2px rgba(195, 194, 196, 0.8);
-  font-family: sans-serif;
-  font-size: 12px;
-  text-align: center
-}
-.morris-hover.morris-default-style .morris-hover-row-label {
-  font-weight: bold;
-  margin: 0.25em 0
-}
-.morris-hover.morris-default-style .morris-hover-point {
-  white-space: nowrap;
-  margin: 0.1em 0
 }
 
 .login {
@@ -2600,39 +2452,6 @@ header {
 #nprogress .spinner-icon {
   border-top-color: #1ABB9C;
   border-left-color: #1ABB9C
-}
-.editor-wrapper {
-  min-height: 250px;
-  background-color: white;
-  border-collapse: separate;
-  border: 1px solid #ccc;
-  padding: 4px;
-  box-sizing: content-box;
-  box-shadow: rgba(0, 0, 0, 0.07451) 0px 1px 1px 0px inset;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-  border-bottom-left-radius: 3px;
-  border-top-left-radius: 3px;
-  overflow: scroll;
-  outline: none
-}
-.voiceBtn {
-  width: 20px;
-  color: transparent;
-  background-color: transparent;
-  transform: scale(2, 2);
-  -webkit-transform: scale(2, 2);
-  -moz-transform: scale(2, 2);
-  border: transparent;
-  cursor: pointer;
-  box-shadow: none;
-  -webkit-box-shadow: none
-}
-div[data-role="editor-toolbar"] {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none
 }
 .dropdown-menu a {
   cursor: pointer
@@ -2870,6 +2689,8 @@ ul.notifications {
 @media (max-width: 767px) {
   .dataTables_length { float:none; }
 }
+
+.daterangepicker.xdisplay { width:228px; }
 
 .dataTables_wrapper > .row{
   overflow:auto !important; /*prevent datatables overflowing its container*/
