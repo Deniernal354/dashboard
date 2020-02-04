@@ -791,8 +791,8 @@ function init_PNotify() {
         console.log("init_PNotify");
 
         var noti = PNotify.info({
-            title: "v2.2.0",
-            text: "알림 메일 기능이 추가되었습니다.\n공지사항을 참고해주세요.",   
+            title: "v2.2.1",
+            text: "Bug Fix 및 UI개선\n공지사항을 참고해주세요.",   
             styling: "bootstrap3",
             icons: "fontawesome4",
             delay: 3000,
