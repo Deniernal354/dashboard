@@ -243,16 +243,23 @@ function updateProjectDetail(labels, data, idx) {
             setAttributes(a2, {
                 "id": "failTitle" + i,
                 "class": "title",
+                "title": rawdata.pj_name,
             });
             a2.innerText = rawdata.pj_name;
             var p1 = document.createElement("p");
             var tmpTotal = rawdata.pass + rawdata.skip + rawdata.fail;
-            var tmprate = (rawdata.fail / tmpTotal * 100).toFixed(1);
-            p1.setAttribute("id", "failp" + i);
-            p1.innerText = tmpTotal + "개 TC중 " + rawdata.fail + "개 TC Fail (" + tmprate + "%)";
+            var p1Text = "Fail 비율: " + (rawdata.fail / tmpTotal * 100).toFixed(1) + "%(" + rawdata.fail + "/" + tmpTotal + ")";
+            setAttributes(p1, {
+                "id": "failp" + i,
+                "title": p1Text,
+            });
+            p1.innerText = p1Text;
             var p2 = document.createElement("p");
             var sm = document.createElement("small");
-            sm.setAttribute("id", "failauthor" + i);
+            setAttributes(sm, {
+                "id": "failauthor" + i,
+                "title": rawdata.pj_author,
+            });
             sm.innerText = rawdata.pj_author;
 
             p2.appendChild(sm);
