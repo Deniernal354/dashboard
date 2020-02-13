@@ -28,7 +28,8 @@ module.exports = function(asyncQuery, redisClient) {
 
         const info = await transporter.sendMail(mailOption);
 
-        console.log("Message sent: %s", info.accepted[0]);
+        // If you want to know where the mail sent is.
+        // console.log("Message sent: %s", info.accepted[0]);
         transporter.close();
     }
 
