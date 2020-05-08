@@ -1,5 +1,5 @@
 module.exports = function(passport, LocalStrategy) {
-    const bcrypt = require("bcrypt-nodejs");
+    const bcrypt = require("bcryptjs");
     const moment = require("moment");
     const adminID = require("./adminUser.json").userid;
     const adminPass = [];
