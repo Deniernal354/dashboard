@@ -1,15 +1,9 @@
 module.exports = function(passport, redisClient) {
     const express = require("express");
-    const router = express.Router();
     const util = require("util");
-    const makeAsync = fn => async (req, res, next) => {
-        try {
-            await fn(req, res, next);
-        } catch (err) {
-            return next(err);
-        }
-    };
-    const asyncRedis = util.promisify(redisClient.get).bind(redisClient);
+    const makeAsync = require("./makeAsync.js");
+    const router = express.Router();
+    const asyncRedisGet = util.promisify(redisClient.get).bind(redisClient);
 
     function isAuthenticated(req, res, next) {
         if (req.isAuthenticated()) {
@@ -37,8 +31,8 @@ module.exports = function(passport, redisClient) {
     });
 
     router.get("/getKnobData", makeAsync(async (req, res, next) => {
-        const maxLabel = await asyncRedis("maxLabel");
-        const abmaxLabel = await asyncRedis("abmaxLabel");
+        const maxLabel = await asyncRedisGet("maxLabel");
+        const abmaxLabel = await asyncRedisGet("abmaxLabel");
 
         res.header("Cache-Control", "no-cache, private, no-store, must-revalidate");
         res.status(200).json({
@@ -50,8 +44,8 @@ module.exports = function(passport, redisClient) {
     router.post("/changeMaxLabel", makeAsync(async (req, res) => {
         if (req.body.newMaxLabel && req.session.userid) {
             const newLabel = req.body.newMaxLabel.substring(5, req.body.newMaxLabel.indexOf("개")) * 1;
-            const preLabel = await asyncRedis("maxLabel") * 1;
-            const abmaxLabel = await asyncRedis("abmaxLabel") * 1;
+            const preLabel = await asyncRedisGet("maxLabel") * 1;
+            const abmaxLabel = await asyncRedisGet("abmaxLabel") * 1;
 
             if ((newLabel >= 1) && (newLabel <= abmaxLabel) && (preLabel !== newLabel)) {
                 console.log(`By ${req.session.userid}, maxLabel is changed : ${preLabel} -> ${newLabel}`);

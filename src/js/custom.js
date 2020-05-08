@@ -667,6 +667,7 @@ function init_modal(pj_id, build_id) {
                 if (pointData.length != 0) {
                     var buildtmp = parsedResult.pjLabel[0].build_id[pointData[0]._index];
 
+                    // Update the modal only if the selected point is not the previous.
                     if (prevBuild != buildtmp) {
                         prevBuild = buildtmp;
                         init_modal_detail(parsedResult.pjLabel[0].pj_id, buildtmp);
@@ -697,6 +698,8 @@ function init_charts() {
     console.log("init_charts");
 
     Chart.defaults.global.legend = false;
+
+    // modal event listeners
     $("#detailPage").on("hidden.bs.modal", function () {
         var newChart = doc.createElement("canvas");
 
@@ -711,6 +714,9 @@ function init_charts() {
         document.getElementById("team_mo").innerText = "팀 : ";
         document.getElementById("author_mo").innerText = "사용자 : ";
         clear_modalDetail();
+    });
+    $("#detailPage").on("shown.bs.modal", function () {
+        $(".modal-custom").scrollTop(0);
     });
 
     var doc = document;
@@ -785,8 +791,8 @@ function init_PNotify() {
         console.log("init_PNotify");
 
         var noti = PNotify.info({
-            title: "v2.2.0",
-            text: "알림 메일 기능이 추가되었습니다.\n공지사항을 참고해주세요.",   
+            title: "v2.2.1",
+            text: "Bug Fix 및 UI개선\n공지사항을 참고해주세요.",   
             styling: "bootstrap3",
             icons: "fontawesome4",
             delay: 3000,

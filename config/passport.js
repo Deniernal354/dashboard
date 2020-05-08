@@ -1,6 +1,12 @@
-module.exports = function(passport, LocalStrategy, userControl) {
+module.exports = function(passport, LocalStrategy) {
     const bcrypt = require("bcrypt-nodejs");
     const moment = require("moment");
+    const adminID = require("./adminUser.json").userid;
+    const adminPass = [];
+
+    adminID.forEach(value => {
+        adminPass.push(bcrypt.hashSync(value, bcrypt.genSaltSync()));
+    });
 
     passport.use(new LocalStrategy({
         usernameField: "userid",
@@ -8,10 +14,10 @@ module.exports = function(passport, LocalStrategy, userControl) {
         passReqToCallback: true,
     },
     (req, userid, password, done) => {
-        const useridx = userControl.getUserid().indexOf(userid);
+        const useridx = adminID.indexOf(userid);
 
         if (useridx !== -1) {
-            bcrypt.compare(password, userControl.getPassword()[useridx], (err, res) => {
+            bcrypt.compare(password, adminPass[useridx], (err, res) => {
                 if (res) {
                     const user = {
                         "userid": userid,
